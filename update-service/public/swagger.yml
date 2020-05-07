@@ -2023,7 +2023,8 @@ paths:
       summary: Create an image
       operationId: Firmware_Image_create
       description: | 
-        Create a firmware image.
+        Create a firmware image.        
+        <BR/> **Note:** Only use this API for images smaller than 100 MB. For larger images, [upload in chunks](../updating-firmware/uploading-a-large-firmware-image.html). 
         <br>
         **Usage example:**
         ```
