@@ -1,0 +1,18 @@
++----------------------------------------------------------------------------+
+|  The confidential and proprietary information contained in this file may   |
+|  only be used by a person authorized under and to the extent permitted     |
+|  by a subsisting licensing agreement from Arm Limited or its affiliates.   |
+|                                                                            |
+|         (C)COPYRIGHT 2017 - 2020 Arm Limited or its affiliates.            |
+|             ALL RIGHTS RESERVED                                            |
+|                                                                            |
+|  This entire notice must be reproduced on all copies of this file          |
+|  and copies of this file may only be made by a person if such person is    |
+|  permitted to do so under the terms of a subsisting license agreement      |
+|  from Arm Limited or its affiliates.                                       |
++----------------------------------------------------------------------------+
+
+Access to this repository and the Swagger files is governed by the Arm website 
+terms and conditions: https://www.arm.com/company/policies/terms-and-conditions, 
+and use of the APIs is governed by the Pelion terms and 
+conditions: https://www.pelion.com/terms/ 
