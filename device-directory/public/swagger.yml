@@ -1,0 +1,2348 @@
+swagger: '2.0'
+tags:
+  - name: Device directory - devices
+    description: Manage devices.
+  - name: Device directory - events
+    description: Fetch device event logs.
+  - name: Device directory - device queries
+    description: Manage saved queries for filtering devices.
+  - name: Device directory - groups
+    description: Manage device groups.
+  - name: Device directory - lifecycle
+    description: Manage device lifecycle including suspensions.
+x-aliases:
+  generic_device_block: &generic_device_block
+    - description: The device block.
+      in: body
+      name: Block
+      required: true
+      schema:
+        type: object
+        properties:
+          category:
+            type: string
+            description: The reference of the block category.
+            pattern: "[a-z0-9_]{0,32}"
+            example: "maintenance"
+          description:
+            type: string
+            maxLength: 2000
+            description: The most recent description of why the device was suspended or returned to service.
+            example: Suspended for maintenance.
+  device_list_x_filter: &device_list_x_filter
+    x-filter:
+      lifecycle_status:
+        - eq
+        - neq
+        - in
+        - nin
+      operator_suspended:
+        - eq
+        - neq
+      last_operator_suspended_category:
+        - eq
+        - neq
+        - in
+        - nin
+      last_operator_suspended_updated_at:
+        - in
+        - nin
+        - lte
+        - gte
+      system_suspended:
+        - eq
+        - neq
+      last_system_suspended_category:
+        - eq
+        - neq
+        - in
+        - nin
+      last_system_suspended_updated_at:
+        - in
+        - nin
+        - lte
+        - gte      
+      account_id:
+        - eq
+        - neq
+        - in
+        - nin
+      auto_update:
+        - eq
+        - neq
+      bootstrap_expiration_date:
+        - in
+        - nin
+        - lte
+        - gte
+      bootstrapped_timestamp:
+        - in
+        - nin
+        - lte
+        - gte
+      ca_id:
+        - eq
+        - neq
+        - in
+        - nin
+      connector_expiration_date:
+        - in
+        - nin
+        - lte
+        - gte
+      created_at:
+        - in
+        - nin
+        - lte
+        - gte
+      deployed_state:
+        - eq
+        - neq
+        - in
+        - nin
+      deployment:
+        - eq
+        - neq
+        - in
+        - nin
+      description:
+        - eq
+        - neq
+        - in
+        - nin
+      device_class:
+        - eq
+        - neq
+        - in
+        - nin
+      device_execution_mode:
+        - eq
+        - neq
+        - in
+        - nin
+      device_key:
+        - eq
+        - neq
+        - in
+        - nin
+      endpoint_name:
+        - eq
+        - neq
+        - in
+        - nin
+      endpoint_type:
+        - eq
+        - neq
+        - in
+        - nin
+      enrolment_list_timestamp:
+        - in
+        - nin
+        - lte
+        - gte
+      firmware_checksum:
+        - eq
+        - neq
+        - in
+        - nin
+      host_gateway:
+        - eq
+        - neq
+        - in
+        - nin
+      id:
+        - eq
+        - neq
+        - in
+        - nin
+      manifest:
+        - eq
+        - neq
+        - in
+        - nin
+      manifest_timestamp:
+        - in
+        - nin
+        - lte
+        - gte
+      mechanism:
+        - eq
+        - neq
+        - in
+        - nin
+      mechanism_url:
+        - eq
+        - neq
+        - in
+        - nin
+      name:
+        - eq
+        - neq
+        - in
+        - nin
+      serial_number:
+        - eq
+        - neq
+        - in
+        - nin
+      state:
+        - eq
+        - neq
+        - in
+        - nin
+      updated_at:
+        - in
+        - nin
+        - lte
+        - gte
+      vendor_id:
+        - eq
+        - neq
+        - in
+        - nin
+  group_editable_body: &group_editable_body
+    name:
+      type: string
+      maxLength: 128
+      description: Name of the group.
+      example: My devices
+    description:
+      type: string
+      maxLength: 1024
+      description: The description of the group.
+      example: Devices on the factory floor.
+    custom_attributes:
+      type: object
+      maxProperties: 10
+      additionalProperties:
+        type: string
+        maxLength: 128
+        pattern: "^[A-Za-z].*"
+      description: Up to ten custom key-value attributes. Keys cannot begin with a number. Both key and value are limited to 128 characters. Updating this field replaces existing contents.
+      example:
+        key: value
+  generic_list_fields: &generic_list_fields
+      after:
+        type: string
+        description: An offset token for current page.
+      has_more:
+        type: boolean
+        description: More results are available.
+        example: false
+      limit:
+        type: integer
+        description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+        example: 50
+        minimum: 2
+        maximum: 1000
+      object:
+        type: string
+        description: The type of this API object is 'list'.
+        example: "list"
+      order:
+        type: string
+        description: Order of entries based on creation time.
+        example: "DESC"
+      total_count:
+        format: integer
+        type: integer
+        example: 1
+  limit_param: &limit_param
+    - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+      in: query
+      name: limit
+      type: integer
+      minimum: 2
+      maximum: 1000
+  order_param: &order_param
+    - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+      in: query
+      name: order
+      type: string
+  after_param: &after_param
+    - description: The ID of the item after which to retrieve the next page.
+      in: query
+      name: after
+      type: string
+  include_param: &include_param
+    - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+      in: query
+      name: include
+      type: string
+info:
+  description: |-
+      This is the API documentation for the Device Directory service. Device Directory stores metadata, enabling searching and filtering. Device Directory also provides device history information, for example, firmware update and suspend events.
+
+      See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.
+  title: Device Directory API
+  version: '3'
+host: api.us-east-1.mbedcloud.com
+schemes:
+  - https
+produces:
+  - application/json
+definitions:
+  DeviceGroupManipulation:
+    type: object
+    required:
+      - device_id
+    properties:
+      device_id:
+        type: string
+        example: '00000000000000000000000000000000'
+  ErrorResponse:
+    type: object
+    properties:
+      object:
+        type: string
+        example: error
+      code:
+        type: integer
+        format: int32
+        example: 400
+        description: Response code.
+      type:
+        type: string
+        example: validation_error
+      message:
+        type: string
+        example: A human-readable informative explanation.
+      fields:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+              example: field_name
+            message:
+              type: string
+              example: A human-readable validation error.
+      request_id:
+        type: string
+        example: request_id
+  DeviceEqNeqFilter:
+    type: "object"
+    properties:
+      account_id:
+        type: string
+      auto_update:
+        type: boolean
+      bootstrap_expiration_date:
+        format: date
+        example: "2017-05-22"
+        type: string
+      bootstrapped_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      ca_id:
+        type: string
+      connector_expiration_date:
+        format: date
+        example: "2017-05-22"
+        type: string
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      custom_attributes:
+        type: object
+        additionalProperties:
+            type: string
+      deployed_state:
+        type: string
+      deployment:
+        type: string
+      description:
+        type: string
+      device_class:
+        type: string
+      device_execution_mode:
+        type: integer
+      id:
+        type: string
+      device_key:
+        type: string
+      endpoint_name:
+        type: string
+      endpoint_type:
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      firmware_checksum:
+        type: string
+      host_gateway:
+        type: string
+      manifest:
+        type: string
+      manifest_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      mechanism:
+        type: string
+      mechanism_url:
+        type: string
+      name:
+        type: string
+      serial_number:
+        type: string
+      state:
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      vendor_id:
+        type: string
+      enrolment_list_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceInNinFilter:
+    type: "object"
+    properties:
+      account_id:
+        type: string
+      auto_update:
+        type: boolean
+      bootstrap_expiration_date:
+        format: date
+        example: "2017-05-22"
+        type: string
+      bootstrapped_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      ca_id:
+        type: string
+      connector_expiration_date:
+        format: date
+        example: "2017-05-22"
+        type: string
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      custom_attributes:
+        type: object
+        additionalProperties:
+            type: string
+      deployed_state:
+        type: string
+      deployment:
+        type: string
+      description:
+        type: string
+      device_class:
+        type: string
+      device_execution_mode:
+        type: integer
+      id:
+        type: string
+      device_key:
+        type: string
+      endpoint_name:
+        type: string
+      endpoint_type:
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      firmware_checksum:
+        type: string
+      host_gateway:
+        type: string
+      manifest:
+        type: string
+      manifest_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      mechanism:
+        type: string
+      mechanism_url:
+        type: string
+      name:
+        type: string
+      serial_number:
+        type: string
+      state:
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      vendor_id:
+        type: string
+      enrolment_list_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceGteLteFilter:
+    type: "object"
+    properties:
+      bootstrap_expiration_date:
+        format: date
+        example: "2017-05-22"
+        type: string
+      bootstrapped_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      connector_expiration_date:
+        format: date
+        example: "2017-05-22"
+        type: string
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      manifest_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      enrolment_list_timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceEventData:
+    properties:
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      object:
+        type: string
+        description: The API resource entity.
+        example: "device-event"
+      changes:
+        type: object
+        additionalProperties:
+          type: object
+        example: { }
+        x-deprecation:
+          issued_at: "2019-01-15T14:55:20+00:00"
+          end_of_life_at: "2020-01-15T14:55:20+00:00"
+          comment: This field is not used.
+          links: []
+      data:
+        type: object
+        example: { "campaign_id": "00000000000000000000000000000000" }
+        description: Additional data relevant to the event.
+        additionalProperties:
+          type: string
+      date_time:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      description:
+        type: string
+        example: "Device record created"
+      id:
+        type: string
+        example: "00000000000000000000000000000000"
+      device_id:
+        type: string
+        example: "00000000000000000000000000000000"
+      event_type:
+        type: string
+        maxLength: 100
+        example: UPD2_100
+        description: Event code
+      event_type_category:
+        type: string
+        example: FAIL_MANIFEST_REJECTED
+        description: Category code that groups the event type by a summary category.
+      event_type_description:
+        type: string
+        example: FAIL
+        description: Generic description of the event.
+      state_change:
+        type: boolean
+    required:
+      - date_time
+      - id
+  DeviceEventEqNeqFilter:
+    properties:
+      date_time:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      device_id:
+        type: string
+      event_type:
+        type: string
+      state_change:
+        type: boolean
+  DeviceEventInNinFilter:
+    properties:
+      date_time:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      device_id:
+        type: string
+      event_type:
+        type: string
+      state_change:
+        type: boolean
+  DeviceEventGteLteFilter:
+    properties:
+      date_time:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceEventPage:
+    properties:
+      after:
+        type: string
+        example: null
+      data:
+        items:
+          $ref: '#/definitions/DeviceEventData'
+        type: array
+        example: "[]"
+      has_more:
+        type: boolean
+        example: false
+      limit:
+        type: integer
+        example: 1000
+      object:
+        type: string
+        example: "list"
+      order:
+        type: string
+        example: "DESC"
+      total_count:
+        type: integer
+        example: 1
+
+  DeviceQuery:
+    properties:
+      created_at:
+        description: The timestamp of when the query was created.
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        description: The entity instance signature.
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        description: The ID of the query.
+        type: string
+        example: "00000000000000000000000000000000"
+      name:
+        description: The name of the query.
+        type: string
+        example: "00000000000000000000000000000000"
+      object:
+        description: The API resource entity.
+        type: string
+        example: "device-query"
+      query:
+        description: The device query.
+        type: string
+        example: "id=00000000000000000000000000000000"
+      updated_at:
+        description: The time the object was updated.
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+    required:
+      - created_at
+      - etag
+      - id
+      - name
+      - object
+      - query
+      - updated_at
+  DeviceQueryPage:
+    properties:
+      after:
+        type: string
+        example: null
+      data:
+        items:
+          $ref: '#/definitions/DeviceQuery'
+        type: array
+        example: "[]"
+      has_more:
+        type: boolean
+        example: false
+      limit:
+        format: integer
+        type: integer
+        example: 1000
+      object:
+        type: string
+        example: "list"
+      order:
+        type: string
+        example: "DESC"
+      total_count:
+        format: integer
+        type: integer
+        example: 1
+    required:
+      - limit
+      - order
+      - object
+      - has_more
+      - total_count
+      - data
+  DeviceQueryPatchRequest:
+    properties:
+      name:
+        description: The name of the query.
+        type: string
+        maxLength: 200
+      query:
+        description: The device query.
+        type: string
+        maxLength: 1000
+  DeviceQueryPostPutRequest:
+    properties:
+      name:
+        description: The name of the query.
+        type: string
+        maxLength: 200
+      query:
+        description: The device query.
+        type: string
+        maxLength: 1000
+    required:
+      - name
+      - query
+  DeviceQueryEqNeqFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      query:
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceQueryInNinFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      query:
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceQueryGteLteFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  DeviceGroupPage:
+    type: object
+    properties:
+      after:
+        type: string
+        description: An offset token for current page.
+        example: '01631667477600000000000100100374'
+      data:
+        items:
+          $ref: '#/definitions/DeviceGroup'
+        type: array
+      has_more:
+        type: boolean
+        description: More results are available.
+        example: false
+      limit:
+        type: integer
+        description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+        example: 50
+        minimum: 2
+        maximum: 1000
+      object:
+        type: string
+        description: The type of this API object is 'list'.
+        example: "list"
+      order:
+        type: string
+        description: Record order based on creation time.
+        example: "DESC"
+      total_count:
+        format: integer
+        type: integer
+        example: 1
+  DeviceGroup:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The group ID.
+        example: '015c3029f6f7000000000001001000c3'
+      devices_count:
+        type: integer
+        description: The number of devices in this group.
+        example: 10
+      <<: *group_editable_body
+      object:
+        type: string
+        description: 'Entity name: always `device-group`.'
+        example: device-group
+      created_at:
+        type: string
+        format: date-time
+        description: The time the group was created.
+        example: '2017-05-22T12:37:55.576563Z'
+      updated_at:
+        type: string
+        format: date-time
+        description: The time this object was updated.
+        example: '2017-05-22T12:37:55.576563Z'
+      etag:
+        format: date-time
+        example: '2017-05-22T12:37:55.576563Z'
+        type: string
+  DeviceBlockCategory:
+    type: object
+    properties:
+      object:
+        type: string
+        example: 'device-block-category'
+        description: "Entity name: always 'device-block-category'."
+      reference:
+        type: string
+        example: 'maintenance'
+      description:
+        type: string
+        example: Suspended for maintenance.
+      updated_at:
+        type: string
+        format: date-time
+  DeviceBlockCategoryPage:
+    type: object
+    properties:
+      <<: *generic_list_fields
+      data:
+        items:
+          $ref: '#/definitions/DeviceBlockCategory'
+        type: array
+paths:
+  /v3/devices/{id}/suspend:
+    post:
+      tags:
+        - Device directory - lifecycle
+      summary: Suspend a device.
+      description: |-
+        [Suspending a device](../device-management/device-suspension.html) prevents it from connecting to Device Management. If a device is currently connected, it disconnects and shows as deregistered.
+
+        You can also receive [deregistration events](../service-api-references/device-management-connect.html#notificationmessage) in [notification channels](../integrate-web-app/event-notification.html).
+
+        API operations needing device transactions fail while a device is suspended.
+
+        Example use case to use suspending is that device is reported lost or stolen. You can block the device to connect and this way prevent  device to cause unreliable data to your system.
+
+         ***Example:*
+
+         The following example suspends a device with category "Lost or stolen". You can see available categories with '/v3/device-block-categories/'.
+         ```
+         curl -X POST https://api.us-east-1.mbedcloud.com/v3/devices/<device_id>/suspend \
+         -H 'Authorization: Bearer <api_key>' \
+         -H 'content-type: application/json' \
+         -d '{ "category": "lost_or_stolen", "description": "EXAMPLE: Customer contacted via phone and reported device being stolen. Specific time of the theft was not know. Device last used in May/2019"}'
+         ```
+      operationId: Device_suspend
+      parameters:
+        - description: The [Device ID](../connecting/device-identity.html) created by Device Management.
+          in: path
+          name: id
+          required: true
+          type: string
+        - <<: *generic_device_block
+      responses:
+        '204':
+          description: Ok - Device suspended.
+        '400':
+          description: Bad request.
+        '401':
+          description: Unauthorized.
+        '404':
+          description: Not found - Could not find device.
+  /v3/devices/{id}/resume:
+    post:
+      tags:
+        - Device directory - lifecycle
+      summary: Return a device to service.
+      description: |-
+          [Returning a device to service](../device-management/device-suspension.html#suspending-and-resuming-connection-to-devices-with-the-apis) allows the device to connect to Device Management again. The connection is established according to the device's reconnection logic. The device reports a [registration event](../service-api-references/device-management-connect.html#notificationmessage) through a [notification channel](../integrate-web-app/event-notification.html).
+
+          The default reconnection logic is a progressive back-off for 2, 4, 8, or 16 seconds, up to one week. All API functionality is restored.
+
+          **Example:**
+
+          The following example enables a device to reconnect to Pelion Device Management. The category must match the reason device was suspended. This device was reported stolen, but was found:
+          ```
+          curl -X POST https://api.us-east-1.mbedcloud.com/v3/devices/<device_id>/resume \
+          -H 'Authorization: Bearer <api_key>' \
+          -H 'content-type: application/json' \
+          -d '{ "category": "lost_or_stolen", "description": "Was found, was not stolen but miss placed"}'
+          ```
+      operationId: Device_resume
+      parameters:
+        - description: The ID of the device.
+          in: path
+          name: id
+          required: true
+          type: string
+        - <<: *generic_device_block
+      responses:
+        '204':
+          description: Ok - Device returned to service.
+        '400':
+          description: Bad request.
+        '401':
+          description: Unauthorized.
+        '404':
+          description: Not Found - Could not find device.
+  /v3/device-block-categories/:
+    get:
+      tags:
+       - Device directory - lifecycle
+      summary: List all device block categories
+      description: |-
+         List all device block categories. A block category is a short description of why a device was suspended or returned to service.
+
+         **Example:**
+         Get all defined device suspension categories:
+         ```
+         curl -X GET https://api.us-east-1.mbedcloud.com/v3/device-block-categories \
+         -H 'Authorization: Bearer <API key>'
+         ```
+      operationId: Block_Categories_list
+      parameters:
+        - description: This endpoint doesn't support paging. Parameter is accepted for API compatibility. Value is ignored.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - <<: *order_param
+        - description: This endpoint doesn't support paging. Parameter is accepted for API compatibility. Value is ignored.
+          in: query
+          name: after
+          type: string
+        - <<: *include_param
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/DeviceBlockCategoryPage'
+        400:
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      x-filter:
+        reference:
+          - eq
+          - neq
+          - in
+          - nin
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+  /v3/device-block-categories/{block_category_reference}:
+    get:
+      tags:
+        - Device directory - lifecycle
+      summary: Get a device block category.
+      description: Retrieve a device block category. A block category is a short description of why a device was suspended or returned to service.
+      operationId: Block_Categories_retrieve
+      parameters:
+        - description: The reference of the block category.
+          in: path
+          name: block_category_reference
+          type: string
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DeviceBlockCategory'
+        401:
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/device-events/:
+    get:
+      tags:
+        - Device directory - events
+      summary: List all device events.
+      description: |-
+        List all or a filtered list of device events for the account. Device events are events significant to operation or lifetime, such as creation, firmware update, and suspension.
+
+        To see statistics for device connectivity and usage, use the [Statistics API](../service-api-references/connect-statistics.html).
+
+         **Example:**
+         Following example gets device-events limiting returned results to max 5 events
+         ```
+         curl -X GET https://api.us-east-1.mbedcloud.com/v3/device-events?limit=5 \
+         -H 'Authorization: Bearer <API key>'
+         ```
+         or to get events for certain device filter based on device_id:
+         ```
+         curl -X GET https://api.us-east-1.mbedcloud.com/v3/device-events?device_id=<device_id> \
+         -H 'Authorization: Bearer <API key>'
+         ```
+      operationId: Device_Event_list
+      parameters:
+        - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data.
+
+            ##### Filtering
+
+            `?filter={URL encoded query string}`
+
+            The query string is made up of key/value pairs separated by ampersands. So for a query of
+            `key1=value1&key2=value2&key3=value3`, this is encoded as `?filter=key1%3Dvalue1%26key2%3Dvalue2%26key3%3Dvalue3`.
+
+            ###### Filterable fields:
+
+            The below table lists all filterable fields:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>date_time</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>device_id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>event_type</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>state_change</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The examples below show the queries in *unencoded* form.
+
+            ###### By id:
+
+            `id={id}`
+
+            ###### By state change:
+
+            `state_change=[True|False]`
+
+            ###### By event type:
+
+            `event_type={value}`
+
+            ###### On date-time fields:
+
+            Date-time fields should be specified in UTC RFC3339 format: `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted
+            variations:
+
+            * UTC RFC3339 with milliseconds, for example, 2016-11-30T16:25:12.1234Z.
+            * UTC RFC3339 without milliseconds, for example, 2016-11-30T16:25:12Z.
+            * UTC RFC3339 shortened - without milliseconds and punctuation, for example, 20161130T162512Z.
+
+            Date-time filtering supports three operators:
+
+            * Equality.
+            * Greater than or equal to &ndash; field name suffixed with `__gte`.
+            * Less than or equal to &ndash; field name suffixed with `__lte`.
+            Lower and upper limits to a date-time range may be specified by including both the `__gte` and `__lte` forms in
+            the filter:
+
+            `{field name}[|__lte|__gte]={UTC RFC3339 date-time}`
+
+            ##### Multi-field example
+
+            `id=0158d38771f70000000000010010038c&state_change=True&date_time__gte=2016-11-30T16:25:12.1234Z`
+
+            Encoded:
+
+            `?filter=id%3D0158d38771f70000000000010010038c%26state_change%3DTrue%26date_time__gte%3D2016-11-30T16%3A25%3A12.1234Z`
+
+            ##### Filtering with filter operators
+
+            String field filtering supports the following operators:
+
+            * Equality: `__eq`.
+            * Non-equality: `__neq`.
+            * In : `__in`.
+            * Not in: `__nin`.
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+
+            `event_type__in=update.device.device-created,update.device.device-updated`
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '#/definitions/DeviceEventPage'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find page.
+      x-filter:
+        date_time:
+          - in
+          - nin
+          - lte
+          - gte
+        description:
+          - eq
+          - neq
+          - in
+          - nin
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        device_id:
+          - eq
+          - neq
+          - in
+          - nin
+        event_type:
+          - eq
+          - neq
+          - in
+          - nin
+        state_change:
+          - eq
+          - neq
+  '/v3/device-events/{device_event_id}/':
+    get:
+      tags:
+        - Device directory - events
+      summary: Retrieve a device event.
+      description: |-
+        "Retrieve a specific device event. See '/v3/device-events/' for information on device events, and how to get the device_event_id."
+
+        **Example:**
+        To fetch a specific event you can use the 'id' field from '/v3/device-events'. Form of '016c03d40a4e000000000001001003b4'
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/device-events/<device_event_id> \
+        -H 'Authorization: Bearer <API key>'
+        ```
+      operationId: Device_Event_retrieve
+      parameters:
+        - in: path
+          name: device_event_id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '#/definitions/DeviceEventData'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find device.
+  /v3/devicelog/:
+    get:
+      tags:
+        - Device directory - events
+      summary: "DEPRECATED: List all device events."
+      description: 'DEPRECATED: This API is replaced with `/v3/device-events/`.'
+      deprecated: True
+      operationId: Device_Log_list
+      parameters:
+        - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data.
+
+            ##### Filtering
+
+            `?filter={URL encoded query string}`
+
+            The query string is made up of key/value pairs separated by ampersands. So for a query of
+            `key1=value1&key2=value2&key3=value3`, this would be encoded as `?filter=key1%3Dvalue1%26key2%3Dvalue2%26key3%3Dvalue3`.
+
+            ###### Filterable fields:
+
+            The below table lists all filterable fields:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>date_time</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>device_id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>event_type</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>state_change</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The examples below show the queries in *unencoded* form.
+
+            ###### By id:
+
+            `id={id}`
+
+            ###### By state change:
+
+            `state_change=[True|False]`
+
+            ###### By event type:
+
+            `event_type={value}`
+
+            ###### On date-time fields:
+
+            Date-time fields should be specified in UTC RFC3339 format `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted
+            variations:
+
+            * UTC RFC3339 with milliseconds, for example, 2016-11-30T16:25:12.1234Z.
+            * UTC RFC3339 without milliseconds, for example, 2016-11-30T16:25:12Z.
+            * UTC RFC3339 shortened - without milliseconds and punctuation, for example, 20161130T162512Z.
+
+            Date-time filtering supports three operators:
+
+            * Equality.
+            * Greater than or equal to &ndash; field name suffixed with `__gte`.
+            * Less than or equal to &ndash; field name suffixed with `__lte`.
+
+            Lower and upper limits to a date-time range may be specified by including both the `__gte` and `__lte` forms in
+            the filter:
+
+            `{field name}[|__lte|__gte]={UTC RFC3339 date-time}`
+
+            ##### Multi-field example
+
+            `id=0158d38771f70000000000010010038c&state_change=True&date_time__gte=2016-11-30T16:25:12.1234Z`
+
+            Encoded:
+
+            `?filter=id%3D0158d38771f70000000000010010038c%26state_change%3DTrue%26date_time__gte%3D2016-11-30T16%3A25%3A12.1234Z`
+
+            ##### Filtering with filter operators
+
+            String field filtering supports the following operators:
+
+            * Equality: `__eq`.
+            * Non-equality: `__neq`.
+            * In : `__in`.
+            * Not in: `__nin`.
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+            `event_type__in=update.device.device-created,update.device.device-updated`.
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '#/definitions/DeviceEventPage'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find page.
+      x-filter:
+        date_time:
+          - in
+          - nin
+          - lte
+          - gte
+        description:
+          - eq
+          - neq
+          - in
+          - nin
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        device_id:
+          - eq
+          - neq
+          - in
+          - nin
+        event_type:
+          - eq
+          - neq
+          - in
+          - nin
+        state_change:
+          - eq
+          - neq
+          - in
+          - nin
+  '/v3/devicelog/{device_event_id}/':
+    get:
+      tags:
+        - Device directory - events
+      summary: "DEPRECATED: Retrieve a device event."
+      description: 'DEPRECATED: This API is replaced by `/v3/device-events/` and `/v3/device-events/{device_event_id}/`.'
+      deprecated: True
+      operationId: Device_Log_retrieve
+      parameters:
+        - in: path
+          name: device_event_id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '#/definitions/DeviceEventData'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find device.
+  /v3/devices/:
+    get:
+      tags:
+        - Device directory - devices
+      summary: List all devices.
+      description: |-
+        List all devices enrolled to Device Management for the account.
+
+        **Example:**
+        Following example filters devices according to state field and returns only devices in 'registered' state:
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/devices?filter=state%3Dregistered \
+        -H 'Authorization: Bearer <API key>'
+        ```
+      operationId: Device_list
+      parameters:
+        - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description:  'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+          in: query
+          name: include
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DevicePage'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find page.
+      <<: *device_list_x_filter
+    post:
+      tags:
+        - Device directory - devices
+      summary: Create a device.
+      description: |-
+              Create a new device in Device Management. Usually you do not need to create a device this way, as it is automatically created when it bootstraps or connects to Device Management.
+      operationId: Device_create
+      parameters:
+        - in: body
+          name: Device
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DeviceDataPostRequest'
+      responses:
+        '201':
+          description: Device created.
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DeviceData'
+        '400':
+          description: |-
+            Validation error: The data used to create the device did not validate.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Account limit reached. Could not create device.
+        '409':
+          description: Unique-constrained fields are used by other resources.
+  '/v3/devices/{id}/':
+    delete:
+      tags:
+        - Device directory - devices
+      summary: Delete a device.
+      description: Delete device. Only available for devices with a developer certificate. Attempting to delete a device with a production certificate returns a 400 response.
+      operationId: Device_destroy
+      parameters:
+        - description: The [Device ID](../connecting/device-identity.html) created by Device Management.
+          in: path
+          name: id
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Device deleted.
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to delete device because it can't be found.
+    get:
+      tags:
+        - Device directory - devices
+      summary: Get a device.
+      description: |-
+          Retrieve information about a specific device. This API returns [DeviceData](../service-api-references/device-directory.html#devicedata). If you want to see the structure of resources in the device or the actual resource values, use the [Connect API](../service-api-references/device-management-connect.html).
+
+          **Example:**
+          Following example must be updated with the device's ID to the URL. The id is from of "01667c6e992c00000000000100100370"
+          ```
+          curl -X GET https://api.us-east-1.mbedcloud.com/v3/devices/<device_ID> \
+          -H 'Authorization: Bearer <API key>'
+          ```
+      operationId: Device_retrieve
+      parameters:
+        - description: The [Device ID](../connecting/device-identity.html) created by Device Management.
+          in: path
+          name: id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DeviceData'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find device.
+    put:
+      tags:
+        - Device directory - devices
+      summary: Update a device.
+      description: |-
+        Update a specific device.
+
+        **Example:**
+        Following example will update the specific devices description field to contain "Testing description field".
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/devices/<device_ID> \
+        -H 'Authorization: Bearer <API key>' \
+        -H 'content-type: application/json' \
+        -d '{"description": "Testing description field"}'
+        ```
+      operationId: Device_update
+      parameters:
+        - description: 'The [Device ID](../connecting/device-identity.html) created by Device Management.'
+          in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: Device
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DeviceDataPutRequest'
+      responses:
+        '200':
+          description: Device updated.
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DeviceData'
+        '400':
+          description: |-
+            Validation error: The data used to update the device did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to update device because it can't be found.
+  /v3/device-queries/:
+    get:
+      tags:
+        - Device directory - device queries
+      summary: List device queries.
+      description: List all device queries.
+      operationId: Device_Query_list
+      parameters:
+        - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description:  'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data.
+
+            ##### Filtering
+
+            `?filter={URL encoded query string}`
+
+            The query string is made up of key/value pairs separated by ampersands. So for a query of
+            `key1=value1&key2=value2&key3=value3`, this would be encoded as: `?filter=key1%3Dvalue1%26key2%3Dvalue2%26key3%3Dvalue3`.
+
+            ###### Filterable fields
+
+            The below table lists all filterable fields:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>name</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>query</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The examples below show the queries in *unencoded* form.
+
+            ###### By device query properties (all properties are filterable):
+
+            For example:
+            `description={value}`
+
+            ###### On date-time fields:
+
+            Date-time fields should be specified in UTC RFC3339 format `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted
+            variations:
+
+            * UTC RFC3339 with milliseconds, for example, 2016-11-30T16:25:12.1234Z.
+            * UTC RFC3339 without milliseconds, for example, 2016-11-30T16:25:12Z.
+            * UTC RFC3339 shortened - without milliseconds and punctuation, for example, 20161130T162512Z.
+
+            Date-time filtering supports three operators:
+
+            * Equality.
+            * Greater than or equal to &ndash; field name suffixed with `__gte`.
+            * Less than or equal to &ndash; field name suffixed with `__lte`.
+
+            Lower and upper limits to a date-time range may be specified by including both the `__gte` and `__lte` forms in
+            the filter: `{field name}[|__lte|__gte]={UTC RFC3339 date-time}`.
+
+            ##### Multi-field example
+
+            `query_id=0158d38771f70000000000010010038c&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            Encoded:
+
+            `filter=query_id%3D0158d38771f70000000000010010038c%26created_at__gte%3D2016-11-30T16%3A25%3A12.1234Z%26created_at__lte%3D2016-11-30T00%3A00%3A00Z`
+
+            ##### Filtering with filter operators
+
+            String field filtering supports the following operators:
+
+            * Equality: `__eq`.
+            * Non-equality: `__neq`.
+            * In : `__in`.
+            * Not in: `__nin`.
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+            `name__nin=query1,query2`
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '#/definitions/DeviceQueryPage'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find page.
+      x-filter:
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        name:
+          - eq
+          - neq
+          - in
+          - nin
+        query:
+          - eq
+          - neq
+          - in
+          - nin
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+    post:
+      tags:
+        - Device directory - device queries
+      summary: Create a device query.
+      description: Create a new device query.
+      operationId: Device_Query_create
+      parameters:
+        - in: body
+          name: Device
+          required: true
+          schema:
+            $ref: '#/definitions/DeviceQueryPostPutRequest'
+      responses:
+        '201':
+          description: Update device query created.
+          schema:
+            $ref: '#/definitions/DeviceQuery'
+        '400':
+          description: |-
+            Validation error: The data used to create the device query did not validate.
+        '401':
+          description: Not authenticated.
+  '/v3/device-queries/{query_id}/':
+    delete:
+      tags:
+        - Device directory - device queries
+      summary: Delete a device query.
+      description: Delete a device query.
+      operationId: Device_Query_destroy
+      parameters:
+        - in: path
+          name: query_id
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Update device query deleted.
+        '400':
+          description: |-
+            Validation error: The data used to create the device query did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to delete update device query because it can't be found.
+    get:
+      tags:
+        - Device directory - device queries
+      summary: Retrieve a device query.
+      description: Retrieve a specific device query.
+      operationId: Device_Query_retrieve
+      parameters:
+        - in: path
+          name: query_id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '#/definitions/DeviceQuery'
+        '400':
+          description: |-
+            Validation error: The data used to create the device query did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find device query.
+    put:
+      tags:
+        - Device directory - device queries
+      summary: Update a device query.
+      description: Update a specifc device query.
+      operationId: Device_Query_update
+      parameters:
+        - in: path
+          name: query_id
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Device query update object.
+          required: true
+          schema:
+            $ref: '#/definitions/DeviceQueryPostPutRequest'
+      responses:
+        '200':
+          description: Device updated.
+          schema:
+            $ref: '#/definitions/DeviceQuery'
+        '400':
+          description: |-
+            Validation error: The data used to update the device query did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to update device query because it can't be found.
+  /v3/device-groups/:
+    get:
+      tags:
+        - Device directory - groups
+      summary: List all groups.
+      description: List all groups.
+      operationId: Group_list
+      parameters:
+        - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data.
+
+            ##### Filtering
+
+            `?filter={URL encoded query string}`
+
+            The query string is made up of key/value pairs separated by ampersands. So for a query of
+            `key1=value1&key2=value2&key3=value3`, this would be encoded as `?filter=key1%3Dvalue1%26key2%3Dvalue2%26key3%3Dvalue3`.
+
+            ###### Filterable fields:
+
+            The table lists all filterable fields:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>devices_count</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>name</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>custom_attributes</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The examples below show the queries in *unencoded* form.
+
+            ###### By device group properties:
+
+            `name__eq=mygroup`
+
+            ###### On date-time fields:
+
+            Date-time fields should be specified in UTC RFC3339 format `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted
+            variations:
+
+            * UTC RFC3339 with milliseconds, for example, 2016-11-30T16:25:12.1234Z.
+            * UTC RFC3339 without milliseconds, for example, 2016-11-30T16:25:12Z.
+            * UTC RFC3339 shortened - without milliseconds and punctuation, for example, 20161130T162512Z.
+
+            Date-time filtering supports three operators:
+
+            * Equality.
+            * Greater than or equal to &ndash; field name suffixed with `__gte`.
+            * Less than or equal to &ndash; field name suffixed with `__lte`.
+
+            Lower and upper limits to a date-time range may be specified by including both the `__gte` and `__lte` forms in
+            the filter:
+
+            `{field name}[|__lte|__gte]={UTC RFC3339 date-time}`
+
+            ###### By device group custom attributes:
+
+            `custom_attributes__{param}={value}`
+
+            `custom_attributes__tag=TAG1`
+
+            ##### Multi-field example
+
+            `name__eq=mygroup&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            Encoded:
+
+            `?filter=name__eq%3Dmygroup%26created_at__gte%3D2016-11-30T16%3A25%3A12.1234Z%26created_at__lte%3D2016-12-30T00%3A00%3A00Z`
+
+            ##### Filtering with filter operators
+
+            String field filtering supports the following operators:
+
+            * Equality: `__eq`.
+            * Non-equality: `__neq`.
+            * In : `__in`.
+            * Not in: `__nin`.
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+            `name__in=group1,group2`
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Ok.
+          schema:
+            $ref: '#/definitions/DeviceGroupPage'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      x-filter:
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        devices_count:
+          - eq
+          - neq
+          - in
+          - nin
+          - lte
+          - gte
+        name:
+          - eq
+          - neq
+          - in
+          - nin
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+    post:
+      tags:
+        - Device directory - groups
+      summary: Create a group.
+      description: Create a group.
+      operationId: Group_create
+      parameters:
+        - description: Group
+          in: body
+          name: group
+          required: true
+          schema:
+            type: object
+            properties:
+              <<: *group_editable_body
+      responses:
+        '201':
+          description: Created.
+          schema:
+            $ref: '#/definitions/DeviceGroup'
+        '400':
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: Conflict - Group name already exists.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/device-groups/{device-group-id}/:
+    delete:
+      tags:
+        - Device directory - groups
+      summary: Delete a group.
+      description: Delete a group. This deletes the group, but not the devices in the group.
+      operationId: Group_delete
+      parameters:
+        - description: The ID of the group.
+          in: path
+          name: device-group-id
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Success - group deleted.
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    get:
+      tags:
+        - Device directory - groups
+      summary: Get a group.
+      description: |-
+              Returns [DeviceGroup](../service-api-references/device-directory.html#DeviceGroup) info what contains info of the group, for example, name and updated date. To list the devices in the group, use '/v3/device-groups/{device-group-id}/devices/'.
+      operationId: Group_retrieve
+      parameters:
+        - description: The group ID
+          in: path
+          name: device-group-id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok.
+          schema:
+            $ref: '#/definitions/DeviceGroup'
+        '400':
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Device directory - groups
+      summary: Modify the attributes of a group.
+      description: Modify the attributes of a group, such as the description.
+      operationId: Group_update
+      parameters:
+        - in: path
+          name: device-group-id
+          required: true
+          type: string
+        - description: Group
+          in: body
+          name: group
+          required: true
+          schema:
+            type: object
+            properties:
+              <<: *group_editable_body
+      responses:
+        '200':
+          description: Ok.
+          schema:
+            $ref: '#/definitions/DeviceGroup'
+        '400':
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/device-groups/{device-group-id}/devices/':
+    get:
+      tags:
+        - Device directory - groups
+      summary: Get a page of devices.
+      description: Get a page of devices in a specified group.
+      operationId: Group_members_retrieve
+      parameters:
+        - in: path
+          name: device-group-id
+          required: true
+          type: string
+        - description: How many objects to retrieve in the page (2-1000). Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+          in: query
+          name: include
+          type: string
+      responses:
+        200:
+          description: Ok.
+          schema:
+            $ref: '../../api-common-definitions/device.yaml#/definitions/DevicePage'
+        400:
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      <<: *device_list_x_filter
+  '/v3/device-groups/{device-group-id}/devices/add/':
+    post:
+      tags:
+        - Device directory - groups
+      summary: Add a device to a group.
+      description: Add one device to a group. A device can be in multiple groups.
+      operationId: Group_members_add
+      parameters:
+        - in: path
+          description: The ID of the group.
+          name: device-group-id
+          required: true
+          type: string
+        - in: body
+          description: Body of the request.
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/DeviceGroupManipulation'
+      responses:
+        '204':
+          description: Success - device added.
+        '400':
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/device-groups/{device-group-id}/devices/remove/':
+    post:
+      tags:
+        - Device directory - groups
+      summary: Remove a device from a group.
+      description: Remove one device from a group.
+      operationId: Group_members_remove
+      parameters:
+        - in: path
+          description: The ID of the group.
+          name: device-group-id
+          required: true
+          type: string
+        - in: body
+          description: Body of the request.
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/DeviceGroupManipulation'
+      responses:
+        '204':
+          description: Success - device removed.
+        '400':
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'

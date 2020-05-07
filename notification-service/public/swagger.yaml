@@ -1,0 +1,767 @@
+swagger: '2.0'
+info:
+  title: Notifications API
+  description: 'Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic) for more details on notification channels.
+
+  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+  version: "2"
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+host: api.us-east-1.mbedcloud.com
+tags:
+  - name: Device data - notifications
+    description: Manage and receive notifications from devices.
+x-aliases:
+  successfully_deleted: &successfully_deleted
+    description: Successfully deleted.
+  unauthorized: &unauthorized
+    description: Unauthorized.
+  forbidden: &forbidden
+    description: Forbidden. The authorization token used is not an API key.
+paths:
+  /v2/notification/callback:
+    put:
+      summary: Register a callback URL.
+      description: |-
+        Register a URL to which the server delivers notifications of changes to the subscribed resource. To push notifications, you must first place subscriptions. The maximum length of the URL, header keys, and values, all combined, is 400 characters. 
+
+        Notifications are delivered as PUT requests to the HTTP server, which the client defines with a subscription server message. The given URL must be accessible, and respond to the PUT request with a response code of 200 or 204. 
+
+        Device Management Connect tests the callback URL with an empty JSON payload `{}` when the URL is registered. Callback implementation does not support URL redirection. For more information on notification messages, see [NotificationMessage](#NotificationMessage).
+
+        **Optional headers in a callback message:**
+
+        You can set optional headers to a callback in a **Webhook** object. Device Management Connect includes the header and key pairs in the notification messages send them to callback URL. The callback URLs and headers are API key-specific.
+
+        One possible use for additional headers is checking the origin of a PUT request, as well as distinguishing the application (API key) to which the notification belongs.
+
+        **Note**: Only one callback URL for each API key can be active. If you register a new URL while another one is active, it replaces the active one. There can be only one notification channel at a time for each API key. If another type of channel is already present, you need to delete it before setting the callback URL.
+
+        **Expiration of a callback URL:**
+
+        A callback can expire when Device Management cannot deliver a notification due to a connection timeout or error response (4xx or 5xx). After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL is removed if all retries fail within 24 hours. More about [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
+
+        **Supported callback URL protocols:**
+
+        Currently, only HTTP and HTTPS protocols are supported.
+
+        **HTTPS callback URLs:**
+
+        When delivering a notification to an HTTPS-based callback URL, Device Management Connect identifies itself with a valid client certificate. The certificate is signed by a trusted certificate authority (GlobalSign), with a Common Name (CN) set to `notifications.mbedcloud.com`.
+
+        **Configuration options:**
+
+        The event notification channel provides configurations options defined in [Serialization config](#SerializationConfigObjectV2).
+
+        **Example:**
+
+        This example command shows how to set your callback URL and API key. It also sets an optional header authorization. When Device Management Connect calls your callback URL, the call contains the authorization header with the defined value.
+
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v2/notification/callback \
+        -H 'Authorization: Bearer <api_key>' \
+        -H 'content-type: application/json' \
+        -d '{
+          "url": "{callback-url}",
+          "headers": {"authorization": "f4b93d6e-4652-4874-82e4-41a3ced0cd56"},
+          "serialization": {"type": "v2", "max_chunk_size": "100",
+            "cfg": {"deregistrations_as_object": "true", "include_uid": "true", "include_timestamp": "true", "include_original_ep": "true"
+            }
+          }
+        }'
+        ```
+      operationId: registerWebhook
+      consumes:
+        - application/json
+      parameters:
+        - name: webhook
+          in: body
+          description: |-
+            A JSON object that contains the optional headers and URL where notifications are sent.
+          required: true
+          schema:
+            $ref: '#/definitions/Webhook'
+      tags:
+        - Device data - notifications
+      responses:
+        204:
+          description: Successfully subscribed.
+        400:
+          description: Given URL is not accessible, or other type of channel already exists.
+        401: *unauthorized
+        403: *forbidden
+        415:
+          description: Unsupported Media Type.
+
+    get:
+      summary: Check callback URL.
+      description: |-
+        Shows the current callback URL if it exists.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/callback \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getWebhook
+      produces:
+        - application/json
+      tags:
+        - Device data - notifications
+      responses:
+        200:
+          description: URL found.
+          schema:
+            $ref: '#/definitions/Webhook'
+        401: *unauthorized
+        403: *forbidden
+        404:
+          description: The callback URL does not exist.
+
+    delete:
+      summary: Delete callback URL.
+      description: |-
+        Deletes the callback URL.
+
+        Deleting the callback URL also removes the channel's notification queue. Any unsent notifications are lost when the channel is deleted.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/notification/callback \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: deregisterWebhook
+      tags:
+        - Device data - notifications
+      responses:
+        204: *successfully_deleted
+        401: *unauthorized
+        403: *forbidden
+        404:
+          description: Callback URL does not exist.
+
+  /v2/notification/websocket:
+    put:
+      summary: Register a websocket channel.
+      description: |-
+        Register (or update) a channel using websocket connection to deliver notifications. The websocket channel should be opened by client using `/v2/notification/websocket-connect` endpoint. To get notifications pushed, you must place subscriptions. For more information on notification messages, see [NotificationMessage](#NotificationMessage).
+
+        A websocket channel can have only one active websocket connection at a time. If a websocket connection for a channel exists and a new connection to the same channel is made, the connection is accepted and the older connection is closed.
+
+        **Note**: Only one websocket channel for each API key can be active at a time. If you register a new websocket channel while another one is active, it replaces the previously active one. If another type of channel is already present, you need to delete it before registering a websocket channel.   
+
+        **Expiration of a websocket:**
+
+        A websocket channel is expired if the channel does not have an opened websocket connection for a 24-hour period. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue is removed. As long as the channel has an opened websocket connection or time between successive websocket connections is less than 24 hours,
+        the channel is considered active, notifications are stored in its internal queue and delivered when a websocket connection is active. A channel can be also deleted explicitly with a DELETE call.
+
+        More about [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic).
+
+        **Configuration options:**
+        
+        The event notification channel provides configurations options defined in [Serialization config](#SerializationConfigObjectV2)
+
+        **Example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v2/notification/websocket \
+        -H 'Authorization: Bearer <api_key>' \
+        -d '{
+          "serialization": {"type": "v2", "max_chunk_size": "100",
+            "cfg": {"deregistrations_as_object": "true", "include_uid": "true", "include_timestamp": "true", "include_original_ep": "true"
+            }
+          }
+        }
+        ```
+      operationId: registerWebsocket
+      consumes:
+        - application/json
+      tags:
+        - Device data - notifications
+      responses:
+        200:
+          description: |-
+            Channel successfully updated. In the current v2 implementation this operation has no effect, and any subsequent PUT call from a client previously registered to a channel results in a 200 OK response.
+          schema:
+            $ref: '#/definitions/RegisterWebsocketChannel'
+        201:
+          description: Channel succesfully registered.
+          schema:
+            $ref: '#/definitions/WebsocketChannel'
+        400:
+          description: Other type of channel already exists.
+        401: *unauthorized
+        403: *forbidden
+
+
+    get:
+      summary: Get websocket channel information.
+      description: |-
+        Returns 200 with websocket connection status, if websocket channel exists.
+
+        **Example:**
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/websocket \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getWebsocket
+      produces:
+        - application/json
+      tags:
+        - Device data - notifications
+      responses:
+        200:
+          description: Websocket found.
+          schema:
+            $ref: '#/definitions/WebsocketChannel'
+        401: *unauthorized
+        403: *forbidden
+        404:
+          description: No channel has been registered.
+
+    delete:
+      summary: Delete websocket channel.
+      description: |-
+        Delete a notification websocket channel bound to the API key. This is required to change the channel from websocket to another type.
+
+        Deleting the websocket channel also removes the channel's notification queue. Any unsent notifications are lost when the channel is deleted.
+        **Example:**
+
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/notification/websocket \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: deleteWebsocket
+      tags:
+        - Device data - notifications
+      responses:
+        204: *successfully_deleted
+        401: *unauthorized
+        403: *forbidden
+        404:
+          description: Websocket channel doesn't exist.
+
+  /v2/notification/websocket-connect:
+    get:
+      summary: Open the websocket.
+      description: |-
+
+        A websocket channel can have only one active connection at a time. If a websocket connection for a channel exists and a new connection to the same channel is made, the connection is accepted and the older connection is closed.
+
+        A websocket client library should be used when connecting to this endpoint.
+
+        Once the socket has been opened, the server may close it with one of the following status codes.
+
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>1000</b></td>
+              <td>Socket closed normally by the client, or by the server when the channel is deleted with a REST call.</td>
+            </tr>
+            <tr>
+              <td><b>1001</b></td>
+              <td>Going away. Set when another socket opens on the used channel.</td>
+            </tr>
+            <tr>
+              <td><b>1006</b></td>
+              <td>Abnormal closure. The client should reconnect after receiving this status code. A short reconnect delay is recommended.</td>
+            </tr>
+            <tr>
+              <td><b>1008</b></td>
+              <td>Policy violation. Set if the API key is lost or invalidated after a successful WebSocket handshake.</td>
+            </tr>
+            <tr>
+              <td><b>1011</b></td>
+              <td>Unexpected condition. The socket is closed with this status in an attempt to open a socket to a nonexistent channel (without a prior PUT request). This code is also used to indicate a closing socket for any other unexpected condition in the server.</td>
+            </tr>
+            <tr>
+              <td><b>1012</b></td>
+              <td>Service restart. Set when the server restarts for update, maintenance, and so on. The client should reconnect after receiving this status code. A short reconnect delay is recommended.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        **Expected client behaviour:**
+
+        If the connection is closed with code 1006 or 1012, the client should try to reconnect to maintain the notification flow. The client might disconnect several times in a relatively short period, for example, during service updates. This is normal. The desired client behavior is to reconnect after each disconnect.
+
+        **Example:**
+        
+        The curl examples provided are meant only for testing. For production devices, use a websocket client library.
+        As the curl example doesn't know how to responsd to websocket ping, it will stop working shortly after receiving first ping.
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/websocket-connect \
+        -H "Authorization:Bearer {apikey}" \
+        -H "Connection:upgrade" \
+        -H "Upgrade:websocket" \
+        -H "Sec-WebSocket-Version: 13" \
+        -H "Sec-WebSocket-Key: {base64nonce}" \
+        --no-buffer \
+        --head
+        ```
+      operationId: connectWebsocket
+      tags:
+        - Device data - notifications
+      parameters:
+        - in: header
+          name: Connection
+          type: string
+          default: Upgrade
+          required: true
+        - in: header
+          name: Upgrade
+          type: string
+          default: websocket
+          required: true
+        - in: header
+          name: Sec-WebSocket-Protocol
+          type: string
+          required: false
+          description: |-
+            API key or user token must be present in the `Sec-WebSocket-Protocol` header **if Authorization header cannot be provided**: `Sec-WebSocket-Protocol:"wss,pelion_ak_{api_key}"`.
+            Refer to the notification service documentation for examples.
+        - in: header
+          name: Origin
+          type: string
+          required: true
+          description: Originating host of the request.
+        - in: header
+          name: Sec-WebSocket-Version
+          type: integer
+          required: true
+          description: WebSocket version. Must be 13.
+          default: 13
+        - in: header
+          name: Sec-WebSocket-Key
+          type: string
+          required: true
+          description: |-
+            The value of this header field must be a nonce consisting of a randomly selected 16-byte value that has been base64-encoded (see Section 4 of [RFC4648]). The nonce must be selected randomly for each connection.
+      responses:
+        101:
+          description: Switching protocols.
+        400:
+          description: Required header(s) missing.
+        401: *unauthorized
+        426:
+          description: Upgrade required. Connect and/or Upgrade headers missing.
+        429:
+          description: While a WebSocket handshake is still in progress, no new WebSocket requests with the same authorization token will be accepted.
+
+  /v2/notification/pull:
+    get:
+      deprecated: true
+      x-deprecation:
+        issued_at: "2017-02-10T15:23:00+00:00"
+        end_of_life_at: "2020-06-30T00:00:00+00:00"
+        comment: Long polling is deprecated and should be used for development purposes only.
+        links: ["https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
+      summary: Get notifications using Long Poll
+      description: |-
+        In this case, notifications are delivered through HTTP long poll requests. The HTTP request is kept open until one or more event notifications are delivered to the client, or the request times out (response code 204). In both cases, the client should open a new polling connection after the previous one closes. Only a single long polling connection per API key can be ongoing at any given time. We recommend using a persistent connection (Connection keep-alive header in the request) to avoid excess TLS handshakes.
+
+        The pull channel is implicitly created by the first GET call to `/v2/notification/pull`. It refreshes on each GET call. If the channel is not polled for a long time (10 minutes), it expires and is deleted. This means that no notifications will stay in the queue between polls. A channel can be also be deleted explicitly with a DELETE call.
+
+        **Note:** If you cannot have a public-facing callback URL, for example, when developing on your local machine, you can use long polling to check for new messages. However, **long polling is deprecated** and will likely be replaced in the future. It is meant only for experimentation, not commercial use. The proper method to receive notifications is a **notification callback**.
+
+        There can only be one notification channel per API key in Device Management Connect. If a notification channel of other type already exists for the API key, delete it before creating a long poll notification channel.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/pull \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: longPollNotifications
+      produces:
+        - application/json
+      tags:
+        - Device data - notifications
+      responses:
+        200:
+          description: Success.
+          schema:
+            $ref: '#/definitions/NotificationMessage'
+        204:
+          description: No new notifications.
+        400:
+          description: Other type of channel already exists.
+        401: *unauthorized
+        409:
+          description: Conflict. Long poll request exists already.
+        410:
+          description: |-
+            Pull channel was deleted and waiting to be purged. This code is a result of incorrect client behavior (delete channel and then pull), which can prevent the creation of a callback channel after the pull channel is deleted. The channel can be (randomly) recreated by this call when deleted and not purged. This client behaviour can set the channel in an undefined state for some time. The channel may respond with 410 GONE or 200/204 codes randomly for some time. Finally, the channel enters a valid "channel exists" state.
+
+    delete:
+      deprecated: true
+      x-deprecation:
+        issued_at: "2017-02-10T15:23:00+00:00"
+        end_of_life_at: "2020-06-30T00:00:00+00:00"
+        comment: Long polling is deprecated and should be used for development purposes only.
+        links: ["https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
+      summary: Delete notification Long Poll channel.
+      description: |-
+        Delete a notification Long Poll channel. This is required to change the channel from Long Poll to another type. Do not make a GET `/v2/notification/pull` call for two minutes after deleting the channel, because it can implicitly recreate the pull channel. You can also have some random responses with payload or 410 GONE with "CHANNEL_DELETED" as a payload or 200/204 until the old channel is purged.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/notification/pull \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: deleteLongPollChannel
+      tags:
+        - Device data - notifications
+      responses:
+        200:
+          description: |-
+            Success. The body can contain "REMOVED" if it was deleted with this call or "ALREADY_DELETED" if it was deleted before and not purged yet.
+        401: *unauthorized
+
+  /v2/notification/channel:
+    get:
+      tags:
+        - Device data - notifications
+      summary: Get channel metadata.
+      description: |
+        Get channel delivery mechanism.
+
+        **Example:**
+
+            curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/channel \
+            -H 'Authorization: Bearer <api_key>'
+
+      operationId: getChannelMetadata
+      responses:
+        200:
+          description: Success.
+          schema:
+            $ref: '#/definitions/ChannelMetadata'
+        404:
+          description: Channel was not found.
+
+definitions:
+
+  Webhook:
+    type: object
+    required:
+      - url
+    properties:
+      url:
+        type: string
+        description: The URL to which the notifications are sent. We recommend that you serve this URL over HTTPS.
+        example: "https://www.example.com/my-webhook"
+      headers:
+        type: object
+        description: 'The headers (key/value) sent with the notification. Optional.'
+        additionalProperties:
+          type: string
+        example: "{\"authorization\" : \"f4b93d6e-4652-4874-82e4-41a3ced0cd56\"}"
+      serialization:
+        type: object
+        description: Serialization configuration for a channel.
+        schema:
+          $ref: '#/definitions/SerializationConfigData'
+
+  WebsocketChannel:
+    type: object
+    properties:
+      status:
+        type: string
+        enum: ['connected', 'disconnected', 'unknown']
+        default: "disconnected"
+        example: "disconnected"
+        description: |-
+          Channel status is 'connected' when the channel has an active WebSocket bound to it. The status is 'disconnected' when either the channel or the WebSocket bound to it is closed and 'unknown' when the server cannot determine it.
+      queue_size:
+        type: integer
+        default: 0
+        example: 0
+        description: "Number of events in the channel's event queue waiting to be delivered. If the server cannot determine the queue size the value will be set to `-1`."
+      serialization:
+        type: object
+        description: Serialization configuration for a channel.
+        schema:
+          $ref: '#/definitions/SerializationConfigData'
+
+  RegisterWebsocketChannel:
+    type: object
+    properties:
+      serialization:
+        type: object
+        description: Serialization configuration for a channel
+        schema:
+          $ref: '#/definitions/SerializationConfigData'
+
+  SerializationConfigData:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: ['v2']
+        default: 'v2'
+        description: "Serialization type: v2 - specified in NotificationMessage."
+        example: "v2"
+      max_chunk_size:
+        type: integer
+        minimum: 100
+        maximum: 10000
+        description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic) for more details.
+        example: "500"
+      cfg:
+        type: object
+        description: Serialization configuration object according to configuration type.
+        schema:
+          $ref: '#/definitions/SerializationConfigObjectV2'
+
+  SerializationConfigObjectV2:
+    type: object
+    properties:
+      deregistrations_as_object:
+        type: boolean
+        default: false
+        description: |
+          Defines serialization format for 'de-registrations' and 'registrations-expired'. If set to true,
+          de-registration and registration-expired messages will be represented as json objects and can have
+          additional fields: 'uid', 'timestamp', 'original-ep', together with the 'ep' field. If set to false,
+          (default) - de-registration and 'registration-expired' will be represented by a string,
+          containing only data from 'ep' field.
+        example: "true"
+      include_uid:
+        type: boolean
+        default: false
+        description: |
+          Include 'uid' message field to serialized objects. This is message ID, and can be used for duplicate detection.
+        example: "true"
+      include_timestamp:
+        type: boolean
+        default: false
+        description: |
+          Include 'timestamp' message field in serialized objects. The timestamp represents the time that the notification service receives the message and sorts it into the queue. Timestamp provides information of queue length (web-app current time - timestamp = delay).
+        example: "true"
+      include_original_ep:
+        type: boolean
+        default: false
+        description: |
+          Include 'original-ep' message field in serialized objects. This is the endpoint_name from the device.
+        example: "true"
+
+  ChannelMetadata:
+    type: object
+    properties:
+      delivery_mechanism:
+        type: string
+        description: Channel delivery mechanism.
+        enum: ['CALLBACK','LONG_POLLING','WEB_SOCKET']
+        example: 'CALLBACK'
+
+  NotificationMessage:
+    type: object
+    properties:
+      notifications:
+        type: array
+        items:
+          $ref: '#/definitions/NotificationData'
+      registrations:
+        type: array
+        items:
+          $ref: '#/definitions/EndpointData'
+      reg-updates:
+        type: array
+        items:
+          $ref: '#/definitions/EndpointData'
+      de-registrations:
+        type: array
+        items:
+          type: string
+          description: The device ID.
+          example: "015f3850a657000000000001001002ab"
+      registrations-expired:
+        type: array
+        items:
+          type: string
+          description: The device ID.
+          example: "015f3850a657000000000001001002ab"
+      async-responses:
+        type: array
+        items:
+          $ref: '#/definitions/AsyncIDResponse'
+
+  NotificationData:
+    type: object
+    properties:
+      ep:
+        type: string
+        description: Device Management Device ID.
+        example: "015f3850a657000000000001001002ab"
+      path:
+        type: string
+        description: URI path.
+        example: "/sen/light"
+      ct:
+        type: string
+        description: Content type.
+        example: "text/plain"
+      payload:
+        type: string
+        description: Base64 encoded payload.
+        example: "My4zMQ=="
+      max-age:
+        type: string
+        description: |-
+          Max age value is an integer number of seconds between 0 and 2^32-1, but the actual maximum cache time is limited to 3 days.
+          Default 60.
+        example: 60
+
+  EndpointData:
+    type: object
+    properties:
+      ep:
+        type: string
+        description: Unique Device Management device ID.
+        example: "015f3850a657000000000001001002ab"
+      original-ep:
+        type: string
+        description: |-
+          If device registration is initiated with a self-provided endpoint name, Device Management provides a new device ID for subsequent use. The new platform-provided Device ID is forwarded as the 'ep' property and the original self-provided one as the optional 'original-ep' property in a registration notification. The name and ID can then be mapped accordingly. Device Management saves the original endpoint name in the Device Directory for future device registrations so you don't need to do mapping again.
+        example: "my-device-123"
+      ept:
+        type: string
+        description: Endpoint type.
+        example: "Light"
+      q:
+        type: boolean
+        description: Queue mode (default value is false).
+        example: false
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/ResourcesData'
+
+  ResourcesData:
+    type: object
+    properties:
+      path:
+        type: string
+        description: Resource's URI path.
+        example: "/sen/light"
+      if:
+        type: string
+        description: |-
+          Interface description that defines a name or URI that indicates how to interact with the target resource. It describes a generic interface type, such as a 'sensor'.
+        example: "sensor"
+      rt:
+        type: string
+        description: |-
+          Application-specific resource type that describes this resource. It is created by the [client side application](../device-management/resource-setup-in-device-management-client.html).
+          Not meant to be a human-readable name for the resource. Multiple resource types may be included, separated by a space.
+        example: "light_sensor"
+      ct:
+        type: string
+        description: Content type.
+        example: "text/plain"
+      obs:
+        type: boolean
+        description: 'Whether the resource is observable (true/false).'
+        example: true
+
+  AsyncIDResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique ID of the asynchronous response.
+        example: "9e3c96b8-c4d7-496a-ab90-cc732b9b560e"
+      status:
+        type: integer
+        example: 200
+        description: |
+
+          States whether sending a command to the device succeeded or failed.
+
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>200</b></td>
+                <td>Operation succeeded. The payload contains result of the operation from the device.</td>
+              </tr>
+              <tr>
+                <td><b>400</b></td>
+                <td>The device rejected the request, possibly because it does not support the request method.
+                See how the supported methods are
+                [configured for the device resources](../device-management/collecting-resources.html#setting-the-operation-mode). </td>
+              </tr>
+              <tr>
+                <td><b>404</b></td>
+                <td>The device replied that it does not have the requested resource.</td>
+              </tr>
+              <tr>
+                <td><b>412</b></td>
+                <td>Precondition failed and the operation was not executed. The device responded with 4.12 CoAP
+                response code. The device may reject a subscription request with this response code.</td>
+              </tr>
+              <tr>
+                <td><b>413</b></td>
+                <td>Request entity is too large and could not be delivered to the device.</td>
+              </tr>
+              <tr>
+                <td><b>415</b></td>
+                <td>The device does not support the media type in the request.</td>
+              </tr>
+              <tr>
+                <td><b>429</b></td>
+                <td>An expired request was removed from queue (REQUEST_EXPIRED),
+                the device requested deregistration (DEVICE_REMOVED_REGISTRATION),
+                or the device was suspended (DEVICE_BLOCKED). The request was never delivered to the device.</td>
+              </tr>
+              <tr>
+                <td><b>502</b></td>
+                <td>The request to the device failed and the retry count was exceeded.
+                The last retry failed to establish TCP or TLS connection to the device.</td>
+              </tr>
+              <tr>
+                <td><b>503</b></td>
+                <td>The request to the device failed and the retry count was exceeded.
+                The last retry failed, because the device is currently unavailable (NOT_CONNECTED).</td>
+              </tr>
+              <tr>
+                <td><b>504</b></td>
+                <td>The request to the device failed and the retry count was exceeded.
+                The last retry failed, because the device did not respond in time according to the protocol-specific
+                retransmission logic (TIMEOUT).</td>
+              </tr>
+            </tbody>
+          </table>
+      error:
+        type: string
+        description: |
+          An optional error message describing the error. Please refer to status listing above.
+        example: "TIMEOUT"
+      payload:
+        type: string
+        description: Requested data, base64 encoded.
+        example: "My4zMQ=="
+      ct:
+        type: string
+        description: The content type.
+        example: "text/plain"
+      max-age:
+        type: string
+        description: 'Determines how long this value stays valid in the cache, in seconds. 0 means that the value is not stored in the cache.'
+        example: 60
+        

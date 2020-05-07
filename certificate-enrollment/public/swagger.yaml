@@ -1,0 +1,391 @@
+swagger: '2.0'
+info:
+  description: 'API for managing certificate renewals on devices.
+
+
+  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+  version: v3
+  title: Certificate enrollment API
+  contact: {}
+host: 'api.us-east-1.mbedcloud.com'
+schemes:
+  - https
+produces:
+  - application/json; charset=utf-8
+tags:
+  - name: Device security - device certificate renewals
+    description: Manage certificate renewals on devices.
+
+paths:
+  /v3/devices/{device-id}/certificates/{certificate-name}/renew:
+    post:
+      tags:
+        - Device security - device certificate renewals
+      summary: Request certificate renewal.
+      description: |-
+        Request a certificate renewal.
+
+        **Example:**
+
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/devices/01612df56f3b0a580a010fc700000000/certificates/customer.dlms/renew \
+        -H 'Authorization: Bearer <api_key>' \
+        -H 'content-length: 0'
+        ```
+      operationId: RequestCertificateRenewal
+      parameters:
+        - in: path
+          name: device-id
+          description: The device ID.
+          required: true
+          type: string
+          pattern: '[0-9a-fA-F]{32}'
+        - in: path
+          name: certificate-name
+          description: The certificate name.
+          required: true
+          type: string
+          pattern: '[\w\-]{1,10}\.[\w\-.]{1,10}'
+      responses:
+        '201':
+          description: Created.
+          schema:
+            $ref: '#/definitions/CertificateEnrollment'
+        '400':
+          description: |-
+            Validation error: There is no certificate issuer configured for this certificate.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: You are not authorized to perform the action.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: The device ID or certificate name is not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '409':
+          description: |-
+            Conflict. A renewal request for this certificate is in progress.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '423':
+          description: |-
+            Either:
+            - Operation not supported for this device.
+            - The device is not connected.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  /v3/certificate-enrollments:
+    get:
+      tags:
+        - Device security - device certificate renewals
+      summary: Get certificate enrollments list.
+      description: |-
+        Get certificate enrollments list, optionally filtered.
+
+        **Examples:**
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-enrollments \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-enrollments?device_id__eq=01612df56f3b0a580a010fc700000000 \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getCertificateEnrollments
+      parameters:
+        - name: device_id__eq
+          in: query
+          description: |-
+            An optional filter for the device ID.
+          required: false
+          type: string
+          pattern: '[0-9a-fA-F]{32}'
+        - name: certificate_name__eq
+          in: query
+          description: |-
+             An optional filter for a certificate.
+          required: false
+          type: string
+        - name: limit
+          in: query
+          description: |-
+            The number of results to return (2-1000).
+          required: false
+          type: integer
+        - name: after
+          in: query
+          pattern: '[0-9a-fA-F]{32}'
+          description: |-
+            The ID of the item after which to retrieve the next page.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: |-
+            The order of results.
+          required: false
+          type: string
+          enum: [ASC, DESC]
+        - name: include
+          in: query
+          description: |-
+           a comma-separated list of data fields to return.
+          required: false
+          type: string
+          enum: [total_count]
+        - name: enroll_status__neq
+          in: query
+          description: |-
+            An optional filter for the non-equal certificate enrollment status.
+          required: false
+          type: string
+          enum: [new, completed]
+        - name: enroll_status__eq
+          in: query
+          description: |-
+            An optional filter for the certificate enrollment status.
+          required: false
+          type: string
+          enum: [new, completed]
+        - name: enroll_result__neq
+          in: query
+          description: |-
+            An optional filter for the non-equal certificate enrollment result.
+          required: false
+          type: string
+          enum: [success, failure]
+        - name: enroll_result__eq
+          in: query
+          description: |-
+            An optional filter for the certificate enrollment result.
+          required: false
+          type: string
+          enum: [success, failure]
+        - name: created_at__lte
+          in: query
+          description: |-
+            An optional filter for the date-time, less than or equal, of the certificate enrollment requests creation. Must be in RFC3339 format (for example, 2018-01-30T10:03:50.106Z).
+          required: false
+          type: string
+          format: date-time
+        - name: created_at__gte
+          in: query
+          description: |-
+            An optional filter for the date-time, greater than or equal, of the certificate enrollment requests creation. Must be in RFC3339 format (for example, 2018-01-30T10:03:50.106Z).
+          required: false
+          type: string
+          format: date-time
+        - name: updated_at__lte
+          in: query
+          description: |-
+            An optional filter for the date-time, less than or equal, of the certificate enrollment requests update. Must be in RFC3339 format (for example, 2018-01-30T10:03:50.106Z).
+          required: false
+          type: string
+          format: date-time
+        - name: updated_at__gte
+          in: query
+          description: |-
+            An optional filter for the date-time, greater than or equal, of the certificate enrollment requests update. Must be in RFC3339 format (for example, 2018-01-30T10:03:50.106Z).
+          required: false
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateEnrollmentListResponse'
+        '400':
+          description: |-
+            Validation error.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  /v3/certificate-enrollments/{certificate-enrollment-id}:
+    get:
+      tags:
+        - Device security - device certificate renewals
+      summary: Get a certificate enrollment by ID.
+      description: |-
+        Get a certificate enrollment by ID.
+
+        **Example:**
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-enrollments/01612df56f3b0a580a010fc700000000 \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getCertificateEnrollment
+      parameters:
+        - name: certificate-enrollment-id
+          in: path
+          description: |-
+            Certificate enrollment ID.
+          required: true
+          type: string
+          pattern: '[0-9a-fA-F]{32}'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateEnrollment'
+        '400':
+          description: |-
+            Validation error.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+definitions:
+  CertificateEnrollmentListResponse:
+    type: object
+    properties:
+      object:
+        type: string
+        enum: [list]
+        description: Describes the type of objects in the list.
+      limit:
+        type: integer
+        format: int32
+        description: The number of results to return.
+      after:
+        type: string
+        description: The entity ID to fetch after the given one.
+        example: "01625daa23230a580a0100bd00000000"
+      order:
+        type: string
+        description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+        enum: [ASC, DESC]
+      total_count:
+        type: integer
+        format: int32
+        description: The total number of records.
+      has_more:
+        type: boolean
+        description: Flag indicating whether there are more results.
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/CertificateEnrollment'
+        description: List of certificate enrollments.
+  CertificateEnrollment:
+    type: object
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        description: 'Creation UTC time RFC3339.'
+        example: "2017-01-01T00:00:00Z"
+      etag:
+        type: string
+        description: Entity instance signature.
+        example: "1"
+      id:
+        type: string
+        description: The certificate enrollment ID.
+        example: "01612df56f3b0a580a010fc700000000"
+      device_id:
+        type: string
+        description: The device ID.
+        example: "01625daa23230a580a0100bd00000000"
+      certificate_name:
+        type: string
+        maxLength: 50
+        description: The certificate name.
+        example: "customer.dlms"
+      enroll_status:
+        type: string
+        description: The status of certificate enrollment request.
+        enum:
+          - new
+          - completed
+      enroll_result:
+        type: string
+        enum:
+          - success
+          - failure
+        description: The result of certificate enrollment request.
+        example: success
+      enroll_result_detail:
+        type: string
+        description: Additional information in case of failure.
+        example: The device is currently processing too many certificate renewals.
+      updated_at:
+        type: string
+        format: date-time
+        description: Update UTC time RFC3339.
+        example: "2017-01-01T00:00:00Z"
+      object:
+        type: string
+        enum:
+          - certificate-enrollment
+    required:
+      - created_at
+      - etag
+      - id
+      - device_id
+      - certificate_name
+  ErrorObjectResponse:
+    type: object
+    required:
+      - code
+      - fields
+      - message
+      - object
+      - request_id
+      - type
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: Error code. Correlates with response status code.
+      fields:
+        type: array
+        description: A list of request fields that failed validation.
+        items:
+          $ref: '#/definitions/FieldMessageEntry'
+      message:
+        type: string
+        description: Error message.
+      object:
+        type: string
+        description: 'Entity name: `error`.'
+      request_id:
+        type: string
+        description: Request ID from JWT.
+      type:
+        type: string
+        description: Error type.
+  FieldMessageEntry:
+    type: object
+    properties:
+      field:
+        type: string
+        description: Field name.
+      message:
+        type: string
+        description: Error message related to the field.

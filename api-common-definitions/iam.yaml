@@ -1,0 +1,117 @@
+# This file contains common IAM object definitions.
+swagger: "2.0"
+definitions:
+  AccountResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The UUID of the account.
+        example: 01619571e2e90242ac12000600000000
+        readOnly: true
+      alias:
+        type: string
+        description: Alias of the account.
+        example: cust-314159
+        readOnly: true
+      display_name:
+        type: string
+        description: The display name for the account.
+        example: Customer 3.14159
+        readOnly: true
+      status:
+        type: string
+        description: The status of the account.
+        example: ACTIVE
+        enum:
+          - ENROLLING
+          - ACTIVE
+          - RESTRICTED
+          - SUSPENDED
+        readOnly: true
+      parent_id:
+        type: string
+        description: 'The UUID of the parent account, if it has any.'
+        example: 01619571f3c00242ac12000600000000
+        readOnly: true
+      login_profiles:
+        type: array
+        description: 'A list of login profiles for the user in the account.'
+        x-nullable: true
+        items:
+          $ref: '#/definitions/LoginProfile'
+    description: This object represents an account in responses.
+  AccountResponseList:
+    type: object
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always ''list'''
+        enum:
+          - list
+        readOnly: true
+      limit:
+        type: integer
+        format: int32
+        example: 50
+        description: 'The number of results to return, (range: 2-1000), or equals to `total_count`'
+        readOnly: true
+      after:
+        type: string
+        example: 01619571f3c00242ac12000600000000
+        description: The entity ID to fetch after the given one.
+        readOnly: true
+      order:
+        type: string
+        description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
+        enum:
+          - ASC
+          - DESC
+        readOnly: true
+      total_count:
+        type: integer
+        format: int32
+        example: 5
+        description: 'The total number or records, if requested. It might be returned also for small lists.'
+        readOnly: true
+      has_more:
+        type: boolean
+        example: false
+        description: Flag indicating whether there is more results.
+        readOnly: true
+      data:
+        type: array
+        description: A list of entities.
+        items:
+          $ref: '#/definitions/AccountResponse'
+        readOnly: true
+  LoginProfile:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        example: 01619571f3c00242ac12000600000000
+        description: 'ID of the identity provider.'
+      type:
+        type: string
+        description: 'Identity provider type.'
+        example: NATIVE
+        readOnly: true
+        enum:
+          - NATIVE
+          - MBED
+          - SAML2
+          - OIDC
+      name:
+        type: string
+        example: Pelion
+        readOnly: true
+        description: 'Name of the identity provider.'
+      foreign_id:
+        type: string
+        example: fed/user_007
+        description: The ID of the user in the identity provider's service.
+        readOnly: true
+    description: 'Represents a user login profile in Device Management.'

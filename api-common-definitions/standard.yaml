@@ -1,0 +1,50 @@
+# This file contains standard object definitions which should be used throughout the API.
+swagger: "2.0"
+definitions:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - object
+        - request_id
+        - type
+      properties:
+        object:
+          type: string
+          description: Entity name, always `error`.
+          enum:
+            - error
+        code:
+          type: integer
+          format: int32
+          description: HTTP response code
+          example: 400
+        type:
+          type: string
+          description: Error type used to categorise the error.
+          example: validation_error
+        message:
+          type: string
+          description: A human readable informative explanation
+          example: Validation error
+        request_id:
+          type: string
+          description: ID of the request.
+          example: 0161991d63150242ac12000600000000
+        fields:
+          type: array
+          description: Request fields which failed validation.
+          items:
+            type: object
+            required:
+              - name
+              - message
+            properties:
+              name:
+                type: string
+                description: Name of the field which caused the error.
+              message:
+                type: string
+                description: Message describing the error condition.
+

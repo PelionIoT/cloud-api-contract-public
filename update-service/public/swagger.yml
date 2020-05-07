@@ -1,0 +1,3159 @@
+swagger: '2.0'
+host: api.us-east-1.mbedcloud.com
+info:
+  description: This is the API documentation for the Device Management deployment service, which is part of the Update service.
+  title: Update Service Public API
+  version: '3'
+schemes:
+  - https
+produces:
+  - application/json
+x-aliases:
+  campaign_strategy: &campaign_strategy
+    campaign_strategy:
+      description: How the campaign adds devices. A `one-shot` campaign does not add new devices after it has started. A `continuous` campaign means that devices may be added to the campaign after it has started. The default is `one-shot`.
+      type: string
+      enum:
+        - one-shot
+        - continuous
+      default: one-shot
+  upload_job_editable_body: &upload_job_editable_body
+    name:
+      type: string
+      maxLength: 128
+      description: Human-readable name.
+      example: New Linux update
+    description:
+      type: string
+      maxLength: 2000
+      description: Human-readable description.
+      example: New Linux update for my devices
+  common_properties: &common_properties
+    created_at:
+      type: string
+      format: date-time
+      description: The time the entity was created.
+      example: "2017-05-22T12:37:55.576563Z"
+    etag:
+      type: string
+      description: API resource entity version.
+      example: "2017-05-22T12:37:58.753425Z"
+    updated_at:
+      type: string
+      format: date-time
+      description: The time the entity was updated.
+      example: "2017-05-22T12:37:55.576563Z"
+  upload_job_common_properties: &upload_job_common_properties
+    <<: *common_properties
+    object:
+      type: string
+      description: "Entity name: always 'upload-job'."
+      example: upload-job
+  upload_info_common_properties: &upload_info_common_properties
+    <<: *common_properties
+    object:
+      type: string
+      description: "Entity name: always 'upload-info'."
+      example: upload-info
+  upload_info_chunk_properties: &upload_info_chunk_properties
+    id:
+      type: integer
+      description: The chunk number.
+      example: 1
+    hash:
+      type: string
+      description: The hash of the chunk. The default hash is MD5. If no Content-MD5 header is supplied as part of uploading the chunk then this will be empty.
+    length:
+      type: integer
+      description: The length of the chunk.
+      example: 1234
+    upload_job_id:
+      type: string
+      description: The upload job ID.
+      example: "00000000000000000000000000000000"
+  upload_job_id_parameter: &upload_job_id_parameter
+      description: The upload job ID.
+      in: path
+      name: upload_job_id
+      required: true
+      type: string
+      minLength: 32
+      maxLength: 32
+  campaign_id_parameter: &campaign_id_parameter
+      description: The campaign ID.
+      in: path
+      name: campaign_id
+      required: true
+      type: string
+      minLength: 32
+      maxLength: 32
+  summary_status_parameter: &summary_status_parameter
+      description: The summary status. For example, fail.
+      in: path
+      name: summary_status_id
+      required: true
+      type: string
+  event_type_id_parameter: &event_type_id_parameter
+      description: The event type parameter. For example, UPD4_FAIL_101.
+      in: path
+      name: event_type_id
+      required: true
+      type: string
+      pattern: '^\w{1,16}$'
+tags:
+  - name: Device update - campaigns
+    description: Manage device update campaigns.
+  - name: Device update - firmware images
+    description: Manage firmware images.
+  - name: Device update - firmware manifests
+    description: Manage firmware manifests.
+definitions:
+  CampaignMetrics:
+    type: "object"
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'update-campaign-metrics'."
+      created_at:
+        type: "string"
+        format: "date-time"
+        description: The time the metrics were created.
+        example: "2017-05-22T12:37:55.576563Z"
+      success_count:
+        format: "int32"
+        type: "integer"
+        description: Running total of successfully updated devices.
+        example: "90"
+      failed_count:
+        format: "int32"
+        type: "integer"
+        description: Running total of devices that could not be updated.
+        example: "0"
+      pending_count:
+        format: "int32"
+        type: "integer"
+        description: Running total of devices that have yet to receive an update or are applying an update.
+        example: "5"
+      skipped_count:
+        format: "int32"
+        type: "integer"
+        description: Running total of devices that were skipped.
+        example: "5"
+      total_count:
+        format: "int32"
+        type: "integer"
+        description: Number of devices in the campaign.
+        example: "100"
+  CampaignDeviceMetadata:
+    type: "object"
+    properties:
+      object:
+        type: string
+        description: "The entity name: always 'update-campaign-device-metadata'."
+      <<: *common_properties
+      campaign:
+        type: "string"
+        description: "The device's campaign ID."
+        example: "015bf72fccda00000000000100100280"
+      deployment_state:
+        description: The state of the update campaign on the device.
+        enum:
+          - pending
+          - updated_connector_channel
+          - failed_connector_channel_update
+          - deployed
+          - manifestremoved
+          - deregistered
+        type: string
+      description:
+        type: string
+        maxLength: 2000
+        description: Description.
+        example: "a description"
+      device_id:
+        type: string
+        description: The device ID.
+        example: "015c2fec9bba0000000000010010036f"
+      id:
+        type: string
+        description: The metadata record ID.
+        example: "015c3029f6f7000000000001001000c3"
+      mechanism:
+        type: string
+        description: How the firmware is delivered (connector or direct).
+        example: "connector"
+      mechanism_url:
+        type: string
+        description: The Device Management Connect URL.
+      name:
+        type: string
+        maxLength: 128
+        description: The record name.
+        default: "default_object_name"
+  CampaignDeviceMetadataPage:
+    type: object
+    properties:
+      object:
+        type: string
+        description: "The entity name: always 'list'."
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      limit:
+        type: integer
+        description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+        example: "50"
+        minimum: 2
+        maximum: 1000
+      after:
+        type: string
+        description: The entity ID to fetch after the given one.
+        example: "null"
+      has_more:
+        type: boolean
+        description: A flag indicating whether there are more results.
+        example: "false"
+      data:
+        type: array
+        description: A list of entities.
+        items:
+          $ref: "#/definitions/CampaignDeviceMetadata"
+      total_count:
+        type: integer
+        description: The total number or records, if requested. It may be returned also for small lists.
+        example: "1"
+  UpdateCampaignEqNeqFilter:
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      description:
+        type: string
+      device_filter:
+        type: string
+      etag:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      finished:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      id:
+        type: string
+      name:
+        type: string
+      root_manifest_id:
+        type: string
+      started_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      state:
+        type: string
+      when:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      updated_at:
+        format: date-time
+        type: string
+        example: "2017-05-22T12:37:55.576563Z"
+  UpdateCampaignInNinFilter:
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      description:
+        type: string
+      device_filter:
+        type: string
+      etag:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      finished:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      id:
+        type: string
+      name:
+        type: string
+      root_manifest_id:
+        type: string
+      started_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      state:
+        type: string
+      when:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      updated_at:
+        format: date-time
+        type: string
+        example: "2017-05-22T12:37:55.576563Z"
+  UpdateCampaignGteLteFilter:
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      etag:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      finished:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      started_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      when:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        x-nullable: true
+      updated_at:
+        format: date-time
+        type: string
+        example: "2017-05-22T12:37:55.576563Z"
+  UpdateCampaign:
+    properties:
+      object:
+        description: "Entity name: always 'update-campaign'."
+        type: string
+      <<: *common_properties
+      <<: *campaign_strategy
+      active_at:
+        description: The time the campaign entered the active state.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      approval_required:
+        type: boolean
+        description: Flag indicating whether approval is needed to start the campaign.
+        example: "false"
+      archived_at:
+        description: The time the campaign was archived.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      autostop:
+        type: boolean
+        description: Flag indicating whether the campaign should be auto-stopped on reaching a threshold.
+        example: "false"
+      autostop_success_percent:
+        description: Percent of successful device updates to auto stop the campaign.
+        type: number
+        format: double
+        example: "85.00"
+      autostop_reason:
+        description: Text description of why a campaign failed to start or why a campaign stopped.
+        type: string
+        example: "Insufficient billing credit."
+      description:
+        description: An optional description of the campaign.
+        type: string
+        maxLength: 2000
+        example: "This campaign updates Class XX devices to version 1.34"
+      device_filter:
+        description: The filter for the devices the campaign is targeting at.
+        type: string
+        example: "state__eq=registered"
+      finished:
+        description: The time the campaign finished.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      id:
+        description: The campaign ID.
+        type: string
+        example: "016e83ddc648000000000001001000f5"
+      name:
+        description: The campaign name.
+        type: string
+        maxLength: 128
+        example: "campaign"
+      root_manifest_id:
+        description: The ID of the manifest that will be sent to the device as part of the campaign.
+        type: string
+        example: "016e83dce36a00000000000100100102"
+      root_manifest_url:
+        description: The URL for the manifest that will be sent to the device as part of the campaign.
+        type: string
+        example: "https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/016e83dce36a00000000000100100102"
+      starting_at:
+        description: The time the campaign will be started.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      started_at:
+        description: The time the campaign was started.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      stopping_at:
+        description: The time the campaign will be stopped.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      stopped_at:
+        description: The time the campaign was stopped.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      phase:
+        description: The phase of the campaign.
+        type: string
+        enum:
+          - draft
+          - awaiting_approval
+          - timed
+          - starting
+          - active
+          - stopping
+          - stopped
+          - deleted
+          - archived
+      state:
+        description: The state of the campaign.
+        type: string
+        enum:
+          - draft
+          - scheduled
+          - allocatingquota
+          - allocatedquota
+          - quotaallocationfailed
+          - checkingmanifest
+          - checkedmanifest
+          - devicefetch
+          - devicecopy
+          - devicecheck
+          - publishing
+          - deploying
+          - deployed
+          - manifestremoved
+          - expired
+          - stopping
+          - autostopped
+          - userstopped
+          - conflict
+        x-deprecation:
+          issued_at: "2019-03-18T14:55:20+00:00"
+          end_of_life_at: "2020-03-18T14:55:20+00:00"
+          comment: Use phase instead
+          links: []
+      when:
+        description: The scheduled start time for the campaign. The campaign will start within 1 minute when then start time has elapsed.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        x-nullable: true
+  UpdateCampaignPage:
+    properties:
+      object:
+        description: "Entity name: always 'list'."
+        type: string
+      after:
+        type: string
+        example: null
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/UpdateCampaign'
+      has_more:
+        type: boolean
+      limit:
+        type: integer
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      total_count:
+        type: integer
+  UpdateCampaignPutRequest:
+    properties:
+      description:
+        description: An optional description of the campaign.
+        type: string
+        maxLength: 2000
+        example: ""
+      device_filter:
+        description: The filter for the devices the campaign is targeting at.
+        type: string
+        example: "state__eq=registered"
+      name:
+        description: "The campaign's name."
+        type: string
+        maxLength: 128
+        example: "campaign"
+      root_manifest_id:
+        type: string
+        maxLength: 32
+        example: "016e83dce36a00000000000100100201"
+      state:
+        description: 'DEPRECATED: The state of the campaign (use phase instead).'
+        enum:
+          - draft
+          - scheduled
+          - allocatingquota
+          - allocatedquota
+          - quotaallocationfailed
+          - checkingmanifest
+          - checkedmanifest
+          - devicefetch
+          - devicecopy
+          - devicecheck
+          - publishing
+          - deploying
+          - deployed
+          - manifestremoved
+          - expired
+          - stopping
+          - autostopped
+          - userstopped
+          - conflict
+        type: string
+        x-deprecation:
+          issued_at: "2019-03-18T14:55:20+00:00"
+          end_of_life_at: "2020-03-18T14:55:20+00:00"
+          comment: Use phase instead
+          links: []
+      when:
+        description: The scheduled start time for the update campaign. Not in use.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        x-nullable: true
+      approval_required:
+        type: boolean
+        default: false
+      autostop:
+        type: boolean
+        default: true
+      autostop_success_percent:
+        type: number
+        default: 100.00
+  UpdateCampaignPostRequest:
+    properties:
+      <<: *campaign_strategy
+      description:
+        description: An optional description of the campaign.
+        type: string
+        maxLength: 2000
+        example: "a description"
+      device_filter:
+        description: The filter for the devices the campaign is targeted at.
+        type: string
+        example: "state__eq=registered"
+      name:
+        description: The name for this campaign.
+        type: string
+        maxLength: 128
+        default: "default_object_name"
+      root_manifest_id:
+        type: string
+        minLength: 32
+        maxLength: 32
+        example: "016e83b46477000000000001001001f3"
+      state:
+        description: 'DEPRECATED: The state of the campaign (use phase instead)'
+        enum:
+          - draft
+          - scheduled
+        type: string
+        x-deprecation:
+          issued_at: "2019-03-18T14:55:20+00:00"
+          end_of_life_at: "2020-03-18T14:55:20+00:00"
+          comment: Use phase instead
+          links: []
+      when:
+        description: The scheduled start time for the update campaign. Not in use.
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        x-nullable: true
+      approval_required:
+        type: boolean
+        default: false
+      autostop:
+        type: boolean
+        default: true
+      autostop_success_percent:
+        type: number
+        default: 100.00
+    required:
+      - device_filter
+  FirmwareImageEqNeqFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      datafile:
+        type: string
+      datafile_checksum:
+        type: string
+      datafile_size:
+        type: integer
+      description:
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  FirmwareImageInNinFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      datafile:
+        type: string
+      datafile_checksum:
+        type: string
+      datafile_size:
+        type: integer
+      description:
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  FirmwareImageGteLteFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  FirmwareImage:
+    properties:
+      <<: *common_properties
+      object:
+        description: "Entity name: always 'firmware-image'."
+        type: string
+      datafile:
+        description: The firmware image file URL.
+        type: string
+        example: "http://bucket.com/myimage.elf"
+      datafile_checksum:
+        description: The checksum (sha256) generated for the datafile.
+        type: string
+        example: "e979fe432d6a19b0e70a93b33ac29094cd5fe35a8fd5fbedfd383d8d107d6a7e"
+      datafile_size:
+        description: The size of the datafile in bytes.
+        format: int64
+        type: integer
+      description:
+        description: The description of the object.
+        type: string
+        maxLength: 2000
+        example: "a description"
+      id:
+        description: The firmware image ID.
+        type: string
+        example: "016e652be671000000000001001001e5"
+      name:
+        description: The firmware image name.
+        type: string
+        maxLength: 128
+  FirmwareImagePage:
+    properties:
+      object:
+        description: "Entity name: always 'list'."
+        type: string
+      after:
+        type: string
+        example: null
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/FirmwareImage'
+      has_more:
+        type: boolean
+      limit:
+        format: int32
+        type: integer
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records based on creation time, `ASC` or `DESC`; by default `ASC`."
+        example: "ASC"
+      total_count:
+        format: int32
+        type: integer
+  FirmwareManifestEqNeqFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      datafile:
+        type: string
+      datafile_size:
+        type: integer
+      description:
+        type: string
+      device_class:
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  FirmwareManifestInNinFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      datafile:
+        type: string
+      datafile_size:
+        type: integer
+      description:
+        type: string
+      device_class:
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  FirmwareManifestGteLteFilter:
+    properties:
+      created_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      etag:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      timestamp:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      updated_at:
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+  FirmwareManifest:
+    properties:
+      <<: *common_properties
+      object:
+        description: "Entity name: always 'firmware-manifest'."
+        type: string
+      manifest_schema_version:
+        description: Version of the manifest schema (1 or 3).
+        type: string
+        enum:
+          - "1"
+          - "3"
+      datafile:
+        description: The URL of the ASN.1 DER-encoded firmware manifest binary.
+        type: string
+        format: uri
+        example: "http://bucket.com/mymanifest.manifest"
+      datafile_size:
+        description: The size of the firmware manifest in bytes.
+        type: integer
+        format: int64
+      delivered_payload_url:
+        description: The URL of the payload to deliver to the device.
+        type: string
+        format: uri
+        example: "http://bucket.com/myimage.elf"
+      delivered_payload_size:
+        description: The size in bytes of the payload to deliver to the device.
+        type: integer
+        format: int64
+      delivered_payload_digest:
+        description: Digest (SHA256, hex-encoded) of the payload to deliver to the device.
+        type: string
+        format: hex
+        example: "c520fc771c0482ad39e983d27cf725a7c724fe58c616129a34a420d1941068bc"
+      delivered_payload_type:
+        description: Type of the payload to deliver to the device (full or delta image).
+        type: string
+        enum:
+          - full
+          - delta
+      precursor_payload_digest:
+        description: Digest (SHA256, hex-encoded) of the currently installed payload.
+        type: string
+        example: "54d640fcd687c9b13420b9be66a265494899002aad1b7370cfb3dbfd7fbec42f"
+      description:
+        description: The description of the firmware manifest.
+        type: string
+        maxLength: 2000
+        example: ""
+      device_class:
+        description: The device class ID.
+        type: string
+        format: uuid
+        example: "42c4d8de-704d-546e-b9d3-1ce1eb316167"
+      device_vendor:
+        description: The device vendor ID.
+        type: string
+        format: uuid
+        example: "5d645eae-c231-5a89-9764-2e655cd94fa8"
+      update_priority:
+        description: Update priority, passed to the application callback when an update is performed. Allows the application to make application-specific decisions.
+        type: integer
+        format: int64
+      key_table:
+        description: The key table of pre-shared keys for devices.
+        type: string
+        format: uri
+        example: "http://example.com/key-table"
+      id:
+        description: The firmware manifest ID.
+        type: string
+        example: "12345678901234567890123456789012"
+      name:
+        description: The name of the manifest.
+        type: string
+        maxLength: 128
+        example: "manifest_name"
+      timestamp:
+        description: The firmware manifest version as a timestamp.
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+        type: string
+      parsed_raw_manifest:
+        description: |
+          Raw manifest in JSON format, parsed from ASN.1 DER encoding.
+          Fields may change. Backwards compatibility is not guaranteed.
+          Recommended for debugging only.
+        type: object
+  FirmwareManifestPage:
+    properties:
+      object:
+        description: "Entity name: always 'list'."
+        type: string
+      after:
+        type: string
+        example: null
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/FirmwareManifest'
+      has_more:
+        type: boolean
+      limit:
+        format: int32
+        type: integer
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      total_count:
+        format: int32
+        type: integer
+  UploadJob:
+    type: object
+    properties:
+      <<: *upload_job_common_properties
+      <<: *upload_job_editable_body
+      complete:
+        type: boolean
+        description: A flag that indicates job completion.
+        example: false
+      id:
+        type: string
+        description: The upload job ID.
+        example: "016e652be671000000000001001001e5"
+      firmware_image_id:
+        type: string
+        description: ID of the firmware image - empty until the upload job is complete.
+        example: "016e652be671000000000001001001a8"
+      status:
+        type: string
+        description: Status of the upload job.
+        example: in_progress
+  UploadChunkInfo:
+    type: object
+    properties:
+      <<: *upload_info_chunk_properties
+      <<: *upload_info_common_properties
+  UploadChunkInfoPage:
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'list'."
+      after:
+        type: string
+        example: null
+      data:
+        items:
+          $ref: '#/definitions/UploadChunkInfo'
+        type: array
+      has_more:
+        type: boolean
+      limit:
+        format: int32
+        type: integer
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      total_count:
+        format: int32
+        type: integer
+  UploadJobPage:
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'list'."
+      after:
+        type: string
+        example: null
+      data:
+        items:
+          $ref: '#/definitions/UploadJob'
+        type: array
+      has_more:
+        type: boolean
+      limit:
+        format: int32
+        type: integer
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      total_count:
+        format: int32
+        type: integer
+  ErrorResponse:
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'error'."
+      code:
+        type: integer
+        format: int32
+        example: 400
+        description: Response code.
+      type:
+        type: string
+        example: validation_error
+      message:
+        type: string
+        example: A human readable informative explanation
+      fields:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+              example: field_name
+            message:
+              type: string
+              example: A human readable validation error
+      request_id:
+        type: string
+        example: request_id
+  EventTypeSummary:
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'summary_status'."
+      summary_status:
+        type: string
+        enum:
+        - FAIL
+        - SUCCESS
+        - INFO
+        - SKIPPED
+        example: FAIL
+        description: The event type description.
+      id:
+        type: string
+        enum:
+        - fail
+        - success
+        - info
+        - skipped
+        example: fail
+        description: ID of the event type description.
+      count:
+        type: integer
+        example: 10
+      created_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      campaign_id:
+        type: string
+        example: "016e652be6710000000000010010013d"
+        description: ID of the associated campaign.
+  EventTypeSummaryList:
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "The entity name: always 'list'."
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      limit:
+        type: integer
+        description: "The number of results to return, (range: 2-1000), or equals to total_count."
+        example: "50"
+      after:
+        type: string
+        description: The entity ID to fetch after the given one.
+        example: "null"
+      has_more:
+        type: boolean
+        description: A flag indicating whether there are more results.
+        example: "false"
+      total_count:
+        type: integer
+        description: The total number or records, if requested. It may be returned also for small lists.
+        example: "1"
+      data:
+        type: array
+        items:
+          $ref: "#/definitions/EventTypeSummary"
+  EventType:
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'event-type'."
+      created_at:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      event_type:
+        type: string
+        example: UPD4_FAIL_101
+      description:
+        type: string
+        example: Update error, nonspecific network error
+      summary_status:
+        type: string
+        example: FAIL
+      id:
+        type: string
+        example: upd_fail_101
+      count:
+        type: integer
+        example: 10
+      summary_status_id:
+        type: string
+        example: "fail"
+      campaign_id:
+        type: string
+        example: "016e652be671000000000001001001e5"
+        description: ID of the associated campaign.
+  EventTypeList:
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "The entity name: always 'list'."
+        example: "list"
+      order:
+        type: string
+        enum:
+        - ASC
+        - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      limit:
+        type: integer
+        description: "The number of results to return, (range: 2-1000), or equals to total_count."
+        example: "50"
+      after:
+        type: string
+        description: The entity ID to fetch after the given one.
+        example: "null"
+      has_more:
+        type: boolean
+        description: A flag indicating whether there are more results.
+        example: "false"
+      total_count:
+        type: integer
+        description: The total number or records, if requested. It may be returned also for small lists.
+        example: "1"
+      data:
+        type: array
+        items:
+          $ref: "#/definitions/EventType"
+paths:
+  /v3/firmware-images/upload-jobs:
+    post:
+      tags:
+        - Device update - firmware images
+      summary: Create a new upload job.
+      operationId: Upload_Job_Create
+      description: |
+        Create a new upload job
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs \
+        -H 'Authorization: <valid access token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "name": "New Linux update",
+          "description": "New Linux update for my devices"
+        }'
+        ```
+      parameters:
+        - description: Upload job.
+          in: body
+          required: true
+          name: Upload job
+          schema:
+            type: object
+            properties:
+              <<: *upload_job_editable_body
+      responses:
+        201:
+          description: Success - New job created.
+          headers:
+            Location:
+              type: string
+              description: URL of the metadata for the created upload job.
+          schema:
+            $ref: '#/definitions/UploadJob'
+        400:
+          description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        409:
+          description: Conflict.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    get:
+      tags:
+        - Device update - firmware images
+      summary: Get all upload jobs
+      operationId: Upload_Job_List
+      description: |
+        Get all upload jobs.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: ASC or DESC.
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: "A comma-separated list of data fields to return. Currently supported: total_count."
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data.
+
+            `?filter={URL-encoded query string}`
+
+            ###### Filterable fields:
+
+            The table lists all the fields that can be filtered on with certain filters:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>name</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>complete</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>firmware_image_id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>status</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The query string is made up of key-value pairs separated by ampersands. For example, this query:
+            `key1=value1&key2=value2&key3=value3`
+
+            would be URL-encoded as:
+            `?filter=key1__eq%3Dvalue1%26key2__eq%3Dvalue2%26key3__eq%3Dvalue3`
+
+
+            **Filtering by properties**
+            `name__eq=myimage`
+
+            **Filtering on date-time fields**
+
+            Date-time fields should be specified in UTC RFC3339 format, `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted variations:
+
+            * UTC RFC3339 with milliseconds. Example: `2016-11-30T16:25:12.1234Z`
+            * UTC RFC3339 without milliseconds. Example: `2016-11-30T16:25:12Z`
+            * UTC RFC3339 shortened without milliseconds and punctuation. Example: `20161130T162512Z`
+
+            Date-time filtering supports three operators:
+
+            * equality by appending `__eq` to the field name
+            * greater than or equal to by appending `__gte` to the field name
+            * less than or equal to by appending `__lte` to the field name
+
+            `{field name}[|__eq|__lte|__gte]={UTC RFC3339 date-time}`
+
+            Time ranges may be specified by including both the `__gte` and `__lte` forms in the filter. For example:
+
+            `created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering on multiple fields**
+
+            `name__eq=myimage&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering with filter operators**
+
+            String field filtering supports the following operators:
+
+            * equality: `__eq`
+            * non-equality: `__neq`
+            * in : `__in`
+            * not in: `__nin`
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+
+            `name__in=fw-image1,fw-image2`
+          in: query
+          name: filter
+          type: string
+      responses:
+        200:
+          description: Ok.
+          schema:
+            $ref: '#/definitions/UploadJobPage'
+        400:
+          description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      x-filter:
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+        name:
+          - eq
+          - neq
+          - in
+          - nin
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        description:
+          - eq
+          - neq
+          - in
+          - nin
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        complete:
+          - eq
+          - neq
+        status:
+          - eq
+          - neq
+          - in
+          - nin
+  /v3/firmware-images/upload-jobs/{upload_job_id}:
+    get:
+      tags:
+        - Device update - firmware images
+      summary: Retrieve information for an upload job
+      operationId: Upload_Job_Retrieve
+      description: |
+        Get an upload job.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *upload_job_id_parameter
+      responses:
+        200:
+          description: Ok.
+          schema:
+            $ref: '#/definitions/UploadJob'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Device update - firmware images
+      summary: Delete an upload job
+      operationId: Upload_Job_Delete
+      description: |
+        Delete an upload job.
+        <br>
+        **Usage example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *upload_job_id_parameter
+      responses:
+        204:
+          description: Job deleted - no content to show.
+        400:
+          description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Device update - firmware images
+      summary: Update an upload job
+      operationId: Upload_Job_Update
+      description: |
+        Update an upload job.
+        <br>
+        **Usage example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>' \
+        -d '{
+          "name": "New Linux update",
+          "description": "New Linux update for my class XX devices"
+        }'
+        ```
+      parameters:
+        - <<: *upload_job_id_parameter
+        - description: Upload job.
+          in: body
+          name: Upload job
+          required: true
+          schema:
+            type: object
+            properties:
+              <<: *upload_job_editable_body
+      responses:
+        200:
+          description: Ok.
+          schema:
+            $ref: '#/definitions/UploadJob'
+        400:
+          description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/firmware-images/upload-jobs/{upload_job_id}/chunks:
+    get:
+      tags:
+        - Device update - firmware images
+      summary: List all metadata for uploaded chunks
+      operationId: Upload_Job_Chunk_List
+      description: |
+        List all metadata for uploaded chunks.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs/12345678901234567890123456789012/chunks \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *upload_job_id_parameter
+        - description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: ASC or DESC.
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: "A comma-separated list of data fields to return. Currently supported: total_count."
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data
+
+            `?filter={URL-encoded query string}`
+
+            ###### Filterable fields:
+
+            The table lists all the fields that can be filtered on with certain filters:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>hash</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>length</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The query string is made up of key-value pairs separated by ampersands. For example, this query:
+            `key1=value1&key2=value2&key3=value3`
+
+            would be URL-encoded as:
+            `?filter=key1__eq%3Dvalue1%26key2__eq%3Dvalue2%26key3__eq%3Dvalue3`
+
+
+            **Filtering by properties**
+            `hash__eq=8FS70vXrq5y1VxAAssUMAg==`
+
+            **Filtering on date-time fields**
+
+            Date-time fields should be specified in UTC RFC3339 format, `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted variations:
+
+            * UTC RFC3339 with milliseconds. Example: `2016-11-30T16:25:12.1234Z`
+            * UTC RFC3339 without milliseconds. Example: `2016-11-30T16:25:12Z`
+            * UTC RFC3339 shortened without milliseconds and punctuation. Example: `20161130T162512Z`
+
+            Date-time filtering supports three operators:
+
+            * equality by appending `__eq` to the field name
+            * greater than or equal to by appending `__gte` to the field name
+            * less than or equal to by appending `__lte` to the field name
+
+            `{field name}[|__eq|__lte|__gte]={UTC RFC3339 date-time}`
+
+            Time ranges may be specified by including both the `__gte` and `__lte` forms in the filter. For example:
+
+            `created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering on multiple fields**
+
+            `status__eq=in_progress&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering with filter operators**
+
+            String field filtering supports the following operators:
+
+            * equality: `__eq`
+            * non-equality: `__neq`
+            * in : `__in`
+            * not in: `__nin`
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+
+            `status__in=in_progress,success`
+          in: query
+          name: filter
+          type: string
+      responses:
+        200:
+          description: Ok.
+          schema:
+            $ref: '#/definitions/UploadChunkInfoPage'
+        400:
+          description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      x-filter:
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+        hash:
+          - eq
+          - neq
+          - in
+          - nin
+        length:
+          - eq
+          - neq
+          - in
+          - nin
+          - lte
+          - gte
+    post:
+      tags:
+        - Device update - firmware images
+      summary: Append a chunk to an upload job
+      operationId: Upload_Job_Chunk_Create
+      description: |
+        Append a chunk to an upload job. To finish a job, upload a zero-length chunk.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs/12345678901234567890123456789012/chunks \
+        -H 'Authorization: <valid access token>' \
+        -H 'Content-MD5: Q2h1Y2sgSW51ZwDIAXR5IQ==' \
+        -H 'Content-Type: binary/octet-stream' \
+        -H 'Content-Length: 999' \
+        -d '{
+          "IGh0dHBzOi8vYXBpLnVzLWVhc3QtMS5tYmVkY2xvdWQuY29tLy92My9maXJtd2FyZS1pbWFnZXMvdXBsb2FkLWpvYnMve3VwbG9hZF9qb2JfaWR9W5rcw=="
+        }'
+        ```
+      consumes:
+        - application/octet-stream
+      parameters:
+        - name: Content-MD5
+          in: header
+          required: true
+          type: string
+          format: byte
+          description: The base64-encoded binary digest of the body (chunk data).
+        - name: Content-Length
+          in: header
+          required: true
+          type: integer
+        - <<: *upload_job_id_parameter
+        - description: Chunk.
+          in: body
+          name: chunk
+          required: false
+          schema:
+            type: string
+            format: binary
+      responses:
+        201:
+          description: Success - Chunk appended to the upload.
+          headers:
+            Location:
+              type: string
+              description: URL of the metadata for the uploaded chunk.
+            Content-Location:
+              type: string
+              description: URL of the metadata for the uploaded chunk.
+          schema:
+            $ref: '#/definitions/UploadChunkInfo'
+        400:
+          description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/firmware-images/upload-jobs/{upload_job_id}/chunks/{chunk_id}:
+    get:
+      tags:
+        - Device update - firmware images
+      summary: Get metadata about a chunk
+      operationId: Upload_Job_Chunk_retreive
+      description: |
+        Get metadata about a chunk.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/upload-jobs/12345678901234567890123456789012/chunks/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *upload_job_id_parameter
+        - description: Chunk.
+          in: path
+          name: chunk_id
+          required: true
+          type: string
+          minLength: 32
+          maxLength: 32
+      responses:
+        200:
+          description: Ok.
+          schema:
+            $ref: '#/definitions/UploadChunkInfo'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/firmware-images:
+    get:
+      tags:
+        - Device update - firmware images
+      summary: List all images
+      operationId: Firmware_Image_list
+      description: |
+        List all firmware images.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: ASC or DESC.
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: "A comma-separated list of data fields to return. Currently supported: total_count."
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data
+
+            `?filter={URL-encoded query string}`
+
+            ###### Filterable fields:
+
+            The table lists all the fields that can be filtered on with certain filters:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>datafile</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>datafile_checksum</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>datafile_size</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>name</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The query string is made up of key-value pairs separated by ampersands. For example, this query:
+            `key1=value1&key2=value2&key3=value3`
+
+            would be URL-encoded as:
+            `?filter=key1__eq%3Dvalue1%26key2__eq%3Dvalue2%26key3__eq%3Dvalue3`
+
+
+            **Filtering by properties**
+            `name__eq=myimage`
+
+            **Filtering on date-time fields**
+
+            Date-time fields should be specified in UTC RFC3339 format, `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted variations:
+
+            * UTC RFC3339 with milliseconds. Example: `2016-11-30T16:25:12.1234Z`
+            * UTC RFC3339 without milliseconds. Example: `2016-11-30T16:25:12Z`
+            * UTC RFC3339 shortened without milliseconds and punctuation. Example: `20161130T162512Z`
+
+            Date-time filtering supports three operators:
+
+            * equality by appending `__eq` to the field name
+            * greater than or equal to by appending `__gte` to the field name
+            * less than or equal to by appending `__lte` to the field name
+
+            `{field name}[|__eq|__lte|__gte]={UTC RFC3339 date-time}`
+
+            Time ranges may be specified by including both the `__gte` and `__lte` forms in the filter. For example:
+
+            `created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering on multiple fields**
+
+            `name__eq=myimage&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering with filter operators**
+
+            String field filtering supports the following operators:
+
+            * equality: `__eq`
+            * non-equality: `__neq`
+            * in : `__in`
+            * not in: `__nin`
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+
+            `name__in=fw-image1,fw-image2`
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '#/definitions/FirmwareImagePage'
+        '400':
+          description: Bad Request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find content.
+      x-filter:
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        datafile:
+          - eq
+          - neq
+          - in
+          - nin
+        datafile_checksum:
+          - eq
+          - neq
+          - in
+          - nin
+        datafile_size:
+          - eq
+          - neq
+          - in
+          - nin
+        description:
+          - eq
+          - neq
+          - in
+          - nin
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        name:
+          - eq
+          - neq
+          - in
+          - nin
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+    post:
+      tags:
+        - Device update - firmware images
+      summary: Create an image
+      operationId: Firmware_Image_create
+      description: | 
+        Create a firmware image.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/firmware-images \
+        -H 'Authorization: <valid access token>' \
+        -H 'Content-Type: multipart/form-data' \
+        -F 'datafile=@myimage.bin;type=application/octet-stream'
+        -F 'description=bla bla' \
+        -F 'name=My Linux Image'
+        ```
+      consumes:
+        - multipart/form-data
+      parameters:
+        - description: The firmware image file to upload. File name must not exceed 100 characters.
+          in: formData
+          name: datafile
+          required: true
+          type: file
+        - description: The description of the firmware image.
+          in: formData
+          name: description
+          required: false
+          type: string
+        - description: The name of the firmware image.
+          in: formData
+          name: name
+          type: string
+          maxLength: 128
+      responses:
+        '201':
+          description: Firmware image created. The API gateway enforces the account-specific file size.
+          schema:
+            $ref: '#/definitions/FirmwareImage'
+        '400':
+          description: Cannot validate the data used to create the firmware image.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Forbidden.
+        413:
+          description: Firmware image too large.
+  '/v3/firmware-images/{image_id}':
+    delete:
+      tags:
+        - Device update - firmware images
+      summary: Delete an image
+      operationId: Firmware_Image_destroy
+      description: |
+        Delete a firmware image.
+        <br>
+        **Usage example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-images/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: The firmware image ID.
+          in: path
+          name: image_id
+          required: true
+          type: string
+          minLength: 32
+          maxLength: 32
+      responses:
+        '204':
+          description: Firmware image deleted.
+        '400':
+          description: Bad Request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Firmware image not found.
+    get:
+      tags:
+        - Device update - firmware images
+      summary: Get an image.
+      operationId: Firmware_Image_retrieve
+      description: |
+        Retrieve a firmware image.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: The firmware image ID
+          in: path
+          name: image_id
+          required: true
+          type: string
+          minLength: 32
+          maxLength: 32
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '#/definitions/FirmwareImage'
+        '400':
+          description: Bad Request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Firmware image can't be found.
+  /v3/firmware-manifests/:
+    get:
+      tags:
+        - Device update - firmware manifests
+      summary: List all firmware manifests.
+      operationId: Firmware_Manifest_list
+      description: |
+        List all firmware manifests.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-manifests \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: ASC or DESC.
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: "A comma-separated list of data fields to return. Currently supported: total_count."
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data
+
+            `?filter={URL-encoded query string}`
+
+            ###### Filterable fields:
+
+            The table lists all the fields that can be filtered on with certain filters:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>datafile</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>datafile_size</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>device_class</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>name</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>timestamp</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The query string is made up of key-value pairs separated by ampersands. For example, this query:
+            `key1__eq=value1&key2__eq=value2&key3__eq=value3`
+
+            would be URL-encoded as:
+            `?filter=key1__eq%3Dvalue1%26key2__eq%3Dvalue2%26key3__eq%3Dvalue3`
+
+
+            **Filtering by properties**
+            `name__eq=mymanifest`
+
+            **Filtering on date-time fields**
+
+            Date-time fields should be specified in UTC RFC3339 format, `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted variations:
+
+            * UTC RFC3339 with milliseconds. Example: `2016-11-30T16:25:12.1234Z`
+            * UTC RFC3339 without milliseconds. Example: `2016-11-30T16:25:12Z`
+            * UTC RFC3339 shortened without milliseconds and punctuation. Example: `20161130T162512Z`
+
+            Date-time filtering supports three operators:
+
+            * equality by appending `__eq` to the field name
+            * greater than or equal to by appending `__gte` to the field name
+            * less than or equal to by appending `__lte` to the field name
+
+            `{field name}[|__eq|__lte|__gte]={UTC RFC3339 date-time}`
+
+            Time ranges may be specified by including both the `__gte` and `__lte` forms in the filter. For example:
+
+            `created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering on multiple fields**
+
+            `name__eq=mymanifest&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering with filter operators**
+
+            String field filtering supports the following operators:
+
+            * equality: `__eq`
+            * non-equality: `__neq`
+            * in : `__in`
+            * not in: `__nin`
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+
+            `name__in=fw-manifest1,fw-manifest2`
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '#/definitions/FirmwareManifestPage'
+        '400':
+          description: Bad Request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find content.
+      x-filter:
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        datafile:
+          - eq
+          - neq
+          - in
+          - nin
+        datafile_size:
+          - eq
+          - neq
+          - in
+          - nin
+        description:
+          - eq
+          - neq
+          - in
+          - nin
+        device_class:
+          - eq
+          - neq
+          - in
+          - nin
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        name:
+          - eq
+          - neq
+          - in
+          - nin
+        timestamp:
+          - in
+          - nin
+          - lte
+          - gte
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+    post:
+      tags:
+        - Device update - firmware manifests
+      summary: Upload a manifest
+      operationId: Firmware_Manifest_create
+      description: |
+        Upload a firmware manifest. The API enforces a maximum manifest size of 2KB.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/firmware-manifests \
+        -H 'Authorization: <valid access token>' \
+        -H 'Content-Type: multipart/form-data' \
+        -F 'datafile=@myimage.bin;type=application/octet-stream' \
+        -F 'description=bla bla' \
+        -F 'key_table=@myKeyTable.proto;type=' \
+        -F 'name=My Manifest'
+        ```
+      consumes:
+        - multipart/form-data
+      parameters:
+        - description: The manifest file to create. The API gateway enforces the account-specific file size. File name must not exceed 100 characters.
+          in: formData
+          name: datafile
+          required: true
+          type: file
+        - description: The description of the firmware manifest.
+          in: formData
+          name: description
+          required: false
+          type: string
+        - description: The key table of pre-shared keys for devices. The table is generated by the manifest tool. File name must not exceed 100 characters.
+          in: formData
+          name: key_table
+          required: false
+          type: file
+        - description: The name of the firmware manifest.
+          in: formData
+          name: name
+          type: string
+          maxLength: 128
+      responses:
+        '201':
+          description: Created.
+          schema:
+            $ref: '#/definitions/FirmwareManifest'
+        '400':
+          description: |
+            Validation error. The data used to create the firmware manifest did not validate and/or the manifest uploaded exceeded 2 KB in size.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Forbidden.
+  '/v3/firmware-manifests/{manifest_id}':
+    delete:
+      tags:
+        - Device update - firmware manifests
+      summary: Delete a manifest
+      operationId: Firmware_Manifest_destroy
+      description: |
+        Delete a firmware manifest.
+        <br>
+        **Usage example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: The firmware manifest ID.
+          in: path
+          name: manifest_id
+          required: true
+          type: string
+          minLength: 32
+          maxLength: 32
+      responses:
+        '204':
+          description: Firmware manifest deleted.
+        '400':
+          description: Bad Request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Firmware manifest not found.
+    get:
+      tags:
+        - Device update - firmware manifests
+      summary: Get a manifest
+      operationId: Firmware_Manifest_retrieve
+      description: |
+        Retrieve a firmware manifest.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: The firmware manifest ID.
+          in: path
+          name: manifest_id
+          required: true
+          type: string
+          minLength: 32
+          maxLength: 32
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '#/definitions/FirmwareManifest'
+        '400':
+          description: Bad request.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Firmware manifest can't be found.
+  /v3/update-campaigns:
+    get:
+      tags:
+        - Device update - campaigns
+      summary: List all campaigns
+      operationId: Update_Campaign_list
+      description: |
+        Get update campaigns for devices specified by a filter.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: "The order of the records. Acceptable values: ASC, DESC. Default: ASC."
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: "A comma-separated list of data fields to return. Currently supported: total_count."
+          in: query
+          name: include
+          type: string
+        - description: |-
+            URL-encoded query string parameter to filter returned data
+
+            `?filter={URL-encoded query string}`
+
+
+            ###### Filterable fields:
+
+            The below table lists all the fields that can be filtered on with certain filters:
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>= / __eq / __neq</th>
+                  <th>__in /  __nin</th>
+                  <th>__lte / __gte</th>
+                <tr>
+              <thead>
+              <tbody>
+                <tr>
+                  <td>created_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>device_filter</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>etag</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>finished</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>name</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>root_manifest_id</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>started_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>state</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>updated_at</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+                <tr>
+                  <td>when</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                </tr>
+              </tbody>
+            </table>
+            &nbsp;
+
+            The query string is made up of key-value pairs separated by ampersands. For example, this query:
+            `key1__eq=value1&key2__eq=value2&key3__eq=value3`
+
+            would be URL-encoded as:
+            `?filter=key1__eq%3Dvalue1%26key2__eq%3Dvalue2%26key3__eq%3Dvalue3`
+
+
+            **Filtering by campaign properties**
+            `state__eq=[draft|scheduled|devicefectch|devicecopy|publishing|deploying|deployed|manifestremoved|expired]`
+
+            `root_manifest_id__eq=43217771234242e594ddb433816c498a`
+
+            **Filtering on date-time fields**
+
+            Date-time fields should be specified in UTC RFC3339 format, `YYYY-MM-DDThh:mm:ss.msZ`. There are three permitted variations:
+
+            * UTC RFC3339 with milliseconds. Example: `2016-11-30T16:25:12.1234Z`
+            * UTC RFC3339 without milliseconds. Example: `2016-11-30T16:25:12Z`
+            * UTC RFC3339 shortened without milliseconds and punctuation. Example: `20161130T162512Z`
+
+            Date-time filtering supports three operators:
+
+            * equality by appending `__eq` to the field name
+            * greater than or equal to by appending `__gte` to the field name
+            * less than or equal to by appending `__lte` to the field name
+
+            `{field name}[|__eq|__lte|__gte]={UTC RFC3339 date-time}`
+
+            Time ranges may be specified by including both the `__gte` and `__lte` forms in the filter. For example:
+
+            `created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering on multiple fields**
+
+            `state__eq=deployed&created_at__gte=2016-11-30T16:25:12.1234Z&created_at__lte=2016-12-30T00:00:00Z`
+
+            **Filtering with filter operators**
+
+            String field filtering supports the following operators:
+
+            * equality: `__eq`
+            * non-equality: `__neq`
+            * in : `__in`
+            * not in: `__nin`
+
+            For `__in` and `__nin` filters list of parameters must be comma-separated:
+
+            `name__in=fw-image1,fw-image2`
+          in: query
+          name: filter
+          type: string
+      responses:
+        '200':
+          description: Request successful.
+          schema:
+            $ref: '#/definitions/UpdateCampaignPage'
+        '400':
+          description: |
+            Validation error: The data used to update the campaign did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find content.
+      x-filter:
+        created_at:
+          - in
+          - nin
+          - lte
+          - gte
+        description:
+          - eq
+          - neq
+          - in
+          - nin
+        device_filter:
+          - eq
+          - neq
+          - in
+          - nin
+        finished:
+          - in
+          - nin
+          - lte
+          - gte
+        id:
+          - eq
+          - neq
+          - in
+          - nin
+        name:
+          - eq
+          - neq
+          - in
+          - nin
+        root_manifest_id:
+          - eq
+          - neq
+          - in
+          - nin
+        started_at:
+          - in
+          - nin
+          - lte
+          - gte
+        state:
+          - eq
+          - neq
+          - in
+          - nin
+        updated_at:
+          - in
+          - nin
+          - lte
+          - gte
+        when:
+          - in
+          - nin
+          - lte
+          - gte
+    post:
+      tags:
+        - Device update - campaigns
+      summary: Create a campaign
+      operationId: Update_Campaign_create
+      description: |
+        Create an update campaign.
+
+        To include a filter for targeted devices, refer to the filter using `<filter_id>` in the message body.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns \
+        -H 'Authorization: <valid access token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "campaign_strategy": "one-shot",
+          "description": "Campaign is for ...",
+          "device_filter": "<filter_id>",
+          "name": "campaign",
+          "root_manifest_id": "5678000000000000000000000000bd98",
+        }'
+        ```
+      parameters:
+        - description: Update campaign.
+          in: body
+          name: campaign
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateCampaignPostRequest'
+      responses:
+        '201':
+          description: Update campaign created.
+          schema:
+            $ref: '#/definitions/UpdateCampaign'
+        '400':
+          description: |
+            Validation error: The data used to create the campaign did not validate.
+        '401':
+          description: Not authenticated.
+  '/v3/update-campaigns/{campaign_id}':
+    delete:
+      tags:
+        - Device update - campaigns
+      summary: Delete a campaign
+      operationId: Update_Campaign_destroy
+      description: |
+        Delete an update campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        '204':
+          description: Update campaign deleted.
+        '400':
+          description: |
+            Validation error: The data used to update the campaign did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Update campaign can't be found.
+        409:
+          description: Conflict - Cannot delete the campaign while in the current phase.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get a campaign.
+      operationId: Update_Campaign_retrieve
+      description: |
+        Get an update campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        '200':
+          description: Retrieved result successfully.
+          schema:
+            $ref: '#/definitions/UpdateCampaign'
+        '400':
+          description: |
+            Validation error: The data used to update the campaign did not validate.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Unable to find campaign.
+    put:
+      tags:
+        - Device update - campaigns
+      summary: Modify a campaign
+      operationId: Update_Campaign_update
+      description: |
+        Modify an update campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>' \
+        d '{
+          "description": "Campaign is for ...",
+          "device_filter": "id__eq=123400000000000000000000000ae45",
+          "name": "campaign",
+          "root_manifest_id": "5678000000000000000000000000bd98",
+        }'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+        - description: Update campaign.
+          in: body
+          name: campaign
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateCampaignPutRequest'
+      responses:
+        '200':
+          description: Update campaign updated.
+          schema:
+            $ref: '#/definitions/UpdateCampaign'
+        '400':
+          description: |
+            Validation error: The data used to update the campaign did not validate.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Fields apart from 'name', 'description' and 'state' cannot be modified when the state is not 'draft'.
+        '404':
+          description: Update campaign can't be found.
+  '/v3/update-campaigns/{campaign_id}/campaign-device-metadata':
+    get:
+      tags:
+        - Device update - campaigns
+      summary: List all campaign device metadata
+      operationId: Update_Campaign_Metadata_list
+      description: |
+        Get metadata for all devices in a campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/campaign-device-metadata \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+        - description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+          in: query
+          name: limit
+          type: integer
+          minimum: 2
+          maximum: 1000
+        - description: ASC or DESC.
+          in: query
+          name: order
+          type: string
+        - description: The ID of the item after which to retrieve the next page.
+          in: query
+          name: after
+          type: string
+        - description: "A comma-separated list of data fields to return. Currently supported: total_count."
+          in: query
+          name: include
+          type: string
+      responses:
+        200:
+          description: "Request successful."
+          schema:
+            $ref: "#/definitions/CampaignDeviceMetadataPage"
+        401:
+          description: "Unauthorized"
+  '/v3/update-campaigns/{campaign_id}/campaign-device-metadata/{campaign_device_metadata_id}':
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get a campaign device metadata
+      operationId: Update_Campaign_Metadata_retrieve
+      description: |
+        Get update campaign metadata for a specific device.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/5d645eaec2315a8997642e655cd94fa8/campaign-device-metadata/016e83ddc645000000000001001000f6 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+        - description: The campaign device metadata ID.
+          in: path
+          name: campaign_device_metadata_id
+          required: true
+          type: string
+          minLength: 32
+          maxLength: 32
+      responses:
+        200:
+          description: "Request successful."
+          schema:
+            $ref: "#/definitions/CampaignDeviceMetadata"
+        401:
+          description: "Unauthorized."
+        404:
+          description: "Not Found."
+  /v3/update-campaigns/{campaign_id}/start:
+    post:
+      tags:
+        - Device update - campaigns
+      summary: Start a campaign.
+      operationId: Update_Campaign_start
+      description: |
+        Start a campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns/5d645eaec2315a8997642e655cd94fa8/start \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        '202':
+          description: The campaign is starting.
+        '400':
+          description: Unable to change the phase of the campaign.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Cannot find the campaign.
+        '409':
+          description: Cannot start the campaign while in the current phase.
+  /v3/update-campaigns/{campaign_id}/stop:
+    post:
+      tags:
+        - Device update - campaigns
+      summary: Stop a campaign.
+      operationId: Update_Campaign_stop
+      description: |
+        Stop a campaign. Stopping is a process that requires the campaign go through several [phases](../updating-firmware/running-update-campaigns.html#stopping).
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns/016e83ddc645000000000001001000b5/stop \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        '202':
+          description: The campaign is stopping.
+        '400':
+          description: Unable to change the phase of the campaign.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Cannot find the campaign.
+        '409':
+          description: Cannot stop the campaign while in the current phase.
+  /v3/update-campaigns/{campaign_id}/archive:
+    post:
+      tags:
+        - Device update - campaigns
+      summary: Archive a campaign.
+      operationId: Update_Campaign_archive
+      description: |
+        Archive a campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns/016e83ddc649000000000001001000b8/archive \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        '202':
+          description: The campaign has been archived.
+        '400':
+          description: Unable to change the phase of the campaign.
+        '401':
+          description: Not authenticated.
+        '404':
+          description: Cannot find the campaign.
+        '409':
+          description: Cannot archive the campaign while in the current phase.
+  /v3/update-campaigns/{campaign_id}/metrics:
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get campaign metrics
+      operationId: Update_Campaign_metrics
+      description: |
+        Get [information](https://www.pelion.com/docs/device-management/current/updating-firmware/campaign-metrics-in-portal.html) for a campaign based on **SUCCESS**, **FAIL**, or **SKIPPED** criteria for each device.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/metrics \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        200:
+          description: "Request successful."
+          schema:
+            $ref: "#/definitions/CampaignMetrics"
+        401:
+          description: "Unauthorized."
+        404:
+          description: "Unable to find campaign or the campaign hasn't started."
+      deprecated: true
+      x-deprecation:
+        issued_at: "2019-04-10T13:41:00+00:00"
+        end_of_life_at: "2020-04-10T13:41:00+00:00"
+        comment: Use the statistics endpoint instead.
+        links: []
+  /v3/update-campaigns/{campaign_id}/statistics:
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get statistics for a campaign
+      operationId: Update_Campaign_statistics_list
+      description: |
+        Get a list of statistics for a campaign, including the number of devices reporting specific event codes.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/EventTypeSummaryList'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/update-campaigns/{campaign_id}/statistics/{summary_status_id}:
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get a status summary
+      operationId: Update_Campaign_statistics_retrieve
+      description: |
+        Get the count of successfully updated, skipped, and failed devices. 
+        <br>
+        **Usage example:**
+        ```
+        curl https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+        - <<: *summary_status_parameter
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/EventTypeSummary'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/update-campaigns/{campaign_id}/statistics/{summary_status_id}/event_types:
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get a list of events grouped by summary
+      operationId: Update_Campaign_event_types_list
+      description: |
+        Get a list of events grouped by summary.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics/12345678901234567890123456789012/event_types \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+        - <<: *summary_status_parameter
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/EventTypeList'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/update-campaigns/{campaign_id}/statistics/{summary_status_id}/event_types/{event_type_id}:
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get an event type for a campaign
+      operationId: Update_Campaign_event_types_retrieve
+      description: |
+        Get the count for a specific event type; for example, succeeded, failed, or skipped.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics/12345678901234567890123456789012/event_types/12345678901234567890123456789012 \
+        -H 'Authorization: <valid access token>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+        - <<: *summary_status_parameter
+        - <<: *event_type_id_parameter
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/EventType'
+        401:
+          description: Not Authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'

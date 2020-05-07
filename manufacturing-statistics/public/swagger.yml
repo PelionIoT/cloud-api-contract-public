@@ -1,0 +1,174 @@
+swagger: '2.0'
+info:
+  description: The Manufacturing Statistics API enables secure factories to retrieve manufacturing statistics. This API is only available for authorized accounts. <br/>Please [contact us](https://cloud.mbed.com/contact) to enable this API for your account.
+  version: v3
+  title: Manufacturing Statistics API
+  contact: {}
+host: 'api.us-east-1.mbedcloud.com'
+schemes:
+  - https
+
+x-aliases:
+  generic_list_fields: &generic_list_fields
+    after:
+      type: string
+      description: An offset token for the current page.
+      example: '01631667477600000000000100100374'
+    has_more:
+      type: boolean
+      description: Indicates whether additional results are available.
+      example: false
+    limit:
+      type: integer
+      description: The number of results to return (2-1000). Values outside of this range are set to the closest limit.
+      example: 50
+      minimum: 2
+      maximum: 1000
+    object:
+      type: string
+      description: The API object type. The object type of this API is "list".
+      example: "list"
+    order:
+      type: string
+      description: Record order based on record identifier.
+      example: "DESC"
+    total_count:
+      format: integer
+      type: integer
+      example: 100
+  limit_param: &limit_param
+    - description: The number of results to return (2-1000). Values outside of this range are set to the closest limit.
+      in: query
+      name: limit
+      type: integer
+      minimum: 2
+      maximum: 1000
+  order_param: &order_param
+    - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+      in: query
+      name: order
+      type: string
+  after_param: &after_param
+    - description: The ID of the item after which to retrieve the next page.
+      in: query
+      name: after
+      type: string
+  include_param: &include_param
+    - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+      in: query
+      name: include
+      type: string
+tags:
+  - name: Factory manufacturing statistics
+    description: Retrieve provisioning statistics for devices in your factories.
+paths:
+  /v3/manufacturing/statistics/report:
+    get:
+      tags:
+        - Factory manufacturing statistics
+      summary: Retrieve provisioning statistics for devices in your factories.
+      operationId: ManufacturingStatisticsReport
+      produces:
+        - application/json
+      description: |
+        Get manufacturing statistics report.
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/manufacturing/statistics-report?startDate=2019-10-20&endDate=2019-10-22 \
+        -H 'authorization: <valid access token>' \
+        ```
+      parameters:
+        - description: The start date of the period on which the report is produced.
+          in: query
+          name: start
+          type: string
+          required: true
+          format: date-time
+        - description: The end date of the period on which the report is produced. Default is the current date-time.
+          in: query
+          name: end
+          type: string
+          required: false
+          format: date-time
+      responses:
+        200:
+          schema:
+            $ref: '#/definitions/StatisticsReportListResponse'
+          description: OK.
+        204:
+          description: No content.
+        401:
+          description: Unauthorized.
+          schema:
+            $ref: "../../api-common-definitions/standard.yaml#/definitions/ErrorResponse"
+        403:
+          description: Forbidden.
+          schema:
+            $ref: "../../api-common-definitions/standard.yaml#/definitions/ErrorResponse"
+        400:
+          description: Validation error.
+          schema:
+            $ref: "../../api-common-definitions/standard.yaml#/definitions/ErrorResponse"
+definitions:
+  StatisticsReportResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        description: |-
+          Unique row identifier.
+        format: uuid
+        pattern: "[a-fA-F0-9]{32}"
+        example: "01612df56f3b0a580a010fc700000000"
+      factory_id:
+        type: integer
+        description: |-
+          Factory ID.
+        example: "164"
+      factory_name:
+        type: string
+        description: |-
+          Factory name.
+        example: "factory 1"
+      workstation:
+        type: string
+        description: |-
+          Workstation.
+        example: "ws_1"
+      avg_provisioning_time_sec:
+        type: number
+        description: |-
+          Average provisioning time in seconds.
+        example: "2.5"
+      max_provisioning_time_sec:
+        type: number
+        description: |-
+          Maximum provisioning time in seconds.
+        example: "3.1"
+      min_provisioning_time_sec:
+        type: number
+        description: |-
+          Minimum provisioning time in seconds.
+        example: "2.2"
+      device_count:
+        type: integer
+        description: |-
+          Number of manufactured devices.
+        example: "103"
+  StatisticsReportListResponse:
+    type: object
+    properties:
+      start:
+        type: string
+        format: date-time
+        example: "2020-03-29T07:30:00.000"
+      end:
+        type: string
+        format: date-time
+        example: "2020-03-30T07:30:00.000"
+      <<: *generic_list_fields
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/StatisticsReportResponse'
+        description: List of manufacturing statistics.

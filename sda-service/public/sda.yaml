@@ -1,0 +1,578 @@
+swagger: '2.0'
+host: api.us-east-1.mbedcloud.com
+basePath: /
+schemes:
+  - http
+produces:
+  - application/json;charset=UTF-8
+consumes:
+  - application/json;charset=UTF-8
+tags:
+  - name: Security and identity - secure device access
+    description: Manage access tokens and trust anchors.
+
+info:
+  version: '1.0'
+  title: Secure Device Access API
+  description: |
+    The Secure Device Access (SDA) API lets you request an access token and manage [trust anchors](https://www.pelion.com/docs/device-management/current/sda/how-sda-works.html).
+    
+    See <a href="https://www.pelion.com/docs/device-management/latest/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
+
+x-aliases:
+  generic_list_fields: &generic_list_fields
+    object:
+      description: The type of this API object is a `list`.
+      type: string
+      example: "list"
+    after:
+      description: An offset token for the current page.
+      type: string
+      pattern: '[A-Fa-f0-9]{32}'
+      example: '01631667477600000000000100100374'
+    has_more:
+      description: Indicates whether additional results are available.
+      type: boolean
+      example: false
+    limit:
+      description: Indicates how many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+      type: integer
+      minimum: 2
+      maximum: 1000
+      default: 50
+    order:
+      description: Indicates how to order the entries based on when they were created.
+      type: string
+      enum : [ "ASC", "DESC" ]
+      example: "DESC"
+    total_count:
+      type: integer
+      format: integer
+      example: 1
+
+  generic_entity_fields: &generic_entity_fields
+    object:
+      description: The API resource entity
+      type: string
+      example: "trust-anchor"
+    id:
+      description: The ID of the entity.
+      type: string
+      pattern: '[A-Fa-f0-9]{32}'
+      example: "01612df56f3b0a580a010fc700000000"
+    created_at:
+      description: Creation UTC time.
+      type: string
+      format: date-time
+      example: "2017-01-01T00:00:00Z"
+    updated_at:
+      description: Update UTC time.
+      type: string
+      format: date-time
+      example: "2017-01-01T00:00:00Z"
+    etag:
+      description: Entity instance signature, 1 or Unix timestamp of last customer update.
+      type: string
+      example: "1"
+
+  id: &id
+    - in: path
+      name: id
+      description: The ID of the entity.
+      type: string
+      pattern: '[A-Fa-f0-9]{32}'
+      required: true
+      example: "0161991d63150242ac12000600000000"
+  limit_param: &limit_param
+    - in: query
+      name: limit
+      description: Indicates how many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+      type: integer
+      minimum: 2
+      maximum: 1000
+  order_param: &order_param
+    - in: query
+      name: order
+      description: Indicates how to order the entries based on when they were created. `ASC` by default.
+      type: string
+      enum : [ "ASC", "DESC" ]
+  after_param: &after_param
+    - in: query
+      name: after
+      description: The ID of the item after which to retrieve the next page.
+      type: string
+      pattern: '[A-Fa-f0-9]{32}'
+  include_param: &include_param
+    - in: query
+      name: include
+      description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+      type: string
+
+paths:
+
+  /ace-auth/token:
+    post:
+      tags:
+        - Security and identity - secure device access
+      summary: Get an access token to use with a device.
+      operationId: createAceAuthToken
+      description: |
+        Generate a signed CWT (CBOR Web Token). The SDA Android SDK uses this API to gain access to perform actions on the devices specified in the audience (aud).
+        <br>
+        Authorized for roles: Service, ServiceAdministrator
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/ace-auth/token \
+        -H 'Authorization: <valid JWT>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "grant_type":"client_credentials",
+          "aud":["id:f90b1017e52f4c70ad92684e802c9249","ep:dev1"],
+          "scope":"turn-led-on",
+          "cnf":"-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ...XwIDAQAB-----END PUBLIC KEY-----"
+        }'
+        ```
+      parameters:
+        - name: body
+          in: body
+          description: Create access token request.
+          required: true
+          schema:
+            $ref: '#/definitions/TokenRequest'
+      responses:
+        '200':
+          description: A signed CWT (CBOR Web Token) access token.
+          schema:
+            $ref: '#/definitions/TokenResponse'
+        '400':
+          description: |
+            Bad request. Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: |
+            Authentication failure. The provided header is invalid or missing.
+            Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  /v3/trust-anchors:
+    post:
+      tags:
+        - Security and identity - secure device access
+      summary: Create a new trust anchor for the account.
+      operationId: createTrustAnchor
+      description: |
+        Create a trust anchor key pair and return the public key and creation time.
+        Each account can have one trust anchor only. This API fails if a trust anchor already exists for the account.
+        <br>
+        Authorized for roles: Service, ServiceAdministrator
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/trust-anchors \
+        -H 'Authorization: <valid JWT>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "description": "Trust anchor for room lighting controller."
+        }'
+        ```
+      parameters:
+        - name: body
+          in: body
+          description: Request a new trust anchor.
+          required: true
+          schema:
+           $ref: '#/definitions/CreateTrustAnchorRequest'
+      responses:
+        '201':
+          description: Trust anchor created.
+          schema:
+            $ref: '#/definitions/CreateTrustAnchorResponse'
+        '400':
+          description: |
+            Bad request. Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: |
+            Authentication failure. The provided header is invalid or missing.
+            Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: |
+            Account limit exceeded. There is already a trust anchor defined for the account.
+            Returns the standard error object detailing the error message.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+    get:
+      tags:
+        - Security and identity - secure device access
+      summary: Get the account's trust anchor used to sign the access token.
+      operationId: getTrustAnchors
+      description: |
+        Get all trust anchors that match the account ID specified in the JWT.
+        <br>
+        Authorized for roles: Service, ServiceAdministrator
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/trust-anchors \
+        -H 'Authorization: <valid JWT>'
+        ```
+      parameters:
+        - <<: *limit_param
+        - <<: *order_param
+        - <<: *after_param
+        - <<: *include_param
+      responses:
+        '200':
+          description: |
+            Returns the list of trust anchors associated to the account_id specified in the access token.
+          schema:
+            $ref: '#/definitions/GetTrustAnchorsResponse'
+        '400':
+          description: |
+            Bad request. Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: |
+            Authentication failure. The provided header is invalid or missing.
+            Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  '/v3/trust-anchors/{trust_anchor_id}':
+    put:
+      tags:
+        - Security and identity - secure device access
+      summary: Update trust anchor attributes (description).
+      operationId: updateTrustAnchor
+      description: |
+        Updates a trust anchor description attribute.
+        <br>
+        Authorized for roles: Service, ServiceAdministrator
+        <br>
+        **Usage example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/trust-anchors/8e0a9494cc95b750ec6c81464eb06725 \
+        -H 'Authorization: <valid JWT>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "description": "Trust anchor for ambient light module"
+        }'
+        ```
+      parameters:
+        - name: trust_anchor_id
+          in: path
+          description: The id of the trust anchor to be updated
+          type: string
+          pattern: '[A-Fa-f0-9]{32}'
+          required: true
+        - name: body
+          in: body
+          description: Update trust anchor request.
+          required: true
+          schema:
+           $ref: '#/definitions/UpdateTrustAnchorRequest'
+      responses:
+        '200':
+          description: Trust anchor updated.
+          schema:
+            $ref: '#/definitions/UpdateTrustAnchorResponse'
+        '400':
+          description: |
+            Bad request. Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: |
+            Authentication failure. The provided header is invalid or missing.
+            Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: The trust anchor to be updated was not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+    delete:
+      tags:
+        - Security and identity - secure device access
+      summary: Delete a trust anchor. 
+      operationId: deleteTrustAnchor
+      description: |
+        Delete the specified trust anchor. Unrecoverable.
+        <br>
+        Authorized for roles: Service, ServiceAdministrator
+        <br>
+        **Usage example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/trust-anchors/8e0a9494cc95b750ec6c81464eb06725 \
+        -H 'Authorization: <valid JWT>' \
+        ```
+      parameters:
+       - name: trust_anchor_id
+         in: path
+         description: The id of the trust anchor to be deleted
+         type: string
+         pattern: '[A-Fa-f0-9]{32}'
+         required: true
+      responses:
+        '204':
+          description: Trust anchor deleted.
+        '400':
+          description: |
+            Bad request. Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: |
+            Authentication failure. The provided header is invalid or missing.
+            Returns the standard error object detailing the error message and, optionally, the invalid fields.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: The trust anchor to be deleted was not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+definitions:
+
+  AudienceItem:
+    description: Audience item, device ID or endpoint name.
+    type: string
+    pattern: '^ep:[a-zA-Z0-9 -]{1,57}$|^id:[0-9a-fA-F]{32}$'
+
+  KeyValue:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    required:
+      - key
+      - value
+
+  CreateTrustAnchorRequest:
+    type: object
+    properties:
+      description:
+        description: The description of the new trust anchor key pair.
+        type: string
+        format: Free text
+        minLength: 1
+        maxLength: 256
+    required:
+      - description
+
+  CreateTrustAnchorResponse:
+    type: object
+    properties:
+      <<: *generic_entity_fields
+      description:
+        description: Notes about the trust anchor.
+        type: string
+        format: free text
+        minLength: 1
+        maxLength: 256
+      public_key:
+        description: The generated trust anchor public key in PEM format.
+        type: string
+        format: byte
+      public_key_der:
+        description: The generated trust anchor public key in Base64-encoded DER format.
+        type: string
+        format: byte
+      fingerprint:
+        description: The SHA256 of the trust anchor public key; the prefix 'mbed.ta.' followed
+                     by the trust anchor public key as a SHA256 hash in Base64-encoded DER format.
+        type: string
+        format: byte
+
+  UpdateTrustAnchorRequest:
+    type: object
+    properties:
+      description:
+        description: The new description for the trust anchor.
+        type: string
+        format: free text
+        minLength: 1
+        maxLength: 256
+    required:
+      - description
+
+  UpdateTrustAnchorResponse:
+    type: object
+    properties:
+      <<: *generic_entity_fields
+      description:
+        description: The updated notes about the trust anchor.
+        type: string
+        format: free text
+        minLength: 1
+        maxLength: 256
+      public_key:
+        description: The trust anchor public key in PEM format.
+        type: string
+        format: byte
+      public_key_der:
+        description: The generated trust anchor public key in Base64-encoded DER format.
+        type: string
+        format: byte
+      fingerprint:
+        description: The SHA256 of the trust anchor public key; the prefix 'mbed.ta.' followed
+                     by the trust anchor public key as a SHA256 hash in Base64-encoded DER format.
+        type: string
+        format: byte
+
+  GetTrustAnchorsResponse:
+    type: object
+    properties:
+      <<: *generic_list_fields
+      data:
+        description: The list of trust anchors of the account.
+        type: array
+        items:
+         $ref: '#/definitions/TrustAnchorResponse'
+
+  TrustAnchorResponse:
+    type: object
+    properties:
+      <<: *generic_entity_fields
+      description:
+        description: The updated notes about the trust anchor.
+        type: string
+        format: free text
+        minLength: 1
+        maxLength: 256
+      public_key:
+        description: The trust anchor public key in PEM format.
+        type: string
+        format: byte
+      public_key_der:
+        description: The generated trust anchor public key in Base64-encoded DER format.
+        type: string
+        format: byte
+      fingerprint:
+        description: The SHA256 of the trust anchor public key; the prefix 'mbed.ta.' followed
+                     by the trust anchor public key as a SHA256 hash in Base64-encoded DER format.
+        type: string
+        format: byte
+
+  TokenRequest:
+    type: object
+    properties:
+      grant_type:
+        description: >-
+          Hardcoded - can only be "client_credentials".
+        type: string
+      aud:
+        description: >-
+          Array of \<type\>:\<identity\> tuples representing devices for which access is being requested. There must be at least one id/ep tuple.<br/> \<type\> ::= id|ep <br/> \<identity\>::=[a-zA-Z0-9+/=- ]+ <br/>\<audience\> :== \<type\> ":" \<identity\>  <br/> \<identity\> can be up to 60 characters long, and can contain spaces.
+          <br/>
+
+          The audience array can contain up to 50 tuples. If IAM does not authorize even one item in the list, Secure Device Access does not authorize the whole request and does not return an access token (access denied).
+        type: array
+        minItems: 1
+        maxItems: 50
+        items:
+         $ref: '#/definitions/AudienceItem'
+      scope:
+        description: >-
+          The space-delimited list of operations that user is requesting permission for. The array must contain at least one scope item. A scope item can have up to 60 characters. A scope list can hold up to 20 scope items. <br/> \<scope\>::=[a-zA-Z][a-zA-Z0-9-]* <br/>
+          \<scope-list\>::= \<scope\> | \<scope\> " " | \<scope\> " " \<scope-list\> <br/>
+          The scope being requested must match the action that the Android application eventually performs on the IoT device. The device matches the scope in the access token to the action requested in the operation bundle.
+        type: string
+        format: 'scope-item scope-item ...'
+      cnf:
+        description: The Android application proof-of-possession public key.
+        type: string
+        format: The public key in PEM format.
+    required:
+      - grant_type
+      - aud
+      - scope
+      - cnf
+
+  TokenResponse:
+    type: object
+    properties:
+      granted_until:
+        description: Grant expiration UTC time RFC3339.
+        type: string
+        format: date-time
+      access_token:
+        description: The generated CWT (CBOR Web Token) access token as a Base64 string.
+        type: string
+        format: byte
+
+  ErrorResponse:
+    type: object
+    description: This object represents an error message.
+    properties:
+      object:
+        type: string
+        description: Entity name, always 'error'.
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 400
+        description: Response code.
+      type:
+        type: string
+        example: validation_error
+        description: Error type.
+        enum: [
+          "success",
+          "created",
+          "accepted",
+          "permanently_deleted",
+          "validation_error",
+          "invalid_token",
+          "invalid_apikey",
+          "reauth_required",
+          "access_denied",
+          "account_limit_exceeded",
+          "not_found",
+          "method_not_supported",
+          "not_acceptable",
+          "duplicate",
+          "precondition_failed",
+          "unsupported_media_type",
+          "rate_limit_exceeded",
+          "internal_server_error",
+          "system_unavailable"
+        ]
+      message:
+        type: string
+        example: Validation error
+        description: A human-readable message with detailed information.
+      request_id:
+        type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: 0161991d63150242ac12000600000000
+        description: Request ID.
+      fields:
+        type: array
+        description: Input fields that failed during request object validation.
+        items:
+         $ref: '#/definitions/Field'
+
+  Field:
+    type: object
+    required:
+      - message
+      - name
+    properties:
+      name:
+        type: string
+        description: Name of the erroneous field.
+      message:
+        type: string
+        description: Message describing the erroneous situation.

@@ -1,0 +1,669 @@
+swagger: '2.0'
+info:
+  title: Enrollment API
+  description: |-
+    Connect Enrollment Service allows users to claim ownership of a device not yet associated with an account. A device without an assigned account could be one purchased from the open market (OEM dealer) or transferred from one account to another. Refer to the documentation on [Device ownership: First-to-claim](../connecting/device-ownership-first-to-claim-by-enrollment-list.html).
+  version: '3'
+# the domain of the service
+host: api.us-east-1.mbedcloud.com
+# array of all schemes that your API supports
+schemes:
+- http
+# will be prefixed to all paths
+produces:
+- application/json
+consumes:
+- application/json
+tags:
+  - name: Device ownership - enrollments
+    description: Manage ownership claim enrollments.
+paths:
+  '/v3/device-enrollments-bulk-deletes':
+    post:
+      tags:
+      - Device ownership - enrollments
+      summary: Bulk delete.
+      operationId: deleteBulkDeviceEnrollment
+      description: |-
+        With bulk delete, you can upload a `CSV` file containing a number of enrollment IDs to delete.
+
+        **Example:**
+        ```
+        curl -X POST \
+        -H 'Authorization: Bearer <api_key>' \
+        -F 'enrollment_identities=@/path/to/enrollments/enrollments.csv' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-deletes
+
+        ```
+        **To ensure your CSV file is valid:**
+        1. The first line of the file (header) is ignored.
+        1. Each line can contain comma-separated values, where the first value is the Enrollment ID. Everything after the first comma is ignored.
+        1. Valid enrollments begin with A followed by a - and 95 characters (examples below).
+        1. One enrollment ID per line. Empty lines are ignored.
+        1. Trailing comma at the end of the line is optional.
+        1. Lines are terminated with either a line feed \n, a carriage return \r, or both \r\n.
+        1. Leading and trailing whitespace characters (Unicode U+0000 - U+0020) are removed from the identity before validation.
+        1. Empty identities are ignored.
+        1. Valid enrollment identities may be enclosed within quotation marks. Whitespace inside quotation marks is not trimmed and will cause validation to fail. Empty quotation marks are also invalid.
+        1. Use UTF-8 encoding.
+
+        **A valid enrollment file:**
+        ```
+        "Examples of valid identites, notes"
+        "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:44:71:93:23:22:15:43:23:12",
+        "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12"
+        A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12
+        A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:24:44:71:22:15:43:23:12, This text is ignored,
+         A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:60:25:48:44:71:22:15:43:23:12       , Whitespace is trimmed before validation.
+          "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:60:25:48:44:71:22:15:43:23:12"       , Whitespace around quotation marks is also trimmed.
+
+        ```
+
+        **A file containing invalid identities:**
+        ```
+        "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:44:71:93:23:22:15:43:23:12", First line is ignored.
+        A_4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12, Invalid version identifier.
+        A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23, Too-short identity.
+        "", Empty quotation marks are an invalid identity.
+        " A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:44:71:93:23:22:15:43:23:12 ", Whitespace inside quotation marks is not trimmed, causing an error.
+
+        ```
+
+        **An empty file:**
+        ```
+        "Examples of blank lines that are ignored."
+
+        ,,
+        , This is also considered to a blank line.
+        ```
+      consumes:
+      - multipart/form-data
+      parameters:
+      - in: formData
+        name: enrollment_identities
+        type: file
+        required: true
+        description: The `CSV` file containing the enrollment IDs. The maximum file size is 10MB.
+      responses:
+        201:
+          description: Bulk delete data received and asynchronous processing started.
+          schema:
+            $ref: '#/definitions/BulkResponse'
+        400:
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Invalid access token.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  '/v3/device-enrollments-bulk-deletes/{id}':
+    get:
+      tags:
+      - Device ownership - enrollments
+      summary: Get bulk delete entity.
+      operationId: getBulkDeviceEnrollmentDelete
+      description: |-
+        Provides information on bulk delete for the given ID, for example, bulk status and the number of processed enrollment identities. Provides links to bulk delete reports as well.
+
+        **Report file format:**
+        The report files have a header line and the value are separated by commas. The lines are delimited by a line break (CRLF). Make sure the report file is compliant with IETF Informal CSV common format [RFC 4180](https://tools.ietf.org/html/rfc4180).
+
+        An example of a full report file:
+        ```
+        "entity__id","entity__deleted_at","error__code","error__type","error__message","error__fields"
+        "A-F9:AA:AA:AA:DE:31:C7:30:72:55:27:AE:8B:E1:1C:6F:42:7D:06:CF:FB:18:6F:59:48:29:B3:98:4B:76:8F:9E","2018-09-07T12:10:58.428Z","","","",""
+        "A-FF:AA:AA:AA:3B:43:EB:D7:C7:30:03:5F:C8:D0:15:91:70:C2:5D:4F:EB:24:E9:3A:BB:D8:3C:FE:20:EA:B1:72","2018-09-07T12:10:58.428Z","","","",""
+        ```
+        An example of an error report file:
+        ```
+        "entity__id","error__code","error__type","error__message","error__fields"
+        "A-F9:AA:AA:AA:DE:31:C7:30:72:55:27:AE:8B:E1:1C:6F:42:7D:06:CF:FB:18:6F:59:48:29:B3:98:4B:76:8F:9E","409","duplicate","Enrollment identity is already claimed in the mbed Cloud.",""
+        "A-FF:AA:AA:AA:3B:43:EB:D7:C7:30:03:5F:C8:D0:15:91:70:C2:5D:4F:EB:24:E9:3A:BB:D8:3C:FE:20:EA:B1:72","409","duplicate","Enrollment identity is already claimed in the mbed Cloud.",""
+        ```
+        **Example:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <api_key>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-deletes/{id}
+        ```
+      produces:
+      - text/csv
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+        description: Bulk delete task entity ID.
+      responses:
+        200:
+          description: Bulk delete entity found.
+          schema:
+            $ref: '#/definitions/BulkResponse'
+        400:
+          description: Bad request. Invalid bulk identity.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Invalid access token.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  '/v3/device-enrollments-bulk-uploads':
+    post:
+      tags:
+      - Device ownership - enrollments
+      summary: Bulk upload.
+      operationId: createBulkDeviceEnrollment
+      description: |-
+        With bulk upload, you can upload a `CSV` file containing a number of enrollment IDs.
+
+        **Example:**
+        ```
+        curl -X POST \
+        -H 'Authorization: Bearer <api_key>' \
+        -F 'enrollment_identities=@/path/to/enrollments/enrollments.csv' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-uploads
+
+        ```
+          **To ensure your CSV file is valid:**
+          1. The first line of the file (header) is ignored.
+          1. Each line can contain comma-separated values, where the first value is the Enrollment ID. Everything after the first comma is ignored.
+          1. Valid enrollments begin with A followed by a - and 95 characters (examples below).
+          1. One enrollment ID per line. Empty lines are ignored.
+          1. Trailing comma at the end of the line is optional.
+          1. Lines are terminated with either a line feed \n, a carriage return \r, or both \r\n.
+          1. Leading and trailing whitespace characters (Unicode U+0000 - U+0020) are removed from the identity before validation.
+          1. Empty identities are ignored.
+          1. Valid enrollment identities may be enclosed within quotation marks. Whitespace inside quotation marks is not trimmed and will cause validation to fail. Empty quotation marks are also invalid.
+          1. Use UTF-8 encoding.
+
+
+        **A valid enrollment file:**
+        ```
+        "Examples of valid identites, notes"
+        "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:44:71:93:23:22:15:43:23:12",
+        "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12"
+        A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12
+        A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:24:44:71:22:15:43:23:12, This text is ignored.
+         A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:60:25:48:44:71:22:15:43:23:12       , Whitespace is trimmed before validation.
+          "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:60:25:48:44:71:22:15:43:23:12"       , Whitespace around quotation marks is also trimmed.
+
+        ```
+
+        **A file containing invalid identities:**
+        ```
+        "A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:44:71:93:23:22:15:43:23:12", First line is ignored.
+        A_4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12, Invalid version identifier.
+        A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:25:48:44:71:22:15:43:23:12, Too-short identity.
+        "", Empty quotation marks are an invalid identity
+        " A-4E:63:2D:AE:14:BC:D1:09:77:21:95:44:ED:34:06:57:1E:03:B1:EF:0E:F2:59:44:71:93:23:22:15:43:23:12 ", Whitespace inside quotation marks is not trimmed, causing an error.
+
+        ```
+
+        **An empty file:**
+        ```
+        "Examples of blank lines that are ignored"
+
+        ,,
+        , This is also considered a blank line.
+        ```
+
+      consumes:
+      - multipart/form-data
+      parameters:
+      - in: formData
+        name: enrollment_identities
+        type: file
+        required: true
+        description: "The `CSV` file containing the enrollment IDs. The maximum file size is 10 MB."
+      responses:
+        201:
+          description: Bulk upload data received and asynchronous processing started.
+          schema:
+            $ref: '#/definitions/BulkResponse'
+        400:
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Invalid access token.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  '/v3/device-enrollments-bulk-uploads/{id}':
+    get:
+      tags:
+      - Device ownership - enrollments
+      summary: Get bulk upload entity.
+      operationId: getBulkDeviceEnrollment
+      description: |-
+        Provides information on bulk upload for the given ID, for example, bulk status and number of processed enrollment identities. Provides links to bulk upload reports as well.
+
+        **Report file format:**
+        The report files have a header line, and the values are separated by commas. Delimit lines with a line break (CRLF). Make sure the report file is compliant with IETF Informal CSV common format [RFC 4180](https://tools.ietf.org/html/rfc4180).
+
+        An example of a full report file:
+        ```
+        "entity__id","entity__created_at","error__code","error__type","error__message","error__fields"
+        "A-F9:AA:AA:AA:DE:31:C7:30:72:55:27:AE:8B:E1:1C:6F:42:7D:06:CF:FB:18:6F:59:48:29:B3:98:4B:76:8F:9E","2018-09-07T12:10:58.428Z","","","",""
+        "A-FF:AA:AA:AA:3B:43:EB:D7:C7:30:03:5F:C8:D0:15:91:70:C2:5D:4F:EB:24:E9:3A:BB:D8:3C:FE:20:EA:B1:72","2018-09-07T12:10:58.428Z","","","",""
+        ```
+        An example of an error report file:
+        ```
+        "entity__id","error__code","error__type","error__message","error__fields"
+        "A-F9:AA:AA:AA:DE:31:C7:30:72:55:27:AE:8B:E1:1C:6F:42:7D:06:CF:FB:18:6F:59:48:29:B3:98:4B:76:8F:9E","409","duplicate","Enrollment identity is already claimed in the mbed Cloud.",""
+        "A-FF:AA:AA:AA:3B:43:EB:D7:C7:30:03:5F:C8:D0:15:91:70:C2:5D:4F:EB:24:E9:3A:BB:D8:3C:FE:20:EA:B1:72","409","duplicate","Enrollment identity is already claimed in the mbed Cloud.",""
+        ```
+        **Example:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <api_key>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-uploads/{id}
+        ```
+      produces:
+      - text/csv
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+        description: Bulk create task entity ID.
+      responses:
+        200:
+          description: Bulk upload entity found.
+          schema:
+            $ref: '#/definitions/BulkResponse'
+        400:
+          description: Bad request. Invalid bulk identity.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: Invalid access token.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  '/v3/device-enrollments':
+    post:
+      summary: Create a single enrollment.
+      operationId: createDeviceEnrollment
+      parameters:
+      - in: body
+        name: enrollment_identity
+        schema:
+          $ref: '#/definitions/EnrollmentId'
+        required: true
+      description: |-
+        When the device connects to the bootstrap server and provides the enrollment ID, it is assigned to your account.
+        <br>
+        **Example:**
+        ```
+        curl -X POST \
+        -H 'Authorization: Bearer <api_key>' \
+        -H 'content-type: application/json' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments \
+        -d '{"enrollment_identity": "A-35:e7:72:8a:07:50:3b:3d:75:96:57:52:72:41:0d:78:cc:c6:e5:53:48:c6:65:58:5b:fa:af:4d:2d:73:95:c5"}'
+        ```
+      tags:
+      - Device ownership - enrollments
+      responses:
+        201:
+          description: Created. The enrollment claim has been created and is waiting for the device to connect.
+          schema:
+            $ref: '#/definitions/EnrollmentIdentity'
+        400:
+          description: Bad request. The enrollment identity is not valid.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: The provided access token is not valid.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        409:
+          description: Conflict. The requested identity to add already exists on this or another account.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+    get:
+      summary: Get a list of enrollments per account.
+      operationId: getDeviceEnrollments
+      produces:
+      - application/json
+      description: |-
+        Provides a list of pending and claimed enrollments.
+
+        **Example:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <api_key>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments
+        ```
+        With query parameters:
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <api_key>' \
+        'https://api.us-east-1.mbedcloud.com/v3/device-enrollments?limit=10'
+        ```
+      tags:
+      - Device ownership - enrollments
+      parameters:
+      - name: limit
+        type: integer
+        in: query
+        required: false
+        description: 'Number of results to return (2-1000).'
+        minimum: 2
+        maximum: 1000
+      - name: after
+        type: string
+        in: query
+        description: 'Entity ID to fetch after.'
+        required: false
+      - name: order
+        type: string
+        in: query
+        description: 'ASC or DESC'
+        required: false
+        enum: ['ASC', 'DESC']
+        default: 'ASC'
+      - name: include
+        type: string
+        in: query
+        description: 'Comma-separated additional data to return. Currently supported: total_count.'
+        required: false
+      responses:
+        200:
+          description: OK.
+          schema:
+            $ref: '#/definitions/EnrollmentIdentities'
+        400:
+          description: Bad request. The access token could not be read.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        401:
+          description: The provided access token is not valid.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  '/v3/device-enrollments/{id}':
+    get:
+      summary: Get details of an single enrollment by ID.
+      description: |-
+        Check detailed enrollment info, for example, date of claim or expiration date.
+
+        **Example:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <api_key>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments/{id}
+        ```
+      operationId: getDeviceEnrollment
+      tags:
+      - Device ownership - enrollments
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+        description: Enrollment identity.
+      responses:
+        200:
+          description: OK. Pending enrollment data.
+          schema:
+            $ref: '#/definitions/EnrollmentIdentity'
+        400:
+          description: Bad request. Invalid enrollment identity.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      summary: Delete an enrollment by ID.
+      description: |-
+        To free a device from your account, delete the enrollment claim. To bypass the device ownership, you need to delete the enrollment and factory reset the device. For more information, see [Transferring ownership using First-to-Claim](../connecting/device-ownership-first-to-claim-by-enrollment-list.html).
+        <br>
+        **Example:**
+        ```
+        curl -X DELETE \
+        -H 'Authorization: Bearer <api_key>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-enrollments/{id}
+        ```
+      operationId: deleteDeviceEnrollment
+      tags:
+      - Device ownership - enrollments
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+        description: Enrollment identity.
+      responses:
+        204:
+          description: No content. The enrollment claim has been deleted.
+        400:
+          description: Bad request. Invalid enrollment identity.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+definitions:
+  ErrorResponse:
+    type: object
+    required: ['code','message','object','request_id','type']
+    properties:
+      object:
+        type: string
+        description: 'Entity name, always ''error''.'
+        enum: [ 'error' ]
+      code:
+        type: integer
+        format: int32
+        description: Response code.
+        example: 400
+      type:
+        type: string
+        description: Error type.
+        enum: [ 'validation_error', 'invalid_token', 'invalid_apikey', 'reauth_required', 'access_denied', 'account_limit_exceeded', 'not_found', 'method_not_supported', 'not_acceptable', 'duplicate', 'precondition_failed', 'unsupported_media_type', 'rate_limit_exceeded', 'internal_server_error', 'system_unavailable' ]
+        example: 'validation_error'
+      message:
+        type: string
+        example: 'An error description.'
+        description: A human readable message with detailed info.
+      request_id:
+        type: string
+        description: Request ID.
+        pattern: '^[A-Za-z0-9]{32}'
+        example: '00005a4e027f0a580a01081c00000000'
+      fields:
+        type: array
+        description: Failed input fields during request object validation.
+        items:
+          $ref: '#/definitions/Field'
+    description: This object represents an error message.
+
+  EnrollmentId:
+    type: object
+    required: ['enrollment_identity']
+    properties:
+      enrollment_identity:
+        type: string
+        description: Enrollment identity.
+        pattern: '^A-[A-Za-z0-9:]{95}$'
+        example: 'A-35:e7:72:8a:07:50:3b:3d:75:96:57:52:72:41:0d:78:cc:c6:e5:53:48:c6:65:58:5b:fa:af:4d:2d:73:95:c5'
+
+  EnrollmentIdentities:
+    type: object
+    required: ['object','limit','after','order','has_more','total_count','data']
+    properties:
+      object:
+        type: string
+        enum: ['list']
+        example: 'list'
+      limit:
+        type: integer
+        description: Range 2-1000, or default.
+        example: 50
+        minimum: 2
+        maximum: 1000
+      after:
+        type: string
+        description: ID
+        example: '00005a4e027f0a580a01081c00000000'
+        pattern: '^[A-Za-z0-9]{32}'
+      order:
+        type: string
+        enum: ['ASC', 'DESC']
+        default: 'ASC'
+        example: 'ASC'
+      has_more:
+        type: boolean
+        example: true
+      total_count:
+        type: integer
+        example: 100
+        format: int32
+        minimum: 1
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/EnrollmentIdentity'
+
+  EnrollmentIdentity:
+    type: object
+    required: ['object','id','etag','account_id','created_at','expires_at','claimed_at','enrollment_identity','enrolled_device_id']
+    properties:
+      object:
+        type: string
+        enum: ['enrollment']
+        example: 'enrollment'
+      id:
+        type: string
+        description: Enrollment identity.
+        pattern: '^[A-Za-z0-9]{32}'
+        example: '00005a4e027f0a580a01081c00000000'
+      etag:
+        type: string
+        pattern: '[A-Za-z0-9]{1,256}'
+        example: '7642xfaxz'
+      created_at:
+        type: string
+        description: The time of the enrollment identity creation.
+        format: 'date-time'
+      claimed_at:
+        type: string
+        description: The time the device was claimed.
+        format: 'date-time'
+      enrollment_identity:
+        type: string
+        description: Enrollment identity.
+        pattern: '^A-[A-Za-z0-9:]{95}$'
+        example: 'A-35:e7:72:8a:07:50:3b:3d:75:96:57:52:72:41:0d:78:cc:c6:e5:53:48:c6:65:58:5b:fa:af:4d:2d:73:95:c5'
+      account_id:
+        type: string
+        description: ID
+        example: '00005a4e027f0a580a01081c00000000'
+      expires_at:
+        type: string
+        description: The enrollment claim expiration time. If the device does not connect to Device Management before expiration, the claim is removed without separate notice.
+        format: 'date-time'
+      enrolled_device_id:
+        type: string
+        description: 'The ID of the device in the Device Directory once it is registered.'
+        pattern: '^[A-Za-z0-9]{32}'
+        example: '00005a4e027f0a580a01081c00000000'
+
+  BulkResponse:
+    type: object
+    required: ['object','id','etag','created_at','account_id','status','total_count','processed_count','errors_count','completet_at', 'full_report_file', 'errors_report_file']
+    properties:
+      object:
+        type: string
+        enum: ['enrollment-identity-bulk-uploads']
+        example: 'enrollment-identity-bulk-uploads'
+      id:
+        type: string
+        description: 'Bulk ID'
+        pattern: '^[A-Za-z0-9]{32}'
+      account_id:
+        type: string
+        description: ID
+        example: '00005a4e027f0a580a01081c00000000'
+      etag:
+        type: string
+        description: etag
+        example: '1'
+        pattern: '[A-Za-z0-9]{0,256}'
+      created_at:
+        type: string
+        description: |-
+          The time of receiving the bulk creation task.
+        format: 'date-time'
+      status:
+        enum: ['new', 'processing','completed']
+        default: 'new'
+        example: 'new'
+        description: |-
+          The state of the process is 'new' at the time of creation. If creation is still in progress, the state shows as 'processing'. When the request is fully processed, the state changes to 'completed'.
+      total_count:
+        type: integer
+        example: 10
+        description: |-
+          Total number of enrollment identities found in the input CSV.
+      processed_count:
+        type: integer
+        example: 0
+        description: |-
+          The number of enrollment identities processed until now.
+      errors_count:
+        type: integer
+        example: 0
+        description: |-
+          The number of enrollment identities with failed processing.
+      completed_at:
+        type: string
+        description: |-
+          The time the bulk creation task was completed.
+          Null when creating bulk upload or delete.
+        format: 'date-time'
+      full_report_file:
+        type: string
+        x-nullable: true
+        description: |-
+          Link to full report file.
+          Null when creating bulk upload or delete.
+        example: 'https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-uploads/2d238a89038b4ddb84699dd36a901063/full_report.csv'
+      errors_report_file:
+        type: string
+        x-nullable: true
+        description: |-
+          Link to error report file.
+          Null when creating bulk upload or delete.
+        example: 'https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-uploads/2d238a89038b4ddb84699dd36a901063/errors_report.csv'
+
+  Field:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of the erroneous field.
+        example: 'ID'
+      message:
+        type: string
+        description: A message describing the error situation.
+        example: 'The error message'

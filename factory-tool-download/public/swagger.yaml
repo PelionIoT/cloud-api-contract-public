@@ -1,0 +1,157 @@
+swagger: '2.0'
+info:
+  title: Factory Configurator Utility (FCU) download API
+  description: This is the API documentation for the Factory Configurator Utility (FCU) download service, which authorized customers can use to download the FCU archive for factory provisioning. <br/>Please [contact us](https://cloud.mbed.com/contact) to enable FCU download for your account. <br/>For more information about FCU, please see the [Pelion factory provisioning documentation](https://www.pelion.com/docs/device-management-provision/latest/introduction/index.html).
+  version: 1.0.0
+host: api.us-east-1.mbedcloud.com
+schemes:
+  - https
+tags:
+  - name: Manufacturing - Factory Configurator Utility (FCU)
+    description: Retrieve information and artifacts for Factory Configurator Utility (FCU), which you can use to provision devices in your factories.
+paths:
+  /downloads/fcu/factory_configurator_utility.zip:
+    get:
+      tags:
+        - Manufacturing - Factory Configurator Utility (FCU)
+      summary: Download the Factory Configurator Utility archive.
+      description: |
+        Downloads the Factory Configurator Utility (FCU) archive .zip file for the account ID associated with the access token.
+        <br>
+        **Example:**
+        <br>
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/downloads/fcu/factory_configurator_utility.zip \
+        -H 'Authorization: Bearer <valid access token>'
+        ```
+      operationId: downloadFactoryTool
+      produces:
+        - application/zip
+      responses:
+        '200':
+          description: The archive file was downloaded successfully.
+        '400':
+          description: Validation error or bad request.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '403':
+          description: Access denied.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '500':
+          description: Internal server error.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+  /downloads/fcu/info:
+    get:
+      tags:
+        - Manufacturing - Factory Configurator Utility (FCU)
+      summary: Download information about the Factory Configurator Utility archive.
+      description: |
+        Returns information about the Factory Configurator Utility (FCU) archive.
+        <br>
+        **Example:**
+        <br>
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/downloads/fcu/inf \
+        -H 'Authorization: Bearer <valid access token>' o
+        ```
+      operationId: getFactoryToolInfo
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response of the archive information.
+          schema:
+            $ref: '#/definitions/ArchiveInfoResponse'
+        '400':
+          description: Validation error or bad request.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '403':
+          description: Access denied.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '500':
+          description: Internal server error.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+  /downloads/fcu/release_notes:
+    get:
+      tags:
+        - Manufacturing - Factory Configurator Utility (FCU)
+      summary: Download Factory Configurator Utility release notes.
+      description: |
+        Downloads the Factory Configurator Utility (FCU) release notes.
+        <br>
+        **Example:**
+        <br>
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/downloads/fcu/release_notes \
+        -H 'Authorization: Bearer <valid access token>'
+        ```
+      operationId: getFactoryToolReleaseNotes
+      produces:
+        - text/markdown ; charset=UTF-8
+        - application/json
+      responses:
+        '200':
+          description: The release notes were downloaded successfully.
+        '400':
+          description: Validation error or bad request.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '403':
+          description: Access denied.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '500':
+          description: Internal server error.
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+definitions:
+  ArchiveInfoResponse:
+    type: object
+    required:
+      - download_size_bytes
+      - version
+      - download_url
+      - release_notes_url
+    properties:
+      download_size_bytes:
+        type: integer
+        description: The size of the archive file in bytes.
+        example: 2402668
+      download_url:
+        type: string
+        description: URL to download the Factory Configurator Utility archive.
+        example: "https://api.us-east-1.mbedcloud.com/downloads/fcu/factory_configurator_utility.zip"
+      version:
+        type: string
+        description: The Factory Configurator Utility version.
+        example: "1.2.9.500"
+      release_notes_url:
+        type: string
+        description: URL to the Factory Configurator Utility release notes.
+        example: "https://api.us-east-1.mbedcloud.com/downloads/fcu/release_notes"
+      license_type:
+        type: string
+        description: The license agreement type required for downloading Factory Configurator Utility.
+        example: "fcu"
+      license_version:
+        type: string
+        description: The license agreement version required for downloading Factory Configurator Utility.
+        example: "1.0"
+    description: This object represents the response for the archive info request.

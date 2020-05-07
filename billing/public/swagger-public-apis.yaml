@@ -1,0 +1,2128 @@
+swagger: "2.0"
+info:
+  title: "Billing customer API"
+  description: |-
+    The Billing API allows commercial users to retrieve billing reports and service package details.
+
+    See <a href="https://www.pelion.com/docs/device-management/latest/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+
+    **Billing report:**
+
+    Billing reports for the previous month are generated automatically during the third business day of the current month. The reports are usually available by 02:00 AM UTC.
+
+    **Service package:**
+
+    If you have a commercial account, you can create a service package with a specific number of firmware updates, referred to as the *service package quota*. You can only perform device updates equal to the number of firmware updates linked to an active service package. You must purchase a new service package or renew an active one if you have reached the quota for your active service package.
+
+    Aggregator customers share their service package quota with their own tenant accounts. A tenant can create campaigns using the parent account's service package quota. A tenant cannot create or manage service packages on its own. The quota usage history is recorded separately between the aggregator and tenants.
+
+    **Service package events:**
+
+    The following service package events are included in API responses:
+
+    `reservation`:
+
+    Creation of a new update campaign with an estimated number of firmware updates.
+
+    `reservation_release`:
+
+    Closing an update campaign. The unused quota reserved through the update campaign is added to the active service package quota at this point.
+
+    `reservation_termination`:
+
+    Termination of an update campaign due to the expiration of an active service package. The unused quota reserved through the update campaign cannot be used if the active service package has expired.
+
+    `package_creation`:
+
+    Creation of a new service package.
+
+    `package_renewal`:
+
+    Renewal of an active service package before it expires.
+
+    `package_termination`:
+
+    Expiration of an active service package. The unused quota linked to the expired service package cannot be used anymore.
+
+  version: 3.14.0
+host: api.us-east-1.mbedcloud.com
+tags:
+  - name: Usage - billing reports
+    description: Fetch monthly billing reports.
+  - name: Usage - service packages
+    description: Fetch update service packages, transactions and quota.
+  - name: Usage - statistics
+    description: Fetch statistics view of Device Management usage.
+schemes:
+  - http
+produces:
+  - application/json
+paths:
+  /v3/service-packages:
+    get:
+      summary: Get all service packages.
+      description: |-
+        Get information for all service packages for the current authenticated commercial account. The response is returned in
+        descending order by service package created timestamp: first the pending service package, then the active service package,
+        then the previous service packages.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getServicePackages
+      tags:
+        - Usage - billing reports
+      responses:
+        200:
+          description: Information for all service packages associated with an account.
+          schema:
+            $ref: '#/definitions/ServicePackagesResponse'
+          examples:
+            application/json:
+              {
+                "object": "service-packages",
+                "pending": {
+                  "id": "example-service-package-id-4",
+                  "previous_id": "example-service-package-id-3",
+                  "created": "2017-03-01T00:00:00.000Z",
+                  "modified": "2017-03-01T00:00:00.000Z",
+                  "start_time": "2018-01-01T00:00:00.000Z",
+                  "expires": "2019-01-01T00:00:00.000Z",
+                  "firmware_update_count": 400000
+                },
+                "active": {
+                  "id": "example-service-package-id-3",
+                  "previous_id": "example-service-package-id-2",
+                  "next_id": "example-service-package-id-4",
+                  "created": "2017-01-01T00:00:00.000Z",
+                  "modified": "2017-01-01T00:00:00.000Z",
+                  "start_time": "2017-01-01T00:00:00.000Z",
+                  "expires": "2018-01-01T00:00:00.000Z",
+                  "firmware_update_count": 300000,
+                  "grace_perid": false
+                },
+                "previous": [
+                  {
+                    "id": "example-service-package-id-2",
+                    "previous_id": "example-service-package-id-3",
+                    "next_id": "example-service-package-id-3",
+                    "created": "2016-01-01T00:00:00.000Z",
+                    "modified": "2017-02-01T00:00:00.000Z",
+                    "start_time": "2016-01-01T00:00:00.000Z",
+                    "expires": "2017-01-01T00:00:00.000Z",
+                    "end_time": "2017-02-01T00:00:00.000Z",
+                    "firmware_update_count": 200000,
+                    "reason": "renewed"
+                  },
+                  {
+                    "id": "example-service-package-id-1",
+                    "previous_id": null,
+                    "next_id": "example-service-package-id-2",
+                    "created": "2015-01-01T00:00:00.000Z",
+                    "modified": "2016-02-01T00:00:00.000Z",
+                    "start_time": "2015-01-01T00:00:00.000Z",
+                    "expires": "2016-01-01T00:00:00.000Z",
+                    "end_time": "2016-02-01T00:00:00.000Z",
+                    "firmware_update_count": 100000,
+                    "reason": "renewed"
+                  }
+                ]
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: Forbidden.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+  /v3/service-packages-quota:
+    get:
+      summary: Service package quota.
+      description: |-
+        Get the available firmware update quota for the current authenticated commercial account.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages-quota \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getServicePackageQuota
+      tags:
+        - Usage - billing reports
+      responses:
+        200:
+          description: |-
+            Firmware update quota for the current authenticated commercial account.
+          schema:
+            $ref: '#/definitions/ServicePackageQuota'
+          examples:
+            application/json:
+              {
+                "object": "service-package-quota",
+                "quota": 1000
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: Forbidden.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+  /v3/service-packages-quota-history:
+    get:
+      summary: Service package quota history.
+      description: |-
+        Get your quota usage history. This API is available only for commercial accounts. Aggregator accounts can see their own and tenant quota usage data.
+        Data is in ascending order based on creation time.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages-quota-history \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getServicePackageQuotaHistory
+      tags:
+        - Usage - service packages
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of quota history entries in one paged response.
+          required: false
+          type: integer
+          format: int32
+          minimum: 2
+          maximum: 1000
+        - name: after
+          in: query
+          description: Results after specified entry ID.
+          required: false
+          type: string
+          minLength: 32
+          maxLength: 32
+        - name: order
+          in: query
+          description: "Record order. Acceptable values: ASC, DESC. Default: ASC."
+          required: false
+          type: string
+          enum: [ASC, DESC]
+      responses:
+        200:
+          description: |-
+            Quota history for the currently authenticated commercial account.
+          schema:
+            $ref: "#/definitions/ServicePackageQuotaHistoryResponse"
+          examples:
+            application/json:
+              {
+                "after": null,
+                "data": [
+                  {
+                    "id": "787148a58f51434e938f8e0e54c09699",
+                    "added": "2017-10-10T10:45:12.896Z",
+                    "amount": 20,
+                    "reason": "package_creation",
+                    "reservation": null,
+                    "service_package": {
+                      "expires": "2018-10-10T10:45:12.300Z",
+                      "firmware_update_count": 20,
+                      "previous_id": null,
+                      "id": "010c804b945f4c33b2d1e313ed95094e",
+                      "start_time": "2017-10-10T10:45:12.300Z"
+                    }
+                  },
+                  {
+                    "id": "b0817554677248a1b038d7fcd2c020c5",
+                    "added": "2017-11-10T13:45:51.273Z",
+                    "amount": -1,
+                    "reason": "reservation",
+                    "reservation": {
+                      "campaign_name": "campaign",
+                      "id": "b5322aabe29d458ea6e4402594085a15",
+                      "account_id": "10171c6f56084c4f8b53210762650246"
+                    },
+                    "service_package": null
+                  }
+                ],
+                "has_more": false,
+                "limit": 50,
+                "object": "service-package-quota-history",
+                "total_count": 2
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: Forbidden.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+  /v3/billing-report:
+    get:
+      summary: Get billing report.
+      description: |-
+        Fetch the billing report generated for the currently authenticated commercial account. The billing reports for
+        tenant accounts are also included in their aggregator's billing report response. The response contains below additional counters
+        when the account's business model is set to `API calls` by the account administrator.
+          - rest_api_requests_with_user_token
+          - rest_api_requests_with_api_key_token
+          - pelion_to_webapp_notifications
+          - device_to_pelion_messages
+          - pelion_to_device_messages
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-report?month=2018-07 \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getBillingReport
+      tags:
+        - Usage - billing reports
+      parameters:
+        - name: month
+          description: Queried year and month of billing report.
+          in: query
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+          required: true
+      responses:
+        200:
+          description: Billing report response object.
+          schema:
+            $ref: '#/definitions/ReportResponse'
+          examples:
+            application/json:
+              {
+                "id": "6cae0aec221911e88f227f51b2f005c0",
+                "object": "billing-report",
+                "account": {
+                  "address_line1": null,
+                  "address_line2": null,
+                  "city": null,
+                  "company": "example-company",
+                  "contact": null,
+                  "country": null,
+                  "email": null,
+                  "id": "example-account",
+                  "phone_number": null,
+                  "postal_code": null,
+                  "state": null
+                },
+                "aggregated": {
+                  "active_devices": 600,
+                  "firmware_updates": 600,
+                  "sda_tokens": 700,
+                  "generated": "2016-09-21T14:11:34.131Z",
+                  "period_end": "2016-09-30T23:59:59.999Z",
+                  "period_start": "2016-09-01T00:00.000Z"
+                },
+                "billing_data": {
+                  "active_devices": 100,
+                  "firmware_updates": 100,
+                  "sda_tokens": 200,
+                  "generated": "2016-09-21T14:11:34.131Z",
+                  "period_end": "2016-09-30T23:59:59.999Z",
+                  "period_start": "2016-09-01T00:00.000Z"
+                },
+                "month": "2016-09",
+                "service_package": {
+                  "metadata": {
+                    "end_time": null,
+                    "remaining_quota": 1000,
+                    "reserved_quota": 100,
+                    "start_time": "2016-09-01T00:00.000Z"
+                  },
+                  "quota_usage": [
+                    {
+                      "amount": 1000,
+                      "campaign_name": null,
+                      "time": "2016-09-01T00:00.000Z",
+                      "type": "package_creation"
+                    },
+                    {
+                      "amount": -50,
+                      "campaign_name": "example-account-campaign-name",
+                      "time": "2016-09-02T00:00.000Z",
+                      "type": "reservation"
+                    }
+                  ],
+                  "aggregated_quota_usage": [
+                    {
+                      "account_id": "example-account",
+                      "amount": 1000,
+                      "campaign_name": null,
+                      "time": "2016-09-01T00:00.000Z",
+                      "type": "package_creation"
+                    },
+                    {
+                      "account_id": "example-account",
+                      "amount": -50,
+                      "campaign_name": "example-account-campaign-name",
+                      "time": "2016-09-02T00:00.000Z",
+                      "type": "reservation"
+                    },
+                    {
+                      "account_id": "example-tenant-account-1",
+                      "amount": -20,
+                      "campaign_name": "example-tenant-account-1-campaign-name",
+                      "time": "2016-09-03T00:00.000Z",
+                      "type": "reservation"
+                    },
+                    {
+                      "account_id": "example-tenant-account-2",
+                      "amount": -30,
+                      "campaign_name": "example-tenant-account-2-campaign-name",
+                      "type": "reservation",
+                      "time": "2016-09-04T00:00.000Z"
+                    }
+                  ]
+                },
+                "subtenants": [
+                  {
+                    "account": {
+                      "address_line1": null,
+                      "address_line2": null,
+                      "city": null,
+                      "company": "example-tenant-company-1",
+                      "contact": null,
+                      "country": null,
+                      "customer_subtenant_id": "example-customer-tenant-id-1",
+                      "email": null,
+                      "id": "example-tenant-account-1",
+                      "phone_number": null,
+                      "postal_code": null,
+                      "state": null
+                    },
+                    "billing_data": {
+                      "active_devices": 200,
+                      "firmware_updates": 200,
+                      "sda_tokens": 300,
+                      "generated": "2016-09-21T14:11:34.131Z",
+                      "period_end": "2016-09-30T23:59:59.999Z",
+                      "period_start": "2016-09-01T00:00.000Z"
+                    },
+                    "service_package": {
+                      "quota_usage": [
+                        {
+                          "amount": -20,
+                          "campaign_name": "example-tenant-account-1-campaign-name",
+                          "time": "2016-09-03T00:00.000Z",
+                          "type": "reservation"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "account": {
+                      "address_line1": null,
+                      "address_line2": null,
+                      "city": null,
+                      "company": "example-tenant-company-2",
+                      "contact": null,
+                      "country": null,
+                      "customer_subtenant_id": "example-customer-tenant-id-2",
+                      "email": null,
+                      "id": "example-tenant-account-2",
+                      "phone_number": null,
+                      "postal_code": null,
+                      "state": null
+                    },
+                    "billing_data": {
+                      "active_devices": 300,
+                      "firmware_updates": 300,
+                      "sda_tokens": 200,
+                      "generated": "2016-09-21T14:11:34.131Z",
+                      "period_end": "2016-09-30T23:59:59.999Z",
+                      "period_start": "2016-09-01T00:00.000Z"
+                    },
+                    "service_package": {
+                      "quota_usage": [
+                        {
+                          "amount": -30,
+                          "campaign_name": "example-tenant-account-2-campaign-name",
+                          "time": "2016-09-04T00:00.000Z",
+                          "type": "reservation"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+        400:
+          description: Bad request.
+          schema:
+            $ref: "#/definitions/BadRequestErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 400,
+                "request_id": "example-request-id",
+                "type": "validation_error",
+                "message": "One of the request fields has failed validation.",
+                "fields": [
+                  {
+                    "message": "Parameter missing.",
+                    "name": "month"
+                  }
+                ]
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: |-
+            Access forbidden if account is not commercial.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        404:
+          description: |-
+            Billing report not found if requested month is current or in the future. Also could not be available for previous months in special cases.
+          schema:
+            $ref: "#/definitions/ReportNotFoundErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 404,
+                "request_id": "example-request-id",
+                "type": "report_not_found",
+                "message": "Billing report not yet available."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+  /v3/billing-report-active-devices:
+    get:
+      summary: Get raw billing data of the active devices for the month.
+      description: |-
+        Fetch raw billing data for active devices for the currently authenticated commercial account.
+
+        This is supplementary data for the billing report. The raw billing data of the active devices for tenant accounts are included in their aggregator's raw billing data of the active devices.
+
+        The endpoint returns the URL to download the gzipped CSV file. The first line is the header providing information on active devices, for example, the ID of an active device.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-report-active-devices?month=2018-07 \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getBillingReportActiveDevices
+      tags:
+        - Usage - billing reports
+      parameters:
+        - name: month
+          description: Queried year and month of billing report.
+          in: query
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+          required: true
+      responses:
+        200:
+          description: The response includes the URL to download raw billing data of the active devices.
+          schema:
+            $ref: "#/definitions/BillingReportRawDataResponse"
+          examples:
+            application/json:
+              {
+                "object": "billing-report-active-devices",
+                "url": "https://example.com/example.csv.gz",
+                "filename": "example.csv.gz"
+              }
+        400:
+          description: Bad request.
+          schema:
+            $ref: "#/definitions/BadRequestErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 400,
+                "request_id": "example-request-id",
+                "type": "validation_error",
+                "message": "One of the request fields has failed validation.",
+                "fields": [
+                  {
+                    "message": "Parameter missing.",
+                    "name": "month"
+                  }
+                ]
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: |-
+            Access forbidden if account is not commercial.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        404:
+          description: Active devices billing data not found.
+          schema:
+            $ref: "#/definitions/ReportNotFoundErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 404,
+                "request_id": "example-request-id",
+                "type": "report_not_found",
+                "message": "Active devices billing data not yet available."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+  /v3/billing-report-firmware-updates:
+    get:
+      summary: Get raw billing data of the firmware updates for the month.
+      description: |-
+        Fetch raw billing data for firmware updates for the currently authenticated commercial account.
+
+        This is supplementary data for the billing report. The raw billing data of the firmware updates for tenant accounts are also included in their aggregator's raw billing data of the firmware updates.
+
+        The endpoint returns the URL to download the gzipped CSV file. The first line is the header providing information on the firmware updates, for example, the ID of a firmware update.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-report-firmware-updates?month=2018-07 \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getBillingReportFirmwareUpdates
+      tags:
+        - Usage - billing reports
+      parameters:
+        - name: month
+          description: Queried year and month of billing report.
+          in: query
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+          required: true
+      responses:
+        200:
+          description: The response includes the URL to download raw billing data of the firmware updates.
+          schema:
+            $ref: "#/definitions/BillingReportRawDataResponse"
+          examples:
+            application/json:
+              {
+                "object": "billing-report-firmware-updates",
+                "url": "https://example.com/example.csv.gz",
+                "filename": "example.csv.gz"
+              }
+        400:
+          description: Bad request.
+          schema:
+            $ref: "#/definitions/BadRequestErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 400,
+                "request_id": "example-request-id",
+                "type": "validation_error",
+                "message": "One of the request fields has failed validation.",
+                "fields": [
+                  {
+                    "message": "Parameter missing.",
+                    "name": "month"
+                  }
+                ]
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: Access forbidden if account is not commercial.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        404:
+          description: Firmware updates billing data not found.
+          schema:
+            $ref: "#/definitions/ReportNotFoundErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 404,
+                "request_id": "example-request-id",
+                "type": "report_not_found",
+                "message": "Firmware updates billing data not yet available."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+  /v3/billing-statistics:
+    get:
+      summary: Get statistics view of Device Management usage.
+      description: |-
+        Fetch the statistics view of Device Management usage in time series for the currently authenticated commercial account.
+        The response contains the additional counters below, if the account business model is set to `API calls` by the account administrator:
+          - device_to_pelion_messages
+          - pelion_to_device_messages
+          - pelion_to_webapp_notifications
+          - rest_api_requests_with_api_key_token
+          - rest_api_requests_with_user_token
+
+        The return data is retrieved during a defined time window and grouped by defined interval.
+        The time window for data retrieval is defined as a range, that can be either absolute (for instance, using timestamps) or relative (referring to the 'period' parameter).
+        Range start is inclusive, while range end is exclusive. The specified range must be equal to or greater than the specified interval.
+
+        Returned data does not include any tenant usage.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-statistics?start=2019-11-01T00:00:00.000Z&end=2019-12-01T00:00:00.000Z&interval=1d \
+             -H 'Authorization: Bearer <api_key>'
+        ```
+      operationId: getStatisticsView
+      tags:
+        - Usage - statistics
+      parameters:
+        - name: start
+          in: query
+          description: |-
+            Start time of the statistics view in RFC3339 date-time format, with millisecond accuracy and UTC time zone.
+            The parameter is mandatory if the period is not specified. Do not set the parameter if you have specified the period.
+            Fetch data with timestamp greater than or equal to this value. Sample value: 2017-02-07T09:20:56.990Z.
+            The specified range must be equal to or greater than 5 minutes. Maximum supported range is 98 days when using timestamps to specify the range.
+          required: false
+          type: string
+          format: date-time
+        - name: end
+          in: query
+          description: |-
+            End time of the statistics view in RFC3339 date-time format with millisecond accuracy and UTC time zone.
+            The parameter is mandatory if the period is not specified. Do not set the parameter if you have specified the period.
+            Fetch the data with timestamp less than this value. Sample value: 2017-02-07T09:20:56.990Z.
+            The specified range must be equal to or greater than 5 minutes. Maximum supported range is 98 days when using timestamps to specify the range.
+          required: false
+          type: string
+          format: date-time
+        - name: period
+          in: query
+          description: |-
+            Period. Alternative for specifying the range if not using start and end parameters.
+            The parameter is mandatory if the start and end parameters are not specified. Do not set the parameter if you have specified the start and end parameters.
+            Fetch the data for the period in minutes, hours, days, weeks or months.
+            One week is normalized to 7 days. Sample values: 5m, 2h, 3d, 4w, 1mo, 3mo.
+            The allowed periods (inclusive) are 5m-141120m/1h-2352h/1d-98d/1w-14w/1mo-3mo.
+          required: false
+          type: string
+        - name: interval
+          in: query
+          description: |-
+            Group the data by this interval in minutes, hours, days, weeks or months.
+            One week is normalized to 7 days. Sample values: 5m, 2h, 3d, 4w, 1mo, 3mo.
+            Minimum supported interval is 5 minutes. The specified interval must not be greater than the specified range.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: Maximum number of statistics view records in one paginated response.
+          required: false
+          type: integer
+          format: int32
+          minimum: 2
+          maximum: 1000
+          default: 50
+        - name: after
+          in: query
+          description: Results after specified record ID.
+          required: false
+          type: string
+          pattern: '[0-9a-fA-F]{32}'
+        - name: order
+          in: query
+          description: 'Record order. Acceptable values (case insensitive): ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+      responses:
+        200:
+          description: Statistics view of Device Management usage for the currently authenticated commercial account.
+          schema:
+            $ref: '#/definitions/StatisticsViewResponse'
+          examples:
+            application/json:
+              {
+                "after": null,
+                "data": [
+                  {
+                    "object": "billing-statistics",
+                    "id": "00000000000000000000016e7bcf1800",
+                    "timestamp": "2019-11-18T00:00:00.000Z",
+                    "active_devices": 10,
+                    "firmware_updates": 4286,
+                    "sda_tokens": 962
+                  },
+                  {
+                    "object": "billing-statistics",
+                    "id": "00000000000000000000016e80f57400",
+                    "timestamp": "2019-11-19T00:00:00.000Z",
+                    "active_devices": 0,
+                    "firmware_updates": 6553,
+                    "sda_tokens": 1440
+                  },
+                  {
+                    "object": "billing-statistics",
+                    "id": "00000000000000000000016e861bd000",
+                    "timestamp": "2019-11-20T00:00:00.000Z",
+                    "active_devices": 0,
+                    "firmware_updates": 0,
+                    "sda_tokens": 0
+                  }
+                ],
+                "has_more": false,
+                "limit": 50,
+                "object": "list",
+                "order": "asc",
+                "total_count": 3
+              }
+        400:
+          description: Bad request.
+          schema:
+            $ref: "#/definitions/BadRequestErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 400,
+                "request_id": "example-request-id",
+                "type": "validation_error",
+                "message": "One of the request fields has failed validation.",
+                "fields": [
+                  {
+                    "message": "Parameter missing.",
+                    "name": "interval"
+                  }
+                ]
+              }
+        401:
+          description: Unauthorized access.
+          schema:
+            $ref: "#/definitions/UnauthorizedErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 401,
+                "request_id": "example-request-id",
+                "type": "unauthorized",
+                "message": "Access is denied."
+              }
+        403:
+          description: Forbidden.
+          schema:
+            $ref: "#/definitions/ForbiddenErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 403,
+                "request_id": "example-request-id",
+                "type": "forbidden",
+                "message": "Account is not a commercial account."
+              }
+        500:
+          description: Internal server error.
+          schema:
+            $ref: "#/definitions/InternalServerErrorResponse"
+          examples:
+            application/json:
+              {
+                "object": "error",
+                "code": 500,
+                "request_id": "example-request-id",
+                "type": "internal_error",
+                "message": "Unexpected internal server error."
+              }
+# Definitions
+
+definitions:
+
+  BillingReportRawDataResponse:
+    description: The response includes the URL to download raw billing data.
+    type: object
+    required:
+      - object
+      - url
+      - filename
+    properties:
+      object:
+        description: API Resource name.
+        type: string
+      url:
+        description: The URL to download raw billing data.
+        type: string
+      filename:
+        description: The filename of the raw billing data file to download. Contains file extensions.
+        type: string
+
+  #
+  # Service package quota
+  #
+
+  ServicePackageQuota:
+    description: Quota of the service package.
+    type: object
+    required:
+      - object
+      - quota
+    properties:
+      object:
+        description: "Always set to `service-package-quota`."
+        type: string
+        enum:
+          - "service-package-quota"
+      quota:
+        type: integer
+        minimum: 0
+        description: Available quota for the service package.
+        format: int64
+
+  #
+  # Service package quota history response
+  #
+
+  ServicePackageQuotaHistoryResponse:
+    description: Quota history of the service package.
+    type: object
+    required:
+      - object
+      - data
+      - has_more
+      - limit
+      - total_count
+      - order
+    properties:
+      object:
+        description: "Always set to `service-package-quota-history`."
+        type: string
+        enum:
+          - "service-package-quota-history"
+      data:
+        description: List of history items. Empty list if no entries are available.
+        type: array
+        items:
+          $ref: '#/definitions/ServicePackageQuotaHistoryItem'
+      has_more:
+        description: If there is next available quota history paged response to fetch.
+        type: boolean
+      limit:
+        description: Maximum number of quota history entries in one paged response.
+        type: integer
+        format: int32
+        minimum: 2
+        maximum: 1000
+      total_count:
+        description: Sum of all quota history entries that should be returned.
+        type: integer
+        format: int32
+        minimum: 0
+      after:
+        description: ID after which to fetch quota history.
+        type: string
+        minLength: 32
+        maxLength: 32
+      order:
+        description: "History item record order based on creation time."
+        type: string
+
+  #
+  # Service package quota history item
+  #
+
+  ServicePackageQuotaHistoryItem:
+    description: Quota history item.
+    type: object
+    required:
+      - id
+      - added
+      - amount
+      - reason
+    properties:
+      id:
+        description: Service package quota history ID.
+        type: string
+        minLength: 32
+        maxLength: 32
+      added:
+        description: 'Added time of quota history entry in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        type: string
+        format: date-time
+      amount:
+        type: integer
+        format: int64
+        description: Negative or positive quota usage.
+      reason:
+        description: Type of quota usage entry.
+        type: string
+        enum:
+          - reservation
+          - reservation_release
+          - reservation_termination
+          - package_creation
+          - package_renewal
+          - package_termination
+          - package_tokens_edit
+      reservation:
+        description: "Reservation details if reason is `reservation`, `reservation_release` or `reservation_termination`."
+        type: object
+        $ref: '#/definitions/ServicePackageQuotaHistoryReservation'
+      service_package:
+        description: "Service package details if reason is `package_creation`, `package_renewal`, `package_termination`, or `package_tokens_edit`."
+        type: object
+        $ref: '#/definitions/ServicePackageQuotaHistoryServicePackage'
+
+  #
+  # Service package quota history reservation entry
+  #
+
+  ServicePackageQuotaHistoryReservation:
+    description: Service package quota history reservation object.
+    required:
+      - id
+      - account_id
+      - campaign_name
+    properties:
+      id:
+        description: Reservation ID.
+        type: string
+        minLength: 1
+        maxLength: 250
+      account_id:
+        description: Account ID.
+        type: string
+        minLength: 1
+        maxLength: 250
+      campaign_name:
+        description: Campaign name for this reservation.
+        type: string
+        minLength: 1
+        maxLength: 250
+
+  #
+  # Service package quota history reservation entry
+  #
+
+  ServicePackageQuotaHistoryServicePackage:
+    description: Service package quota history service package object.
+    required:
+      - id
+      - start_time
+      - expires
+      - firmware_update_count
+    properties:
+      id:
+        type: string
+        description: ID of this service package.
+      previous_id:
+        type: string
+        description: Previous service package ID, or null.
+      start_time:
+        type: string
+        description: 'Service package start time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      expires:
+        type: string
+        description: 'Service package expiration time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      firmware_update_count:
+        type: integer
+        description: Size of firmware update quota of this service package.
+        format: int32
+
+  #
+  # Service packages response
+  #
+
+  ServicePackagesResponse:
+    description: |-
+      Contains service package information for currently active service package, currently pending service package, and all previous service packages associated with the account.
+    required:
+      - object
+      - previous
+    properties:
+      object:
+        description: "Always set to `service-packages`."
+        type: string
+        enum:
+          - service-packages
+      pending:
+        description: Current pending service package. Can be null.
+        type: object
+        $ref: "#/definitions/PendingServicePackage"
+      active:
+        description: Currently active service package. Can be null.
+        type: object
+        $ref: "#/definitions/ActiveServicePackage"
+      previous:
+        description: List of previous service packages.
+        type: array
+        items:
+          $ref: "#/definitions/PreviousServicePackage"
+
+  #
+  # Active service package
+  #
+
+  ActiveServicePackage:
+    description: An active service package.
+    type: object
+    required:
+      - id
+      - created
+      - modified
+      - start_time
+      - expires
+      - firmware_update_count
+      - grace_period
+    properties:
+      id:
+        type: string
+        description: ID of this service package.
+      previous_id:
+        type: string
+        description: Previous service package ID or null.
+      next_id:
+        type: string
+        description: Next service package ID if this service package has a pending renewal, or null.
+      created:
+        type: string
+        description: 'Service package creation time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      modified:
+        type: string
+        description: 'Service package latest modified time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      start_time:
+        type: string
+        description: 'Service package start time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      expires:
+        type: string
+        description: 'Service package expiration time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      firmware_update_count:
+        type: integer
+        description: Size of firmware update quota of this service package.
+        format: int32
+      grace_period:
+        type: boolean
+        description: Indicates whether the service package is in its grace period.
+
+  PendingServicePackage:
+    description: A pending service package.
+    type: object
+    required:
+      - id
+      - previous_id
+      - created
+      - modified
+      - start_time
+      - expires
+      - firmware_update_count
+    properties:
+      id:
+        type: string
+        description: ID of this service package.
+      previous_id:
+        type: string
+        description: Previous service package ID.
+      created:
+        type: string
+        description: 'Service package creation time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      modified:
+        type: string
+        description: 'Service package latest modified time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      start_time:
+        type: string
+        description: 'Service package start time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      expires:
+        type: string
+        description: 'Service package expiration time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      firmware_update_count:
+        type: integer
+        description: Size of firmware update quota of this service package.
+        format: int32
+
+  PreviousServicePackage:
+    description: Previously active service package.
+    type: object
+    required:
+      - id
+      - start_time
+      - created
+      - modified
+      - expires
+      - end_time
+      - firmware_update_count
+      - reason
+    properties:
+      id:
+        type: string
+        description: ID of this service package.
+      previous_id:
+        type: string
+        description: Previous service package ID.
+      next_id:
+        type: string
+        description: Next service package ID if this service package has a pending renewal or null.
+      created:
+        type: string
+        description: 'Service package creation time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      modified:
+        type: string
+        description: 'Service package latest modified time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      start_time:
+        type: string
+        description: 'Service package start time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      expires:
+        type: string
+        description: 'Service package expiration time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      end_time:
+        type: string
+        description: 'Service package end time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        format: date-time
+      firmware_update_count:
+        type: integer
+        description: Size of firmware update quota of this service package.
+        format: int32
+      reason:
+        type: string
+        description: Reason the service package was ended.
+        enum:
+          - "renewed"
+          - "terminated"
+
+
+  #
+  # Billing report response
+  #
+
+  ReportResponse:
+    description: Billing report response.
+    type: object
+    required:
+      - id
+      - object
+      - account
+      - billing_data
+      - month
+    properties:
+      id:
+        description: Billing report ID.
+        type: string
+      object:
+        description: "Billing report response object. Always set to `billing-report`."
+        type: string
+        enum:
+          - billing-report
+      account:
+        description: Account contact information.
+        $ref: "#/definitions/ReportAccountContactInfo"
+      billing_data:
+        description: Report billing data.
+        $ref: "#/definitions/ReportBillingData"
+      subtenants:
+        description: List of billing reports for tenant accounts. Empty list if account does not have any tenant account.
+        type: array
+        items:
+          $ref: '#/definitions/SubtenantAccountReport'
+      aggregated:
+        description: Aggregated report billing data including all tenant accounts, if any.
+        $ref: "#/definitions/ReportBillingData"
+      service_package:
+        description: Service package report.
+        $ref: "#/definitions/ServicePackageReport"
+      month:
+        description: Month of requested billing report.
+        type: string
+        pattern: '^\d{4}-\d{2}$'
+
+  ReportAccountContactInfo:
+    description: Account contact information.
+    type: object
+    required:
+      - id
+      - company
+    properties:
+      id:
+        description: Account ID.
+        type: string
+      business_model:
+        description: The business model selected for the account to generate the billing reports.
+        type: string
+        enum:
+          - active_device_business_model
+          - api_calls_1_business_model
+      company:
+        type: string
+      contact:
+        type: string
+      email:
+        type: string
+      phone_number:
+        type: string
+      address_line1:
+        type: string
+      address_line2:
+        type: string
+      postal_code:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      country:
+        type: string
+      customer_subtenant_id:
+        description: Account tenant ID, valid only for tenants.
+        type: string
+      alias:
+        type: string
+
+  SubtenantReportAccountContactInfo:
+    description: Tenant account contact information.
+    type: object
+    required:
+      - id
+      - company
+      - customer_subtenant_id
+    properties:
+      id:
+        description: Account ID.
+        type: string
+      business_model:
+        description: The business model selected for the account to generate the billing reports.
+        type: string
+        enum:
+          - active_device_business_model
+          - api_calls_1_business_model
+      company:
+        type: string
+      contact:
+        type: string
+      email:
+        type: string
+      phone_number:
+        type: string
+      address_line1:
+        type: string
+      address_line2:
+        type: string
+      postal_code:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      country:
+        type: string
+      customer_subtenant_id:
+        description: Account tenant ID, valid only for tenants.
+        type: string
+      alias:
+        type: string
+
+  SubtenantAccountReport:
+    description: Billing report for tenant account.
+    type: object
+    required:
+      - account
+      - billing_data
+    properties:
+      account:
+        description: Tenant account contact information.
+        $ref: "#/definitions/SubtenantReportAccountContactInfo"
+      billing_data:
+        description: Report billing data.
+        $ref: "#/definitions/ReportBillingData"
+      service_package:
+        description: service package report for the tenant.
+        $ref: "#/definitions/SubtenantServicePackageReport"
+
+  ReportBillingData:
+    type: object
+    required:
+      - generated
+      - period_start
+      - period_end
+      - active_devices
+      - firmware_updates
+      - sda_tokens
+    properties:
+      generated:
+        format: date-time
+        type: string
+        description: 'Billing report generated time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+      period_start:
+        format: date-time
+        type: string
+        description: 'Billing report start time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+      period_end:
+        format: date-time
+        type: string
+        description: 'Billing report end time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+      active_devices:
+        $ref: "#/definitions/ActiveDevicesCounter"
+      firmware_updates:
+        $ref: "#/definitions/FirmwareUpdatesCounter"
+      sda_tokens:
+        $ref: "#/definitions/SdaTokensCounter"
+      rest_api_requests_with_user_token:
+        $ref: "#/definitions/RestApiRequestsWithUserTokenCounter"
+      rest_api_requests_with_api_key_token:
+        $ref: "#/definitions/RestApiRequestsWithApiKeyTokenCounter"
+      pelion_to_webapp_notifications:
+        $ref: "#/definitions/PelionToWebappNotificationsCounter"
+      device_to_pelion_messages:
+        $ref: "#/definitions/DeviceToPelionMessagesCounter"
+      pelion_to_device_messages:
+        $ref: "#/definitions/PelionToDeviceMessagesCounter"
+
+  ServicePackageReport:
+    description: Account's current service package data included in reporting.
+    type: object
+    required:
+     - quota_usage
+    properties:
+      metadata:
+        $ref: '#/definitions/ServicePackageMetadata'
+        x-nullable: true
+        description: '`Null` if service package has expired.'
+      quota_usage:
+        type: array
+        items:
+          $ref: '#/definitions/QuotaUsageReport'
+      aggregated_quota_usage:
+        type: array
+        items:
+          $ref: '#/definitions/AggregatedQuotaUsageReport'
+
+  SubtenantServicePackageReport:
+    type: object
+    required:
+     - quota_usage
+    properties:
+      quota_usage:
+        type: array
+        items:
+          $ref: '#/definitions/QuotaUsageReport'
+
+  AggregatedQuotaUsageReport:
+    description: Aggregated quota usage entry.
+    type: object
+    required:
+      - account_id
+      - amount
+      - type
+      - time
+    properties:
+      account_id:
+        type: string
+      amount:
+        description: Amount of quota usage entry. Negative if quota consumption.
+        type: integer
+        format: int64
+      type:
+        description: Type of quota usage entry.
+        type: string
+        enum:
+          - reservation
+          - reservation_release
+          - reservation_termination
+          - package_renewal
+          - package_creation
+          - package_termination
+          - package_tokens_edit
+      time:
+        format: date-time
+        description: 'Added time of quota usage entry in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        type: string
+      campaign_name:
+        description: |-
+           Campaign name of quota usage entry.
+           Null if quota usage entry type is not `reservation` or `reservation release`.
+        type: string
+
+  ServicePackageMetadata:
+    description: Account's service package metadata. Value is `null` if service package has expired.
+    type: object
+    required:
+      - start_time
+      - end_time
+      - remaining_quota
+      - reserved_quota
+    properties:
+      start_time:
+        description: 'Service package start time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        type: string
+        format: date-time
+      end_time:
+        description: 'Service package end time in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        type: string
+        format: date-time
+      remaining_quota:
+        description: Current available service package quota.
+        type: integer
+        format: int64
+        minimum: 0
+      reserved_quota:
+        description: Sum of all open reservations for this account.
+        type: integer
+        format: int64
+        minimum: 0
+
+  QuotaUsageReport:
+    description: Account quota usage entry for queried month.
+    type: object
+    required:
+      - amount
+      - type
+      - time
+    properties:
+      amount:
+        description: Amount of quota usage entry. Negative if quota consumption.
+        type: integer
+        format: int64
+      type:
+        description: Type of quota usage entry.
+        type: string
+        enum:
+          - reservation
+          - reservation_release
+          - reservation_termination
+          - package_renewal
+          - package_creation
+          - package_termination
+          - package_tokens_edit
+      time:
+        description: 'Added time of quota usage entry in RFC3339 date-time with millisecond accuracy and UTC time zone.'
+        type: string
+        format: date-time
+      campaign_name:
+        description: |-
+           Campaign name of quota usage entry.
+           Null if quota usage entry type is not `reservation` or `reservation release`.
+        type: string
+
+  #
+  # Statistics view responses
+  #
+  StatisticsViewResponse:
+    description: Contains the statistics view of Device Management usage information.
+    type: object
+    required:
+      - object
+      - data
+      - has_more
+      - limit
+      - order
+    properties:
+      object:
+        description: "Always `list`."
+        type: string
+        enum:
+          - "list"
+      data:
+        description: List of statistics view records. Empty list if no records are available.
+        type: array
+        items:
+          $ref: '#/definitions/StatisticsSeriesRecord'
+      has_more:
+        description: Indicates whether a new statistics view response is available.
+        type: boolean
+      limit:
+        description: Maximum number of statistics view records on a page.
+        type: integer
+        format: int32
+        minimum: 2
+        maximum: 1000
+        default: 50
+      total_count:
+        description: 'Sum of all statistics view records to return. Included in the response when you use the query parameter include=total_count.'
+        type: integer
+        format: int64
+        minimum: 0
+      after:
+        description: The ID after which to fetch the statistics view.
+        type: string
+        pattern: '[0-9a-fA-F]{32}'
+      order:
+        description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+        type: string
+
+  StatisticsSeriesRecord:
+    description: Statistics view record.
+    type: object
+    required:
+      - object
+      - id
+      - timestamp
+      - active_devices
+      - firmware_updates
+      - sda_tokens
+    properties:
+      object:
+        description: "Always `billing-statistics`."
+        type: string
+        enum:
+          - "billing-statistics"
+      id:
+        description: Metric ID.
+        type: string
+        pattern: '[0-9a-fA-F]{32}'
+      timestamp:
+        description: |-
+          The start of the interval for which the data is aggregated, in RFC3339 date-time format with millisecond accuracy and UTC time zone.
+          Each interval includes data for the time greater than or equal to the timestamp and less than the next interval's starting.
+        type: string
+        format: date-time
+      active_devices:
+        $ref: "#/definitions/ActiveDevicesCounter"
+      device_to_pelion_messages:
+        $ref: "#/definitions/DeviceToPelionMessagesCounter"
+      firmware_updates:
+        $ref: "#/definitions/FirmwareUpdatesCounter"
+      pelion_to_device_messages:
+        $ref: "#/definitions/PelionToDeviceMessagesCounter"
+      pelion_to_webapp_notifications:
+        $ref: "#/definitions/PelionToWebappNotificationsCounter"
+      rest_api_requests_with_api_key_token:
+        $ref: "#/definitions/RestApiRequestsWithApiKeyTokenCounter"
+      rest_api_requests_with_user_token:
+        $ref: "#/definitions/RestApiRequestsWithUserTokenCounter"
+      sda_tokens:
+        $ref: "#/definitions/SdaTokensCounter"
+
+  #
+  # Error responses
+  #
+
+  UnauthorizedErrorResponse:
+    description: 401 Unauthorized response.
+    type: object
+    required:
+      - object
+      - message
+      - request_id
+      - type
+      - code
+    properties:
+      object:
+        description: Always set to `error`.
+        type: string
+        enum:
+          - error
+      message:
+        description: A human-readable message with detailed info.
+        type: string
+      request_id:
+        description: Request ID
+        type: string
+      type:
+        description: "Error type. Always set to `unauthorized`."
+        type: string
+        enum:
+          - unauthorized
+      code:
+        description: Response code. Always set to 401.
+        type: integer
+        enum:
+          - 401
+
+  ForbiddenErrorResponse:
+    description: 403 Forbidden.
+    type: object
+    required:
+      - object
+      - message
+      - request_id
+      - type
+      - code
+    properties:
+      object:
+        description: "Always set to `error`."
+        type: string
+        enum:
+          - error
+      message:
+        description: A human-readable message with detailed info.
+        type: string
+      request_id:
+        description: Request ID
+        type: string
+      type:
+        description: "Error type. Always set to `forbidden`."
+        type: string
+        enum:
+          - forbidden
+      code:
+        description: Response code. Always set to 403.
+        type: integer
+        enum:
+          - 403
+
+  InternalServerErrorResponse:
+    description: 500 Internal server error response.
+    type: object
+    required:
+      - object
+      - message
+      - request_id
+      - type
+      - code
+    properties:
+      object:
+        description: "Always set to `error`."
+        type: string
+        enum:
+          - error
+      message:
+        description: A human-readable message with detailed info.
+        type: string
+      request_id:
+        description: Request ID
+        type: string
+      type:
+        description: "Error type. Always set to `internal_error`."
+        type: string
+        enum:
+          - internal_error
+      code:
+        description: Response code. Always set to 500.
+        type: integer
+        enum:
+          - 500
+
+  BadRequestErrorResponse:
+    description: 400 Bad request response.
+    type: object
+    required:
+      - object
+      - message
+      - request_id
+      - type
+      - code
+      - fields
+    properties:
+      object:
+        description: "Always set to `error`."
+        type: string
+        enum:
+          - error
+      message:
+        description: A human-readable message with detailed info.
+        type: string
+      request_id:
+        description: Request ID.
+        type: string
+      type:
+        description: "Error type. Always set to `validation_error`."
+        type: string
+        enum:
+          - validation_error
+      code:
+        description: Response code. Always set to 400.
+        type: integer
+        enum:
+          - 400
+      fields:
+        type: array
+        items:
+          $ref: "#/definitions/BadRequestErrorResponseField"
+
+  BadRequestErrorResponseField:
+    description: Single field that failed validation.
+    type: object
+    required:
+      - name
+      - message
+    properties:
+      name:
+        description: 'Name of the field that failed validation. If name is set to `body,` then the validation failed on request body.'
+        type: string
+      message:
+        description: A human-readable message with detailed validation error.
+        type: string
+
+  ReportNotFoundErrorResponse:
+    description: 404 Not found response.
+    type: object
+    required:
+      - object
+      - message
+      - request_id
+      - type
+      - code
+    properties:
+      object:
+        description: "Always set to `error`."
+        type: string
+        enum:
+          - error
+      message:
+        description: A human-readable message with detailed info.
+        type: string
+      request_id:
+        description: Request ID
+        type: string
+      type:
+        description: "Error type. Always set to `report_not_found`."
+        type: string
+        enum:
+          - report_not_found
+      code:
+        description: Response code. Always set to 404.
+        type: integer
+        enum:
+          - 404
+
+  ActiveDevicesCounter:
+    type: integer
+    description: Active device count is the total number of unique active devices connected to Device Management. A device is considered active when it has registered at least once over a billing period.
+    format: int64
+    minimum: 0
+
+  TransactionsCounter:
+    type: integer
+    description: A transaction is a data block of 512 bytes processed by Device Management. It can be sent either by the device (device --> Device Management) or received by the device (Device Management --> device). A transaction does not include IP, TCP or UDP, TLS or DTLS packet overhead. It only contains the packet payload (full CoAP packet including CoAP headers).
+    format: int64
+    minimum: 0
+
+  BootstrapsCounter:
+    type: integer
+    description: The total number of successful bootstrap operations in the requested time.
+    format: int64
+    minimum: 0
+
+  FirmwareUpdatesCounter:
+    type: integer
+    description: The total number of successful firmware update operations in the requested time.
+    format: int64
+    minimum: 0
+
+  SdaTokensCounter:
+    type: integer
+    description: The total number of devices included in the Secure Device Access tokens used in the requested time. A single Secure Device Access token can be linked to multiple endpoint names.
+    format: int64
+    minimum: 0
+
+  RestApiRequestsWithUserTokenCounter:
+    type: integer
+    description: The number of REST API requests from user sessions in Device Management Portal.
+    format: int64
+    minimum: 0
+
+  RestApiRequestsWithApiKeyTokenCounter:
+    type: integer
+    description: The number of REST API requests from API key sessions in web applications or other service integrations.
+    format: int64
+    minimum: 0
+
+  PelionToWebappNotificationsCounter:
+    type: integer
+    description: The number of notifications from Device Management to the web application or portal.
+    format: int64
+    minimum: 0
+
+  RegistrationsCounter:
+    type: integer
+    description: The number of full device registration requests received from devices.
+    format: int64
+    minimum: 0
+
+  RegistrationUpdatesCounter:
+    type: integer
+    description: The number of device registration update requests received from devices.
+    format: int64
+    minimum: 0
+
+  RegistrationDeletesCounter:
+    type: integer
+    description: The number of deregistration requests received from devices.
+    format: int64
+    minimum: 0
+
+  ObservationsCounter:
+    type: integer
+    description: The number of resource observation event requests received from devices.
+    format: int64
+    minimum: 0
+
+  EstRequestsCounter:
+    type: integer
+    description: The number of certificate creation requests received from devices during bootstrap.
+    format: int64
+    minimum: 0
+
+  ProxyResponsesCounter:
+    type: integer
+    description: The number of device command responses received from devices.
+    format: int64
+    minimum: 0
+
+  BootstrapRequestsCounter:
+    type: integer
+    description: The number of bootstrap requests received from devices.
+    format: int64
+    minimum: 0
+
+  ProxyRequestsCounter:
+    type: integer
+    description: The number of device command requests sent to devices.
+    format: int64
+    minimum: 0
+
+  SubscriptionsCounter:
+    type: integer
+    description: The number of subscription requests sent to devices.
+    format: int64
+    minimum: 0
+
+  DeviceToPelionMessagesCounter:
+    description: The number of messages from the device to Device Management.
+    type: object
+    required:
+      - total_count
+      - registrations
+      - registration_updates
+      - registration_deletes
+      - observations
+      - est_requests
+      - proxy_responses
+      - bootstrap_requests
+    properties:
+      total_count:
+        description: "The number of all inbound requests from devices to Device Management."
+        type: integer
+        format: int64
+        minimum: 0
+      registrations:
+        $ref: "#/definitions/RegistrationsCounter"
+      registration_updates:
+        $ref: "#/definitions/RegistrationUpdatesCounter"
+      registration_deletes:
+        $ref: "#/definitions/RegistrationDeletesCounter"
+      observations:
+        $ref: "#/definitions/ObservationsCounter"
+      est_requests:
+        $ref: "#/definitions/EstRequestsCounter"
+      proxy_responses:
+        $ref: "#/definitions/ProxyResponsesCounter"
+      bootstrap_requests:
+        $ref: "#/definitions/BootstrapRequestsCounter"
+
+  PelionToDeviceMessagesCounter:
+    description: The number of messages from Device Management to the device.
+    type: object
+    required:
+      - total_count
+      - proxy_requests
+      - subscriptions
+    properties:
+      total_count:
+        description: "The number of all outbound requests sent to devices."
+        type: integer
+        format: int64
+        minimum: 0
+      proxy_requests:
+        $ref: "#/definitions/ProxyRequestsCounter"
+      subscriptions:
+        $ref: "#/definitions/SubscriptionsCounter"

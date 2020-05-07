@@ -1,0 +1,365 @@
+swagger: '2.0'
+info:
+  title: Connect Statistics API
+  description: 'The Connect Statistics API provides statistics about other Device Management services, using defined counters.
+
+
+  See <a href="https://www.pelion.com/docs/device-management/latest/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
+  version: "3"
+# the domain of the service
+host: api.us-east-1.mbedcloud.com
+# array of all schemes that your API supports
+tags:
+  - name: Usage - service metrics
+    description: Fetch metrics for device registrations, transactions and other service events.
+schemes:
+  - http
+
+paths:
+  /v3/metrics:
+    get:
+      summary: Provides account-specific statistics for other cloud services.
+      description: Get account-specific statistics.
+      operationId: getMetrics
+      tags:
+        - Usage - service metrics
+      produces:
+        - application/json
+      parameters:
+        - name: include
+          in: query
+          description: |-
+            A comma-separated list of requested metrics and total_count (if included, the response will contain total_count to specify the total number of records available). Supported values are:
+
+            - `transactions`
+            - `full_registrations`
+            - `registration_updates`
+            - `deleted_registrations`
+            - `expired_registrations`
+            - `bootstraps_successful`
+            - `bootstraps_failed`
+            - `bootstraps_pending`
+            - `handshakes_successful`
+            - `connect_rest_api_success`
+            - `connect_rest_api_error`
+            - `device_proxy_request_success`
+            - `device_proxy_request_error`
+            - `device_subscription_request_success`
+            - `device_subscription_request_error`
+            - `device_observations`
+            - `total_count`
+
+            **Note:**
+
+            The metrics `device_proxy_request_success`, `device_proxy_request_error`, `device_subscription_request_success`, `device_subscription_request_error` and `device_observations` monitor only the response from the device to Device Management Connect. They do not confirm that the response is delivered to the client callback URLs used when you try to access device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints. New metrics will be added to monitor the response delivery to client callback URLs later.
+
+            **Example:**
+
+            ```
+            curl  -X GET https://api.us-east-1.mbedcloud.com/v3/metrics?include=transactions,total_count&start=20170207&end=20170407&interval=1d \
+                  -H "Authorization : Bearer <api_key>"
+            ```
+
+            **Response:**
+
+              {
+                "object": "list",
+                "limit": 20,
+                "total_count": 54,
+                "after": "2017-07-26T00:00:00Z",
+                "has_more": true,
+                "data": [
+                    {
+                        "id": "015d8157c800015e306fffff005374617473000",
+                        "timestamp": "2017-07-27T00:00:00Z",
+                        "transactions": 27366
+                    },
+                    {
+                        "id": "015d867e2400015e306fffff005374617473000",
+                        "timestamp": "2017-07-28T00:00:00Z",
+                        "transactions": 27480
+                    }
+                ]
+            }
+            ```
+
+          required: true
+          type: string
+        - name: start
+          in: query
+          description: |-
+            UTC time/year/date in RFC3339 format. Fetch the data with timestamp greater than or equal to this value. Sample values: 20170207T092056990Z/2017-02-07T09:20:56.990Z/2017/20170207. The time between start and end parameters cannot exceed one year (365 days). The parameter is not mandatory if the period is specified.
+          required: false
+          type: string
+          format: date
+        - name: end
+          in: query
+          description: |-
+            UTC time/year/date in RFC3339 format. Fetch the data with timestamp less than this value. Sample values: 20170207T092056990Z/2017-02-07T09:20:56.990Z/2017/20170207. The time between start and end parameters cannot exceed one year (365 days). The parameter is not mandatory if the period is specified.
+          required: false
+          type: string
+          format: date
+        - name: period
+          in: query
+          description: |-
+            Period. Fetch the data for the period in minutes, hours, days or weeks. Sample values: 5m, 2h, 3d, 4w. The parameter is not mandatory if the start and end time are specified. The period cannot exceed one year (365 days). The allowed ranges are 5m-525600m/1h-8760h/1d-365d/1w-53w.
+          required: false
+          type: string
+        - name: interval
+          in: query
+          description: |-
+            Group the data by this interval in minutes, hours, days or weeks. Sample values: 5m, 2h, 3d, 4w. The interval cannot exceed one year (365 days). The allowed ranges are 5m-525600m/1h-8760h/1d-365d/1w-53w.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: |-
+            The number of results to return (2-1000). Default 50.
+          required: false
+          type: integer
+        - name: after
+          in: query
+          description: |-
+            The metric ID after which to start fetching. This also can be used for pagination.
+
+            **Example:**
+
+            ```
+            curl  -X GET https://api.us-east-1.mbedcloud.com/v3/metrics?include=transactions,total_count&start=20170707&end=20170829&interval=1d&limit=20 \
+                  -H "Authorization : Bearer <api_key>"
+            ```
+
+            **Response:**
+            ```
+            {
+               "object": "list",
+               "limit": 20,
+               "total_count": 54,
+               "has_more": true,
+               "data": [
+                   {
+                       "id": "015d1a589800015e306fffff005374617473000",
+                       "timestamp": "2017-07-07T00:00:00Z",
+                       "transactions": 26381
+                   },
+                   .
+                   .
+                   .
+                   {
+                       "id": "015d7c316c00015e306fffff005374617473000",
+                       "timestamp": "2017-07-26T00:00:00Z",
+                       "transactions": 25569
+                   }
+               ]
+            }
+            ```
+
+            If the parameter `has more` is true, it indicates that the list is not complete and more values are available. You can give the last ID of the list as the value of the `after` query parameter, and you get the next page of values. You can keep doing this until `has more` is false.
+
+            ```
+            curl -X GET https://api.us-east-1.mbedcloud.com/v3/metrics?include=transactions,total_count&start=20170707&end=20170829&interval=1d&limit=20&after=015d7c316c00015e306fffff005374617473000 \
+                 -H "Authorization : Bearer <api_key>"
+            ```
+
+            **Response:**
+            ```
+            {
+               "object": "list",
+               "limit": 20,
+               "total_count": 54,
+               "after": "2017-07-26T00:00:00Z",
+               "has_more": true,
+               "data": [
+                   {
+                       "id": "015d8157c800015e306fffff005374617473000",
+                       "timestamp": "2017-07-27T00:00:00Z",
+                       "transactions": 27366
+                   },
+                 .
+                 .
+                 .
+                   {
+                       "id": "015de3309c00015e306fffff005374617473000",
+                       "timestamp": "2017-08-15T00:00:00Z",
+                       "transactions": 24707
+                   }
+               ]
+            }
+            ```
+
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: |-
+            'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/successful-response'
+        400:
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/error-response'
+        401:
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/error-response'
+        403:
+          description: Access denied.
+          schema:
+            $ref: '#/definitions/error-response'
+
+definitions:
+  metric:
+    type: object
+    properties:
+      id:
+        type: string
+        description: A unique metric ID.
+      timestamp:
+        type: string
+        format: date-time
+        description: |-
+          UTC time in RFC3339 format. The timestamp is the starting point of the interval for which the data is aggregated. Each interval includes data for the time greater than or equal to the timestamp and less than the next interval's starting point.
+      transactions:
+        type: integer
+        format: int64
+        description: |-
+          The number of transaction events from or to devices linked to the account. A transaction is a 512-byte block of data processed by Device Management. It can be either sent by the device (device --> Device Management) or received by the device (Device Management --> device). A transaction does not include IP, TCP or UDP, or TLS or DTLS packet overhead. It contains only the packet payload (full CoAP packet including CoAP headers).
+      full_registrations:
+        type: integer
+        format: int64
+        description: |-
+          The number of full registrations linked to the account. Full registration is the process of registering a device with Device Management Connect by providing its lifetime and capabilities, such as resource structure. Device registered status does not guarantee that the device is active and accessible from Device Management Connect at any point of time.
+      registration_updates:
+        type: integer
+        format: int64
+        description: |-
+          The number of registration updates linked to the account. Registration update is the process of updating the registration status with Device Management Connect to update or extend the lifetime of the device.
+      deleted_registrations:
+        type: integer
+        format: int64
+        description: |-
+          The number of deleted registrations (deregistrations) linked to the account. Deregistration is the process of removing the device registration from the Device Management Connect registry. The deregistration is usually initiated by the device. Device Management Connect no longer handles requests for deregistered devices.
+      expired_registrations:
+        type: integer
+        format: int64
+        description: |-
+          The number of expired registrations linked to the account. Device Management Connect removes a registration when the device cannot update its registration before lifetime expiry. Device Management Connect no longer handles requests for devices with already expired registrations.
+      bootstraps_successful:
+        type: integer
+        format: int64
+        description: |-
+          The number of successful bootstraps the account has performed. Bootstrap is the process of provisioning a lightweight machine-to-machine (LwM2M) client to a state where it can initiate a management session to a new LwM2M Server.
+      bootstraps_failed:
+        type: integer
+        format: int64
+        description: |-
+          The number of failed bootstraps the account has performed. Bootstrap is the process of provisioning an Lw2M2M client to a state where it can initiate a management session to a new LwM2M server.
+      bootstraps_pending:
+        type: integer
+        format: int64
+        description: |-
+          The number of pending bootstraps the account has performed. Bootstrap is the process of provisioning an Lw2M2M client to a state where it can initiate a management session to a new LwM2M server.
+      handshakes_successful:
+        type: integer
+        format: int64
+        description: |-
+          The number of successful TLS handshakes the account has performed. The SSL or TLS handshake enables the SSL or TLS client and server to establish secret keys. A successful TLS handshake is required for establishing a connection with Device Management Connect for any operation such as registration, registration update, and deregistration.
+      connect_rest_api_success:
+        type: integer
+        format: int64
+        description: |-
+          The number of successful [Connect API](../service-api-references/device-management-connect.html) requests that have been performed using the account. This metric does not consider the response from the device, only the responses to the HTTP requests used to manage the device.
+      connect_rest_api_error:
+        type: integer
+        format: int64
+        description: |-
+          The number of failed [Connect API](../service-api-references/device-management-connect.html) requests that have been performed using the account. This metric does not consider the response from the device, it includes only the responses to the HTTP requests used to manage the device. This metric includes only messages handled by the Connect service, not any HTTP errors returned by the firewall as a result of incorrect messages.
+      device_proxy_request_success:
+        type: integer
+        format: int64
+        description: |-
+          **(Beta)** The number of successful proxy requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes proxy requests to devices when you try to read or write values to device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+      device_proxy_request_error:
+        type: integer
+        format: int64
+        description: |-
+          **(Beta)** The number of failed proxy requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes proxy requests to devices when you try to read or write values to device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+      device_subscription_request_success:
+        type: integer
+        format: int64
+        description: |-
+          **(Beta)** The number of successful subscription requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes subscription requests to devices when you try to subscribe to a resource path using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+      device_subscription_request_error:
+        type: integer
+        format: int64
+        description: |-
+          **(Beta)** The number of failed subscription requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes subscription requests to devices when you try to subscribe to a resource path using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+      device_observations:
+        type: integer
+        format: int64
+        description: |-
+          **(Beta)** The number of notifications received by the Device Management Connect service from the devices linked to the account. The device pushes notifications to Device Management Connect when you have successfully subscribed to the device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+
+  successful-response:
+    type: object
+    properties:
+      object:
+        type: string
+        description: API resource name.
+      after:
+        type: string
+        description: The metric ID included in the request, or null.
+      total_count:
+        type: integer
+        description: The total number of records available.
+      has_more:
+        type: boolean
+        description: Indicates whether there are more results for you to fetch in the next page.
+      limit:
+        type: integer
+        description: The limit used in the request to retrieve the results.
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/metric'
+
+  fields:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The field name in the failed validation request.
+      message:
+        type: string
+        description: Error description.
+
+  error-response:
+    type: object
+    properties:
+      'object':
+        type: string
+        description: 'Response type: always `error`.'
+      code:
+        type: integer
+        format: int32
+        description: HTTP response code.
+      'type':
+        type: string
+        description: Type of error.
+      message:
+        type: string
+        description: Description of the error.
+      fields:
+        type: array
+        description: Details of the error fields.
+        items:
+           $ref: '#/definitions/fields'
+      request_id:
+        type: string
+        description: Request ID.

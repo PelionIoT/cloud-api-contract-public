@@ -1,0 +1,243 @@
+swagger: '2.0'
+info:
+  title: Bootstrap API
+  description: 'The Bootstrap API allows web applications to control the device bootstrapping process.
+
+
+  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+  version: "2"
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+host: api.us-east-1.mbedcloud.com
+tags:
+  - name: Security and identity - pre-shared keys
+    description: Manage pre-shared keys to be used by devices during bootstrap.
+paths:
+  /v2/device-shared-keys:
+    get:
+      operationId: listPreSharedKeys
+      summary: List PSKs.
+      description: |-
+        Retrieve pre-shared keys (PSKs) with pagination. Default page size of 50 entries.
+
+        **Example:**
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v2/device-shared-keys \
+        -H "Authorization: Bearer <api_key>"
+        ```
+
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Security and identity - pre-shared keys
+      parameters:
+        - name: limit
+          in: query
+          description: The number of objects to retrieve on a page (2-1000). Values outside the range are set to the closest limit.
+          required: false
+          type: integer
+          default: 50
+          minimum: 2
+          maximum: 1000
+        - name: after
+          in: query
+          description: An offset token for fetching a specific page. Provided by the server.
+          required: false
+          type: string
+      responses:
+        200:
+          description: List of PSKs.
+          schema:
+            $ref: '#/definitions/ListOfPreSharedKeysWithoutSecret'
+        400:
+          description: Bad request. Contains the error as a string, either TOKEN_NOT_FOUND or INVALID_LIMIT.
+
+    post:
+      operationId: uploadPreSharedKey
+      summary: Upload a PSK to Pelion Device Management.
+      description: |-
+        Upload a PSK for an endpoint to allow it to bootstrap. The existing key cannot be overwritten, but needs
+        to be deleted first in the case of re-setting a PSK for an endpoint.
+
+        **Note**: The PSK APIs are available only to accounts that have this feature enabled.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v2/device-shared-keys \
+        -H "Authorization: Bearer <api_key>" \
+        -H "content-type: application/json"  \
+             -d '{ "endpoint_name": "my-endpoint-0001", "secret_hex": "4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a" }'
+        ```
+
+      consumes:
+        - application/json
+      tags:
+        - Security and identity - pre-shared keys
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: PSK to upload.
+          required: true
+          schema:
+            $ref: '#/definitions/PreSharedKey'
+      responses:
+        201:
+          description: Successfully created.
+        401:
+          description: Authentication failure.
+        400:
+          description: Bad request. Contains comma-separated errors INVALID_ENDPOINT_NAME, INVALID_SECRET_HEX, and MALFORMED_JSON_CONTENT.
+          schema:
+            type: "string"
+        403:
+          description: Forbidden. You need to read and accept the PSK license in Device Management Portal.
+        409:
+          description: Conflict. The PSK for the endpoint already exists and cannot be overwritten. Contains error KEY_ALREADY_EXISTS_FOR_ENDPOINT.
+          schema:
+            type: "string"
+
+
+  /v2/device-shared-keys/{endpoint_name}:
+    get:
+      operationId: getPreSharedKey
+      summary: Get a PSK.
+      description: |-
+        Check if a PSK for an endpoint exists or not. The response does not contain the secret itself.
+
+        **Example:**
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v2/device-shared-keys/my-endpoint-0001 \
+        -H "Authorization: Bearer <api_key>"
+        ```
+
+      tags:
+        - Security and identity - pre-shared keys
+      parameters:
+        - name: "endpoint_name"
+          in: "path"
+          description: "The unique endpoint identifier that this PSK applies to. [Reserved characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) must be percent-encoded."
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: Pre-shared key for the device (does not contain secret).
+          schema:
+            $ref: '#/definitions/PreSharedKeyWithoutSecret'
+        400:
+          description: Bad request. Endpoint name validation failed. Contains error INVALID_ENDPOINT_NAME.
+          schema:
+            type: "string"
+        401:
+          description: Authentication failure.
+        404:
+          description: The PSK does not exist.
+    delete:
+      operationId: deletePreSharedKey
+      summary: Remove a PSK.
+      description: |-
+        Remove a PSK.
+
+        **Example:**
+
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/device-shared-keys/my-endpoint-0001 \
+        -H "Authorization: Bearer <api_key>"
+        ```
+
+      tags:
+        - Security and identity - pre-shared keys
+      parameters:
+        - name: "endpoint_name"
+          in: "path"
+          description: "The unique endpoint identifier that this PSK applies to. [Reserved characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) must be percent-encoded."
+          required: true
+          type: "string"
+      responses:
+        204:
+          description: Successfully deleted. Responds even if the endpoint does not have an associated PSK.
+        400:
+          description: Bad request. Endpoint name validation failed. Contains error INVALID_ENDPOINT_NAME.
+          schema:
+            type: "string"
+        401:
+          description: Authentication failure.
+
+definitions:
+  PreSharedKey:
+    type: object
+    required:
+    - endpoint_name
+    - secret_hex
+    properties:
+      endpoint_name:
+        type: string
+        pattern: ^[ -~]{16,64}$
+        description: "The unique endpoint identifier that this PSK applies to. 16-64 [printable](https://en.wikipedia.org/wiki/ASCII#Printable_characters) (non-control) ASCII characters."
+        example: "my-endpoint-0001"
+      secret_hex:
+        type: string
+        pattern: ^(0[xX])?[0-9a-fA-F]{32,64}$
+        description: The secret of the PSK in hexadecimal. It is not case sensitive; 4a is same as 4A, and it is allowed with or without 0x in the beginning. The minimum length of the secret is 128 bits and maximum 256 bits.
+        example: "4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a"
+  PreSharedKeyWithoutSecret:
+    type: object
+    required:
+    - endpoint_name
+    properties:
+      endpoint_name:
+        type: string
+        pattern: ^[ -~]{16,64}$
+        description: "The unique endpoint identifier that this PSK applies to. 16-64 [printable](https://en.wikipedia.org/wiki/ASCII#Printable_characters) (non-control) ASCII characters."
+        example: "my-endpoint-0001"
+      created_at:
+        type: string
+        format: date-time
+        description: "The date-time (RFC3339) when this PSK was uploaded to Device Management."
+        example: "2017-07-21T17:32:28.012Z"
+  ListOfPreSharedKeysWithoutSecret:
+    type: object
+    required:
+    - object
+    - limit
+    - order
+    - has_more
+    - data
+    properties:
+      object:
+        type: string
+        description: The type of this API object is a "list".
+        example: "list"
+      limit:
+        type: integer
+        description: The value of limit query parameter from the request, or default if not specified.
+        example: 50
+      order:
+        type: string
+        description: Record order based on creation time.
+        example: "DESC"
+      has_more:
+        type: boolean
+        description: More results are available.
+        example: true
+      after:
+        type: string
+        description: An offset token for current page.
+        example: "001e001000120010fac8f300487f11e8839a459edde8bd42f07fffffebf07fffffebb1219cc7862b64bbaf775dc545e274810004"
+      continuation_marker:
+        type: string
+        description: An offset token for fetching the next page. Note that exactly the same limit needs to be used on the request for fetching subsequent pages.
+        example: "001e001000120010fac8f300487f11e8839a459edde8bd42f07fffffebf07fffffebb1219cc7862b64bbaf775dc545e274810005"
+      data:
+        type: array
+        description: Array of the PSK entries. The array is empty if there are no PSKs.
+        minLength: 0
+        items:
+          $ref: "#/definitions/PreSharedKeyWithoutSecret"

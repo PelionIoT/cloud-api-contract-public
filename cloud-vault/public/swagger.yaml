@@ -1,0 +1,991 @@
+swagger: '2.0'
+info:
+  description: 'API for managing third-party device certificate issuers.
+
+
+  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+  version: v3
+  title: Third-party CA management API
+  contact: {}
+host: 'api.us-east-1.mbedcloud.com'
+schemes:
+  - https
+consumes:
+  - application/json; charset=utf-8
+produces:
+  - application/json; charset=utf-8
+tags:
+  - name: Security and identity - certificate issuers
+    description: Manage CAs for issuing device certificates.
+  - name: Security and identity - certificate issuer configurations
+    description: Manage active CA configurations.
+
+x-aliases:
+  IssuerAttributes: &IssuerAttributes
+    type: object
+    additionalProperties:
+      type: string
+    description: |-
+      General attributes for connecting the certificate issuer.
+      When the issuer_type is GLOBAL_SIGN, the value is empty.
+      When the issuer_type is CFSSL_AUTH, see definition of CfsslAttributes.
+    example: {}
+
+  IssuerCredentials: &IssuerCredentials
+    type: object
+    additionalProperties:
+      type: string
+    description: |-
+      The credentials required to connect to the certificate issuer.
+      When the issuer_type is GLOBAL_SIGN, see definition of GlobalSignCredentials.
+      When the issuer_type is CFSSL_AUTH, see definition of CfsslAuthCredentials.
+    example: {}
+  generic_list_fields: &generic_list_fields
+    after:
+      type: string
+      description: An offset token for current page.
+      example: '01631667477600000000000100100374'
+    has_more:
+      type: boolean
+      description: More results are available.
+      example: false
+    limit:
+      type: integer
+      description: The number of results to return (2-1000). Values outside of this range are set to the closest limit.
+      example: 50
+      minimum: 2
+      maximum: 1000
+    object:
+      type: string
+      description: The type of this API object is `list`.
+      example: "list"
+    order:
+      type: string
+      description: Record order based on creation time.
+      example: "DESC"
+    total_count:
+      format: integer
+      type: integer
+      example: 1
+  limit_param: &limit_param
+    - description: The number of results to return (2-1000). Values outside of this range are set to the closest limit.
+      in: query
+      name: limit
+      type: integer
+      minimum: 2
+      maximum: 1000
+  order_param: &order_param
+    - description: 'Record order. Acceptable values: ASC, DESC. Default: ASC.'
+      in: query
+      name: order
+      type: string
+  after_param: &after_param
+    - description: The ID of the item after which to retrieve the next page.
+      in: query
+      name: after
+      type: string
+  include_param: &include_param
+    - description: 'Comma-separated list of data fields to return. Currently supported: `total_count`.'
+      in: query
+      name: include
+      type: string
+paths:
+  /v3/certificate-issuers:
+    get:
+      tags:
+        - Security and identity - certificate issuers
+      summary: Get certificate issuers list.
+      operationId: getCertificateIssuers
+      description: |-
+        **Note:** This endpoint does not use pagination, and therefore ignores list control parameters such as `limit` or `after`.
+      parameters:
+        - <<: *limit_param
+        - <<: *order_param
+        - <<: *after_param
+        - <<: *include_param
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerInfoListResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    post:
+      tags:
+        - Security and identity - certificate issuers
+      summary: Create certificate issuer.
+      description: |-
+        Create a certificate issuer.
+        <br>
+        The maximum number of issuers is limited to 20 per account.
+        <br>
+        You can create multiple certificate issuers of the same type, provided they have different names. This allows verification of the certificate issuer configuration before activation.
+        <br>
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/certificate-issuers \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "issuer_type": "GLOBAL_SIGN",
+          "name": "GS Issuer",
+          "description": "Sample GlobalSign certificate issuer",
+          "issuer_attributes": null,
+          "issuer_credentials": {
+              "api_key": "e510e289e6cd8947",
+              "api_secret": "a477a8393d17a55ecb2ba6a61f58feb84770b621",
+              "client_certificate": "-----BEGIN CERTIFICATE-----MIIC7zCCAdegAwIBAgIJANTlU4x5S74VMA0GCSqGSIb3DQEBCwUAMA4xDDAKBgNVBAoMA0FybTAeFw0xODAzMTExMzE5MTFaFw0xOTAzMTExMzE5MTFaMA4xDDAKBgNVBAoMA0FybTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJWLStsVMJULZtxdieK9qocM4ymDXMaAusmd9TZLzBgznKQe/CW2yxyA8C8K5e6MmvMYGeKDd4Lkw/ezOj2OsUj2xzNIltUxpGi/GhsNYiN/khNJa/Y1SllLoihJAPm/xbMywOBRu/dM88PiJsNZccOk0I8DYvvyAs9wCTkbKLnfHygl98DCRqXw7nBCplU6F03qpUd/4BUtMtugyqt7yboGH+4YewnUh4Yh4QNOJIvE93Ob++eKjO3pIOYEhQmUxzOLaLNuWXlv2l1WuN281hUP4XBcV8mCzRQfTBBDYTWt+5BEWoLOUkXjW0Um6EAaN3usph1IKDEH6Ia5VHP4Pj0CAwEAAaNQME4wHQYDVR0OBBYEFLsfYZxFcQTjPJKYMjHI2In316fmMB8GA1UdIwQYMBaAFLsfYZxFcQTjPJKYMjHI2In316fmMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFl08GFsIkkUs6M7QgCWmsnwP6PtD8V87wM1GAqQQlOOeztaeRR2TEOeYiKRZQugYszJ/FVfVp4ggqzepJMn6UZ42j5nmSJs+6t79i23QAzX1zNQ354lr/t7kt3fMdhuL3AP0oZGzdy+EnXXiWeAD22UwzvVmLt38ypJIl+pmTsx9jJy4PN7yoRgtP9k+50m3X6oDxVruehC/JPSeTvEhqyLW3fLcG6IoJMX3vIwfO9uXbFJumTowQeViNJJ9duWvD2KBXn/muOOBe97TPuvAms1gOtMmmPT9/jpo9b4+NsfFiAN6bMici81aIKZzLC+lLGOUmR2fFJyM5OsVLxKsko=-----END CERTIFICATE-----",
+                "private_key":"-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: DES-EDE3-CBC,CCAC26A4133947CB\n\np3KJ4FI3wcz3I0MtiLkrznkjWFvprVmoNywySUGb5IqZViJZqCMEsyU9a9iDsSfP\nZ07cg9GviV21WYIPSxZOQrpy1g1VWILzFnH+J6z8dSH4mxXh0PwdOzYgAeqkrIVM\nJ7KRm6t222dZFjjXK3eEcLmBLGo29XwVJxKHx+l4++gU1LZmeHZR5M8fJ4jejUly\n7sqzPlmRF0N3I4lwKVj+PfQTVz43QoCnpxOjuSEL4liBrc2agY2xH1O0PFyHimz9\n3XM9HR/iuPHW0N2D+NPjXlWKacerupH9d4i9IYIagzB+HTgej8limdo03GmmxcZ6\nYNa58n5yQSaqu0TPRU9DsrKeGjadHTlZQGdzfq1SWsROCnHLrXFKE2ozIG3+hxA5\nujBF/QWpX5+inXUwDJhBxp8isHbPEnBEUUd6ZRzCTjvN0jaUti5B9yFhO2G6mbE8\nCvhyzQK8oJqsjZXnlcpPf95LP+9XbcCDjLSIaWJstzXO9tPiv6+x1MVWmivtRHcC\nSTzpx8jAGCiG6ejLqWB87ZXiZm7ujlCBheHSf5RHwNHhUvoP2JEYalDDRxjcDMSx\n4uV42Np4yJlIQEDlGHcBlXoL7vEukFpuWgkYdpcZy/Ou9qz8mXrpLcu8C8MhLmSC\nixGoR5iRhV7cxoHLyuCzj87eYEA73Xu238DQorSEEuiVFnLzQ2+PJMs4qoI14q/L\notlBDz+Ko6DrU/EZROYmiqMkLKXR2sx9zNAJwPYRs6nSH08tZ3dwqzZbgtP3Wazi\nhLWHt5/En7wQRA5a+/dDEHXSoLvvSQ9jvhclhWf+eCYuq2eH+g54oyJGRSY+8GV7\nujhLxkzl/3OZdhZPWoz4U13KpbSTcNWu5Y7oGDoabw19UbvqmLf1PJkpDH/tQgzB\nxYtsLBRUcofpYoeIiIxfAA4do5WilJc8xqrGhkE4WcHfY24HXAiOvsjbxV+BRprX\n1jtgJpV/9nJESMap+8PxipGUFRGjB83/uwJaa6mLftEKflX8i4MZ+HnqraXERsqA\nWRUcDHIWmFfpzIB3iNuxawVvPH8NdCSPmQ9qTb8Cozl0AuOK2E9S+ke8oiYQScWR\nLdu+zhej7GjuQ9R+Ub+wPWqvOA5qLXejqnCexVScDUuN+z9JWM3N2FG1MwxhAzhP\ndEfoQHoBn6uyOmrVGP6fosV3chqhPoec42KeOAm1xDvx692isaIy1jPgIyPxeqhm\n2Tw4E+02R7dlP8Ljf7JzfLm4oKpWHWlcHeqg24x6lY/wXU1RBcWaTa0AQUwoGm2m\nIQCPfIqOEv/QC2HpO7SVCYkl65KwR0oTd1AzYxdxEq3xHQbh69EL0FGZPVxVCPI+\nhEAyifKy1/tm3l91Rf/kGpHY7nIQKCXH49tmFwix8gke2nZJmRgX7/zAdMOAKeKH\nAaIl4nQtv14EbaasMgnn9qgaDYnWzaReEob2QlQ/WYlTor61+KFpGtcf9jAkgudT\n2op+4CF7wT2+aTXdtkVWfmv++iB8GnlqZdxLvyG1cTYjjYHVFbMSWQnxzQqiE2ms\nQgp+byjWCumpsWTMdTO+d9NkDOo80vDpaRxEgebmhJ0MbX+eFjBgVg==\n-----END RSA PRIVATE KEY-----",
+              "passphrase": "helloworld"
+          }
+        }'
+        ```
+      operationId: createCertificateIssuer
+      parameters:
+        - in: body
+          name: CertificateIssuerRequest
+          description: Certificate issuer request.
+          required: true
+          schema:
+            $ref: '#/definitions/CertificateIssuerRequest'
+      responses:
+        '201':
+          description: Created.
+          schema:
+            $ref: '#/definitions/CertificateIssuerInfo'
+        '400':
+          description: |-
+            Validation error: The data used to create the certificate issuer failed validation.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: You are not authorized to view the resource.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '409':
+          description: |-
+            Conflict. A certificate issuer with this name already exists.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '424':
+          description: |-
+            The request failed due to customer configured external service.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  '/v3/certificate-issuers/{certificate-issuer-id}':
+    get:
+      tags:
+        - Security and identity - certificate issuers
+      summary: Get certificate issuer by ID.
+      operationId: getCertificateIssuer
+      parameters:
+        - name: certificate-issuer-id
+          in: path
+          description: |-
+            Certificate issuer ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerInfo'
+        '400':
+          description: |-
+            Validation error: The data used to get the certificate issuer failed validation.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    put:
+      tags:
+        - Security and identity - certificate issuers
+      summary: Update certificate issuer.
+      description: |-
+        Update a certificate issuer.
+        <br>
+        **Example:**
+
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/certificate-issuers/01621560be51507b9d48a91b00000000 \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "description": "Sample GlobalSign certificate issuer - updated.",
+          "name": "GlobalSign Issuer"
+        }'
+        ```
+      operationId: updateCertificateIssuer
+      parameters:
+        - name: certificate-issuer-id
+          in: path
+          description: |-
+            Certificate issuer ID.
+          required: true
+          type: string
+        - in: body
+          name: CertificateIssuerUpdateRequest
+          description: Certificate issuer update request.
+          required: true
+          schema:
+            $ref: '#/definitions/CertificateIssuerUpdateRequest'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerInfo'
+        '400':
+          description: |-
+            Validation error: The data used to update the certificate issuer failed validation.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '409':
+          description: |-
+            Conflict. A certificate issuer with this name already exists.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '424':
+          description: |-
+            The request failed due to customer-configured external service.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    delete:
+      tags:
+        - Security and identity - certificate issuers
+      summary: Delete certificate issuer.
+      description: |-
+        Delete a certificate issuer by ID.
+        <br>
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/certificate-issuers/0162155dc77d507b9d48a91b00000000 \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        ```
+      operationId: deleteCertificateIssuer
+      parameters:
+        - name: certificate-issuer-id
+          in: path
+          description: |-
+            Certificate issuer ID.
+            An active certificate issuer cannot be deleted.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Certificate issuer deleted.
+        '400':
+          description: |-
+            Validation error: An active certificate issuer cannot be deleted.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  '/v3/certificate-issuers/{certificate-issuer-id}/verify':
+    post:
+      tags:
+        - Security and identity - certificate issuers
+      summary: Verify certificate issuer.
+      description: |-
+        Validates the certificate issuer by sending a signing request for a test certificate. This should be done before the configuration is made active.
+        <br>
+        **Note:**
+        The API requests the 3rd party CA to sign a test certificate.
+        For some 3rd party CAs, this operation may use the account quota.
+        <br>
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/certificate-issuers/01621a36719d507b9d48a91b00000000/verify \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        ```
+      operationId: verifyCertificateIssuer
+      parameters:
+        - name: certificate-issuer-id
+          in: path
+          description: |-
+            Certificate issuer ID.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerVerifyResponse'
+        '400':
+          description: Validation error
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '424':
+          description: |-
+            The request failed due to customer configured external service.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  /v3/certificate-issuer-configurations/lwm2m:
+    get:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Get certificate issuer configuration.
+      description: |-
+        Provides the configured certificate issuer used when creating device
+        certificates for LwM2M.
+      operationId: getCertificateIssuerConfig
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigResponse'
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    put:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Update certificate issuer configuration.
+      description: |-
+        Configure the certificate issuer used when creating device certificates
+        for LwM2M.
+        <br>
+        **Example:**
+
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations/lwm2m \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "certificate_issuer_id": "01621a36719d507b9d48a91b00000000"
+        }'
+        ```
+      operationId: updateCertificateIssuerConfig
+      parameters:
+        - in: body
+          name: CertificateIssuerConfigRequest
+          description: Certificate Issuer Configuration Request
+          required: true
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigRequest'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigResponse'
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  /v3/certificate-issuer-configurations:
+    post:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Create certificate issuer configuration.
+      description: |-
+        Configure the certificate issuer to use when creating device custom certificates.
+        <br>
+        **Example:**
+
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        -d '{
+          "reference": "customer.dlms",
+          "certificate_issuer_id": "01621a36719d507b9d48a91b00000000"
+        }'
+        ```
+      operationId: createCertificateIssuerConfig
+      parameters:
+        - in: body
+          name: CreateCertificateIssuerConfig
+          description: Certificate issuer configuration request.
+          required: true
+          schema:
+            $ref: '#/definitions/CreateCertificateIssuerConfig'
+      responses:
+        '201':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigResponse'
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '409':
+          description: |-
+            A certificate issuer configuration with this reference already exists.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    get:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Get certificate issuer configurations.
+      description: |-
+        Get certificate issuer configurations, optionally filtered by reference.
+        <br>
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        ```
+        <br>
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations?reference__eq=dlms \
+        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'content-type: application/json;charset=UTF-8' \
+        ```
+        **Note:** This endpoint does not implement pagination, and therefore ignores list control parameters such as `limit` or `after`.
+      operationId: getCertificateIssuerConfigs
+      parameters:
+        - <<: *limit_param
+        - <<: *order_param
+        - <<: *after_param
+        - <<: *include_param
+        - name: reference__eq
+          in: query
+          description: The certificate name to which the certificate issuer configuration applies.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigListResponse'
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+  /v3/certificate-issuer-configurations/{certificate-issuer-configuration-id}:
+    parameters:
+      - name: certificate-issuer-configuration-id
+        in: path
+        description: |-
+          Certificate issuer ID configuration.
+        required: true
+        type: string
+    get:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Get certificate issuer configuration.
+      description: |-
+        Provides the configured certificate issuer.
+      operationId: getCertificateIssuerConfigByID
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigResponse'
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    put:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Update certificate issuer configuration.
+      description: |-
+        Update certificate issuer configuration.
+      operationId: updateCertificateIssuerConfigByID
+      parameters:
+        - in: body
+          name: CertificateIssuerConfigRequest
+          description: Certificate issuer configuration request.
+          required: true
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigRequest'
+      responses:
+        '200':
+          description: OK.
+          schema:
+            $ref: '#/definitions/CertificateIssuerConfigResponse'
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+    delete:
+      tags:
+        - Security and identity - certificate issuer configurations
+      summary: Delete certificate issuer configuration.
+      description: |-
+        Delete certificate issuer configuration.
+        You can only delete custom certificate configurations.
+      operationId: deleteCertificateIssuerConfigByID
+      responses:
+        '204':
+          description: No content.
+        '400':
+          description: "Validation error."
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '401':
+          description: Unauthorized.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+        '404':
+          description: Not found.
+          schema:
+            $ref: '#/definitions/ErrorObjectResponse'
+definitions:
+  CertificateIssuerInfo:
+    type: object
+    properties:
+      created_at:
+        type: string
+        format: date-time
+        description: Creation UTC time RFC3339.
+        example: "2017-01-01T00:00:00Z"
+      etag:
+        type: string
+        description: Entity instance signature.
+        example: "1"
+      id:
+        type: string
+        description: Certificate issuer ID.
+        example: "01234567890ABCDEF01234567890ABCDEF"
+      issuer_type:
+        type: string
+        enum:
+          - GLOBAL_SIGN
+          - CFSSL_AUTH
+        description: |-
+          Certificate issuer type.
+          - GLOBAL_SIGN:
+            Certificates are issued by GlobalSign service. You must provide your own GlobalSign account credentials.
+          - CFSSL_AUTH:
+            Certificates are issued by CFSSL authenticated signing service.
+            You must provide your own CFSSL host_url and credentials.
+        example: "GLOBAL_SIGN"
+      name:
+        type: string
+        maxLength: 50
+        description: Certificate issuer name, unique per account.
+        example: "GS Issuer"
+      description:
+        type: string
+        maxLength: 100
+        description: General description for the certificate issuer.
+        example: "GlobalSign sample issuer"
+        x-nullable: true
+      issuer_attributes:
+        <<: *IssuerAttributes
+      object:
+        type: string
+        enum:
+          - certificate-issuer
+    required:
+      - issuer_type
+  CertificateIssuerRequest:
+    type: object
+    properties:
+      issuer_type:
+        type: string
+        enum:
+          - GLOBAL_SIGN
+          - CFSSL_AUTH
+        description: |-
+          Certificate issuer type.
+          - GLOBAL_SIGN:
+            Certificates are issued by GlobalSign service. You must provide your own GlobalSign account credentials.
+          - CFSSL_AUTH:
+            Certificates are issued by CFSSL authenticated signing service.
+            You must provide your own CFSSL host_url and credentials.
+      name:
+        type: string
+        maxLength: 50
+        description: Certificate issuer name, unique per account.
+      description:
+        type: string
+        maxLength: 100
+        x-nullable: true
+        description: General description of the certificate issuer.
+      issuer_attributes:
+        <<: *IssuerAttributes
+      issuer_credentials:
+        <<: *IssuerCredentials
+    required:
+      - name
+      - issuer_type
+      - issuer_credentials
+    example:    # Child of media type
+      issuer_type: "GLOBAL_SIGN"
+      name: "GS Issuer"
+      description: "Sample GlobalSign certificate issuer."
+      issuer_attributes:
+      issuer_credentials:
+        api_key: "e510e289e6cd8947"
+        api_secret: "a477a8393d17a55ecb2ba6a61f58feb84770b621"
+        client_certificate: >
+          "-----BEGIN CERTIFICATE-----MIIC7zCCAdegAwIBAgIJANTlU4x5S74VMA0GCSqGSIb3DQEBCwUAMA4xDDAKBgNVBAoMA0FybTAeFw0xODAzMTExMzE5MTFaFw0xOTAzMTExMzE5MTFaMA4xDDAKBgNVBAoMA0FybTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJWLStsVMJULZtxdieK9qocM4ymDXMaAusmd9TZLzBgznKQe/CW2yxyA8C8K5e6MmvMYGeKDd4Lkw/ezOj2OsUj2xzNIltUxpGi/GhsNYiN/khNJa/Y1SllLoihJAPm/xbMywOBRu/dM88PiJsNZccOk0I8DYvvyAs9wCTkbKLnfHygl98DCRqXw7nBCplU6F03qpUd/4BUtMtugyqt7yboGH+4YewnUh4Yh4QNOJIvE93Ob++eKjO3pIOYEhQmUxzOLaLNuWXlv2l1WuN281hUP4XBcV8mCzRQfTBBDYTWt+5BEWoLOUkXjW0Um6EAaN3usph1IKDEH6Ia5VHP4Pj0CAwEAAaNQME4wHQYDVR0OBBYEFLsfYZxFcQTjPJKYMjHI2In316fmMB8GA1UdIwQYMBaAFLsfYZxFcQTjPJKYMjHI2In316fmMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFl08GFsIkkUs6M7QgCWmsnwP6PtD8V87wM1GAqQQlOOeztaeRR2TEOeYiKRZQugYszJ/FVfVp4ggqzepJMn6UZ42j5nmSJs+6t79i23QAzX1zNQ354lr/t7kt3fMdhuL3AP0oZGzdy+EnXXiWeAD22UwzvVmLt38ypJIl+pmTsx9jJy4PN7yoRgtP9k+50m3X6oDxVruehC/JPSeTvEhqyLW3fLcG6IoJMX3vIwfO9uXbFJumTowQeViNJJ9duWvD2KBXn/muOOBe97TPuvAms1gOtMmmPT9/jpo9b4+NsfFiAN6bMici81aIKZzLC+lLGOUmR2fFJyM5OsVLxKsko=-----END CERTIFICATE-----"
+        private_key: |-
+          "-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: DES-EDE3-CBC,CCAC26A4133947CB\n\np3KJ4FI3wcz3I0MtiLkrznkjWFvprVmoNywySUGb5IqZViJZqCMEsyU9a9iDsSfP\nZ07cg9GviV21WYIPSxZOQrpy1g1VWILzFnH+J6z8dSH4mxXh0PwdOzYgAeqkrIVM\nJ7KRm6t222dZFjjXK3eEcLmBLGo29XwVJxKHx+l4++gU1LZmeHZR5M8fJ4jejUly\n7sqzPlmRF0N3I4lwKVj+PfQTVz43QoCnpxOjuSEL4liBrc2agY2xH1O0PFyHimz9\n3XM9HR/iuPHW0N2D+NPjXlWKacerupH9d4i9IYIagzB+HTgej8limdo03GmmxcZ6\nYNa58n5yQSaqu0TPRU9DsrKeGjadHTlZQGdzfq1SWsROCnHLrXFKE2ozIG3+hxA5\nujBF/QWpX5+inXUwDJhBxp8isHbPEnBEUUd6ZRzCTjvN0jaUti5B9yFhO2G6mbE8\nCvhyzQK8oJqsjZXnlcpPf95LP+9XbcCDjLSIaWJstzXO9tPiv6+x1MVWmivtRHcC\nSTzpx8jAGCiG6ejLqWB87ZXiZm7ujlCBheHSf5RHwNHhUvoP2JEYalDDRxjcDMSx\n4uV42Np4yJlIQEDlGHcBlXoL7vEukFpuWgkYdpcZy/Ou9qz8mXrpLcu8C8MhLmSC\nixGoR5iRhV7cxoHLyuCzj87eYEA73Xu238DQorSEEuiVFnLzQ2+PJMs4qoI14q/L\notlBDz+Ko6DrU/EZROYmiqMkLKXR2sx9zNAJwPYRs6nSH08tZ3dwqzZbgtP3Wazi\nhLWHt5/En7wQRA5a+/dDEHXSoLvvSQ9jvhclhWf+eCYuq2eH+g54oyJGRSY+8GV7\nujhLxkzl/3OZdhZPWoz4U13KpbSTcNWu5Y7oGDoabw19UbvqmLf1PJkpDH/tQgzB\nxYtsLBRUcofpYoeIiIxfAA4do5WilJc8xqrGhkE4WcHfY24HXAiOvsjbxV+BRprX\n1jtgJpV/9nJESMap+8PxipGUFRGjB83/uwJaa6mLftEKflX8i4MZ+HnqraXERsqA\nWRUcDHIWmFfpzIB3iNuxawVvPH8NdCSPmQ9qTb8Cozl0AuOK2E9S+ke8oiYQScWR\nLdu+zhej7GjuQ9R+Ub+wPWqvOA5qLXejqnCexVScDUuN+z9JWM3N2FG1MwxhAzhP\ndEfoQHoBn6uyOmrVGP6fosV3chqhPoec42KeOAm1xDvx692isaIy1jPgIyPxeqhm\n2Tw4E+02R7dlP8Ljf7JzfLm4oKpWHWlcHeqg24x6lY/wXU1RBcWaTa0AQUwoGm2m\nIQCPfIqOEv/QC2HpO7SVCYkl65KwR0oTd1AzYxdxEq3xHQbh69EL0FGZPVxVCPI+\nhEAyifKy1/tm3l91Rf/kGpHY7nIQKCXH49tmFwix8gke2nZJmRgX7/zAdMOAKeKH\nAaIl4nQtv14EbaasMgnn9qgaDYnWzaReEob2QlQ/WYlTor61+KFpGtcf9jAkgudT\n2op+4CF7wT2+aTXdtkVWfmv++iB8GnlqZdxLvyG1cTYjjYHVFbMSWQnxzQqiE2ms\nQgp+byjWCumpsWTMdTO+d9NkDOo80vDpaRxEgebmhJ0MbX+eFjBgVg==\n-----END RSA PRIVATE KEY-----"
+        passphrase: "helloworld"
+  CertificateIssuerUpdateRequest:
+    type: object
+    properties:
+      name:
+        type: string
+        maxLength: 50
+        description: Certificate issuer name.
+      description:
+        type: string
+        maxLength: 100
+        x-nullable: true
+        description: General description of the certificate issuer.
+      issuer_attributes:
+        <<: *IssuerAttributes
+      issuer_credentials:
+        <<: *IssuerCredentials
+    example:   # Example for GLOBAL_SIGN case
+      name: "GlobalSign Issuer"
+      description: "Sample GlobalSign certificate issuer - updated."
+  CertificateIssuerConfigRequest:
+    type: object
+    properties:
+      certificate_issuer_id:
+        type: string
+        x-nullable: true
+        description: |-
+          Certificate issuer ID.
+          For LwM2M, may be null if Device Management internal certificate issuer is used.
+        example: "01648415a2a30242ac18000500000000"
+  CreateCertificateIssuerConfig:
+    type: object
+    properties:
+      reference:
+        type: string
+        maxLength: 100
+        pattern: '(?!mbed\.)[\w-_.]{1,100}'
+        description: |-
+          The certificate name, as created in the factory, to which the certificate issuer configuration applies.
+          The following names are reserved and cannot be configured: LwM2M, BOOTSTRAP.
+        example: "customer.dlms"
+      certificate_issuer_id:
+        x-nullable: true
+        type: string
+        maxLength: 32
+        description: |-
+          Certificate issuer ID.
+        example: "01648415a2a30242ac18000500000000"
+    required:
+      - reference
+      - certificate_issuer_id
+  CertificateIssuerConfigResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        description: |-
+          Certificate issuer ID. configuration.
+        example: "01648415a2a30242ac18000500000000"
+      certificate_issuer_id:
+        x-nullable: true
+        type: string
+        description: |-
+          Certificate issuer ID.
+          Null if Device Management internal HSM is used.
+        example: "01648415a2a30242ac18000500000000"
+      object:
+        type: string
+        enum:
+          - certificate-issuer-configuration
+      reference:
+        type: string
+        description: The certificate name to which the certificate issuer configuration applies.
+        example: "customer.dlms"
+      is_custom:
+        type: boolean
+        example: true
+      created_at:
+        type: string
+        format: date-time
+        description: 'Created UTC time RFC3339.'
+        example: "2017-01-01T00:00:00Z"
+      updated_at:
+        type: string
+        format: date-time
+        description: 'Updated UTC time RFC3339.'
+        example: "2017-02-01T00:00:00Z"
+      etag:
+        type: string
+        description: Entity instance signature.
+        example: "1"
+  CertificateIssuerConfigListResponse:
+    type: object
+    properties:
+      <<: *generic_list_fields
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/CertificateIssuerConfigResponse'
+        description: List of certificate issuers.
+  CertificateIssuerInfoListResponse:
+    type: object
+    properties:
+      <<: *generic_list_fields
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/CertificateIssuerInfo'
+        description: List of certificate issuers.
+  GlobalSignCredentials:
+    description: |-
+      The credentials required to connect to the GlobalSign account.
+      The values should be taken from GlobalSign support upon account creation.
+    type: object
+    properties:
+      api_key:
+        type: string
+        maxLength: 1000
+        description: |-
+          Unique ID for API client (provided by GlobalSign).
+        example: "e510e289e6cd8947"
+      api_secret:
+        type: string
+        maxLength: 250
+        format: password
+        description: |-
+          API secret matching the API key (provided by GlobalSign).
+        example: "a477a8393d17a55ecb2ba6a61f58feb84770b621"
+      client_certificate:
+        type: string
+        maxLength: 3000
+        description: |-
+          The client certificate provided by GlobalSign to allow HTTPS connection over TLS/SSL.
+          The certificate wraps a public key that matches a private key provided by the customer.
+          The certificate must be in PEM format.
+        example: >-
+          "-----BEGIN CERTIFICATE-----MIIC7zCCAdegAwIBAgIJANTlU4x5S74VMA0GCSqGSIb3DQEBCwUAMA4xDDAKBgNVBAoMA0FybTAeFw0xODAzMTExMzE5MTFaFw0xOTAzMTExMzE5MTFaMA4xDDAKBgNVBAoMA0FybTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJWLStsVMJULZtxdieK9qocM4ymDXMaAusmd9TZLzBgznKQe/CW2yxyA8C8K5e6MmvMYGeKDd4Lkw/ezOj2OsUj2xzNIltUxpGi/GhsNYiN/khNJa/Y1SllLoihJAPm/xbMywOBRu/dM88PiJsNZccOk0I8DYvvyAs9wCTkbKLnfHygl98DCRqXw7nBCplU6F03qpUd/4BUtMtugyqt7yboGH+4YewnUh4Yh4QNOJIvE93Ob++eKjO3pIOYEhQmUxzOLaLNuWXlv2l1WuN281hUP4XBcV8mCzRQfTBBDYTWt+5BEWoLOUkXjW0Um6EAaN3usph1IKDEH6Ia5VHP4Pj0CAwEAAaNQME4wHQYDVR0OBBYEFLsfYZxFcQTjPJKYMjHI2In316fmMB8GA1UdIwQYMBaAFLsfYZxFcQTjPJKYMjHI2In316fmMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFl08GFsIkkUs6M7QgCWmsnwP6PtD8V87wM1GAqQQlOOeztaeRR2TEOeYiKRZQugYszJ/FVfVp4ggqzepJMn6UZ42j5nmSJs+6t79i23QAzX1zNQ354lr/t7kt3fMdhuL3AP0oZGzdy+EnXXiWeAD22UwzvVmLt38ypJIl+pmTsx9jJy4PN7yoRgtP9k+50m3X6oDxVruehC/JPSeTvEhqyLW3fLcG6IoJMX3vIwfO9uXbFJumTowQeViNJJ9duWvD2KBXn/muOOBe97TPuvAms1gOtMmmPT9/jpo9b4+NsfFiAN6bMici81aIKZzLC+lLGOUmR2fFJyM5OsVLxKsko=-----END CERTIFICATE-----"
+      private_key:
+        type: string
+        maxLength: 3000
+        description: |-
+          The private key that matches the client certificate to allow HTTPS connection over TLS/SSL.
+          The private key may be encrypted using a symmetric encryption key derived from a passphrase.
+          The private key must be in PEM format.
+        example: >-
+          "-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: DES-EDE3-CBC,CCAC26A4133947CB\n\np3KJ4FI3wcz3I0MtiLkrznkjWFvprVmoNywySUGb5IqZViJZqCMEsyU9a9iDsSfP\nZ07cg9GviV21WYIPSxZOQrpy1g1VWILzFnH+J6z8dSH4mxXh0PwdOzYgAeqkrIVM\nJ7KRm6t222dZFjjXK3eEcLmBLGo29XwVJxKHx+l4++gU1LZmeHZR5M8fJ4jejUly\n7sqzPlmRF0N3I4lwKVj+PfQTVz43QoCnpxOjuSEL4liBrc2agY2xH1O0PFyHimz9\n3XM9HR/iuPHW0N2D+NPjXlWKacerupH9d4i9IYIagzB+HTgej8limdo03GmmxcZ6\nYNa58n5yQSaqu0TPRU9DsrKeGjadHTlZQGdzfq1SWsROCnHLrXFKE2ozIG3+hxA5\nujBF/QWpX5+inXUwDJhBxp8isHbPEnBEUUd6ZRzCTjvN0jaUti5B9yFhO2G6mbE8\nCvhyzQK8oJqsjZXnlcpPf95LP+9XbcCDjLSIaWJstzXO9tPiv6+x1MVWmivtRHcC\nSTzpx8jAGCiG6ejLqWB87ZXiZm7ujlCBheHSf5RHwNHhUvoP2JEYalDDRxjcDMSx\n4uV42Np4yJlIQEDlGHcBlXoL7vEukFpuWgkYdpcZy/Ou9qz8mXrpLcu8C8MhLmSC\nixGoR5iRhV7cxoHLyuCzj87eYEA73Xu238DQorSEEuiVFnLzQ2+PJMs4qoI14q/L\notlBDz+Ko6DrU/EZROYmiqMkLKXR2sx9zNAJwPYRs6nSH08tZ3dwqzZbgtP3Wazi\nhLWHt5/En7wQRA5a+/dDEHXSoLvvSQ9jvhclhWf+eCYuq2eH+g54oyJGRSY+8GV7\nujhLxkzl/3OZdhZPWoz4U13KpbSTcNWu5Y7oGDoabw19UbvqmLf1PJkpDH/tQgzB\nxYtsLBRUcofpYoeIiIxfAA4do5WilJc8xqrGhkE4WcHfY24HXAiOvsjbxV+BRprX\n1jtgJpV/9nJESMap+8PxipGUFRGjB83/uwJaa6mLftEKflX8i4MZ+HnqraXERsqA\nWRUcDHIWmFfpzIB3iNuxawVvPH8NdCSPmQ9qTb8Cozl0AuOK2E9S+ke8oiYQScWR\nLdu+zhej7GjuQ9R+Ub+wPWqvOA5qLXejqnCexVScDUuN+z9JWM3N2FG1MwxhAzhP\ndEfoQHoBn6uyOmrVGP6fosV3chqhPoec42KeOAm1xDvx692isaIy1jPgIyPxeqhm\n2Tw4E+02R7dlP8Ljf7JzfLm4oKpWHWlcHeqg24x6lY/wXU1RBcWaTa0AQUwoGm2m\nIQCPfIqOEv/QC2HpO7SVCYkl65KwR0oTd1AzYxdxEq3xHQbh69EL0FGZPVxVCPI+\nhEAyifKy1/tm3l91Rf/kGpHY7nIQKCXH49tmFwix8gke2nZJmRgX7/zAdMOAKeKH\nAaIl4nQtv14EbaasMgnn9qgaDYnWzaReEob2QlQ/WYlTor61+KFpGtcf9jAkgudT\n2op+4CF7wT2+aTXdtkVWfmv++iB8GnlqZdxLvyG1cTYjjYHVFbMSWQnxzQqiE2ms\nQgp+byjWCumpsWTMdTO+d9NkDOo80vDpaRxEgebmhJ0MbX+eFjBgVg==\n-----END RSA PRIVATE KEY-----"
+      passphrase:
+        type: string
+        maxLength: 1000
+        format: password
+        description: |-
+          The passphrase to decrypt the private key in case it is encrypted.
+          Empty if the private key is not encrypted.
+        example: "helloworld"
+    required:
+      - api_key
+      - api_secret
+      - client_certificate
+      - private_key
+  CfsslAttributes:
+    description: |-
+      Describes the attributes required to connect to the CFSSL server.
+    type: object
+    properties:
+      host_url:
+        type: string
+        description: |-
+          The URL to connect to the CFSSL server.
+        example: 'http://my.cfssl.service:5555'
+      cfssl_profile:
+        type: string
+        description: |-
+          The profile that is configured on the CFSSL server and used by CFSSL when creating the certificate.
+      cfssl_label:
+        type: string
+        description: |-
+          The label that is used by CFSSL when creating the certificate.
+    required:
+      - host_url
+  CfsslAuthCredentials:
+    description: |-
+      Describes the credentials required when using CFSSL authenticated signing.
+    type: object
+    properties:
+      hmac_hex_key:
+        type: string
+        maxLength: 64
+        pattern: '^([a-fA-F0-9][a-fA-F0-9]){1,32}$'
+        description: |-
+          The key that is used to compute the HMAC of the request using the HMAC-SHA-256 algorithm.
+          Must contain an even number of hexadecimal characters.
+        example: "0010203ABCD708EF"
+    required:
+      - hmac_hex_key
+  CertificateIssuerVerifyResponse:
+    type: object
+    properties:
+      successful:
+        type: boolean
+        description: |-
+          Indicates whether the certificate issuer was verified successfully.
+        example: false
+      message:
+        type: string
+        description: |-
+          Provides details in case of failure.
+        example: "Message describing the verification failure"
+  ErrorObjectResponse:
+    type: object
+    required:
+      - code
+      - message
+      - object
+      - request_id
+      - type
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: Error code. Correlates with response status code.
+        example: 400
+      fields:
+        type: array
+        description: A list of request fields that failed validation.
+        items:
+          $ref: '#/definitions/FieldMessageEntry'
+      message:
+        type: string
+        description: Error message.
+        example: Message describing the error
+      object:
+        type: string
+        description: 'Entity name: always `error`.'
+        enum:
+          - error
+      request_id:
+        type: string
+        description: Request ID from JWT.
+        example: '0162991d63150242ac12000600000001'
+      type:
+        type: string
+        description: Error type.
+        example: validation_error
+  FieldMessageEntry:
+    type: object
+    properties:
+      field:
+        type: string
+        description: Field name.
+        example: name
+      message:
+        type: string
+        description: Error message related to the field.
+        example: Message describing the error related to the field.
