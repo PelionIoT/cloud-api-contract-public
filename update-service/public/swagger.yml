@@ -1713,6 +1713,7 @@ paths:
       operationId: Upload_Job_Chunk_Create
       description: |
         Append a chunk to an upload job. To finish a job, upload a zero-length chunk.
+        <BR/> **Note:** Chunk size must be between 5MB and 100MB, the last chunk can be less than 5MB; the maximum number of chunks is limited to 10,000.
         <br>
         **Usage example:**
         ```
