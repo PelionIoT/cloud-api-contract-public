@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Enrollment API
   description: |-
-    Connect Enrollment Service allows users to claim ownership of a device not yet associated with an account. A device without an assigned account could be one purchased from the open market (OEM dealer) or transferred from one account to another. Refer to the documentation on [Device ownership: First-to-claim](../connecting/device-ownership-first-to-claim-by-enrollment-list.html).
+    Connect Enrollment Service allows users to claim ownership of a device not yet associated with an account. A device without an assigned account could be one purchased from the open market (OEM dealer) or transferred from one account to another. Refer to the documentation on [Device ownership: First-to-claim](https://www.pelion.com/docs/device-management/current/connecting/device-ownership-first-to-claim-by-enrollment-list.html).
   version: '3'
 # the domain of the service
 host: api.us-east-1.mbedcloud.com
@@ -433,7 +433,7 @@ paths:
     delete:
       summary: Delete an enrollment by ID.
       description: |-
-        To free a device from your account, delete the enrollment claim. To bypass the device ownership, you need to delete the enrollment and factory reset the device. For more information, see [Transferring ownership using First-to-Claim](../connecting/device-ownership-first-to-claim-by-enrollment-list.html).
+        To free a device from your account, delete the enrollment claim. To bypass the device ownership, you need to delete the enrollment and factory reset the device. For more information, see [Transferring ownership using First-to-Claim](https://www.pelion.com/docs/device-management/current/connecting/device-ownership-first-to-claim-by-enrollment-list.html).
         <br>
         **Example:**
         ```

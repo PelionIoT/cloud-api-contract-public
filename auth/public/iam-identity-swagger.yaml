@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   description: 'API to manage account access, authorization, communication and branding.
 
-  See <a href="https://www.pelion.com/docs/device-management/latest/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
+  See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
   version: v3
   title: Account Management API
 host: api.us-east-1.mbedcloud.com

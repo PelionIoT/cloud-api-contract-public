@@ -4,7 +4,7 @@ info:
   description: 'The Connect Statistics API provides statistics about other Device Management services, using defined counters.
 
 
-  See <a href="https://www.pelion.com/docs/device-management/latest/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
+  See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
   version: "3"
 # the domain of the service
 host: api.us-east-1.mbedcloud.com
@@ -51,7 +51,7 @@ paths:
 
             **Note:**
 
-            The metrics `device_proxy_request_success`, `device_proxy_request_error`, `device_subscription_request_success`, `device_subscription_request_error` and `device_observations` monitor only the response from the device to Device Management Connect. They do not confirm that the response is delivered to the client callback URLs used when you try to access device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints. New metrics will be added to monitor the response delivery to client callback URLs later.
+            The metrics `device_proxy_request_success`, `device_proxy_request_error`, `device_subscription_request_success`, `device_subscription_request_error` and `device_observations` monitor only the response from the device to Device Management Connect. They do not confirm that the response is delivered to the client callback URLs used when you try to access device resources using [Connect API](https://www.pelion.com/docs/device-management-api/connect/) endpoints. New metrics will be added to monitor the response delivery to client callback URLs later.
 
             **Example:**
 
@@ -274,37 +274,37 @@ definitions:
         type: integer
         format: int64
         description: |-
-          The number of successful [Connect API](../service-api-references/device-management-connect.html) requests that have been performed using the account. This metric does not consider the response from the device, only the responses to the HTTP requests used to manage the device.
+          The number of successful [Connect API](https://www.pelion.com/docs/device-management-api/connect/) requests that have been performed using the account. This metric does not consider the response from the device, only the responses to the HTTP requests used to manage the device.
       connect_rest_api_error:
         type: integer
         format: int64
         description: |-
-          The number of failed [Connect API](../service-api-references/device-management-connect.html) requests that have been performed using the account. This metric does not consider the response from the device, it includes only the responses to the HTTP requests used to manage the device. This metric includes only messages handled by the Connect service, not any HTTP errors returned by the firewall as a result of incorrect messages.
+          The number of failed [Connect API](https://www.pelion.com/docs/device-management-api/connect/) requests that have been performed using the account. This metric does not consider the response from the device, it includes only the responses to the HTTP requests used to manage the device. This metric includes only messages handled by the Connect service, not any HTTP errors returned by the firewall as a result of incorrect messages.
       device_proxy_request_success:
         type: integer
         format: int64
         description: |-
-          **(Beta)** The number of successful proxy requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes proxy requests to devices when you try to read or write values to device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+          **(Beta)** The number of successful proxy requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes proxy requests to devices when you try to read or write values to device resources using [Connect API](https://www.pelion.com/docs/device-management-api/connect/) endpoints.
       device_proxy_request_error:
         type: integer
         format: int64
         description: |-
-          **(Beta)** The number of failed proxy requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes proxy requests to devices when you try to read or write values to device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+          **(Beta)** The number of failed proxy requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes proxy requests to devices when you try to read or write values to device resources using [Connect API](https://www.pelion.com/docs/device-management-api/connect/) endpoints.
       device_subscription_request_success:
         type: integer
         format: int64
         description: |-
-          **(Beta)** The number of successful subscription requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes subscription requests to devices when you try to subscribe to a resource path using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+          **(Beta)** The number of successful subscription requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes subscription requests to devices when you try to subscribe to a resource path using [Connect API](https://www.pelion.com/docs/device-management-api/connect/) endpoints.
       device_subscription_request_error:
         type: integer
         format: int64
         description: |-
-          **(Beta)** The number of failed subscription requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes subscription requests to devices when you try to subscribe to a resource path using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+          **(Beta)** The number of failed subscription requests from the Device Management Connect service to devices linked to the account. Device Management Connect makes subscription requests to devices when you try to subscribe to a resource path using [Connect API](https://www.pelion.com/docs/device-management-api/connect/) endpoints.
       device_observations:
         type: integer
         format: int64
         description: |-
-          **(Beta)** The number of notifications received by the Device Management Connect service from the devices linked to the account. The device pushes notifications to Device Management Connect when you have successfully subscribed to the device resources using [Connect API](../service-api-references/device-management-connect.html) endpoints.
+          **(Beta)** The number of notifications received by the Device Management Connect service from the devices linked to the account. The device pushes notifications to Device Management Connect when you have successfully subscribed to the device resources using [Connect API](https://www.pelion.com/docs/device-management-api/connect/) endpoints.
 
   successful-response:
     type: object

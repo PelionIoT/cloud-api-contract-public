@@ -558,7 +558,7 @@ definitions:
         maxLength: 2000
         example: "a description"
       device_filter:
-        description: The filter for the devices the campaign is targeted at.
+        description: The filter for the devices the campaign targets. Refer to this using the filter ID.
         type: string
         example: "state__eq=registered"
       name:
@@ -2023,9 +2023,9 @@ paths:
         - Device update - firmware images
       summary: Create an image
       operationId: Firmware_Image_create
-      description: | 
-        Create a firmware image.        
-        <BR/> **Note:** Only use this API for images smaller than 100 MB. For larger images, [upload in chunks](../updating-firmware/uploading-a-large-firmware-image.html). 
+      description: |
+        Create a firmware image.
+        <BR/> **Note:** Only use this API for images smaller than 100 MB. For larger images, [upload in chunks](https://www.pelion.com/docs/device-management/current/updating-firmware/uploading-a-large-firmware-image.html).
         <br>
         **Usage example:**
         ```
@@ -2961,7 +2961,7 @@ paths:
       summary: Stop a campaign.
       operationId: Update_Campaign_stop
       description: |
-        Stop a campaign. Stopping is a process that requires the campaign go through several [phases](../updating-firmware/running-update-campaigns.html#stopping).
+        Stop a campaign. Stopping is a process that requires the campaign go through several [phases](https://www.pelion.com/docs/device-management/current/updating-firmware/device-management-update-using-the-apis.html).
         <br>
         **Usage example:**
         ```
@@ -3075,7 +3075,7 @@ paths:
       summary: Get a status summary
       operationId: Update_Campaign_statistics_retrieve
       description: |
-        Get the count of successfully updated, skipped, and failed devices. 
+        Get the count of successfully updated, skipped, and failed devices.
         <br>
         **Usage example:**
         ```

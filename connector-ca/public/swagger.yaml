@@ -4,7 +4,7 @@ info:
   description: 'Connect CA API allows services to get device credentials.
 
 
-  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+   See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
   version: "3"
 # the domain of the service
 host: api.us-east-1.mbedcloud.com
@@ -26,7 +26,7 @@ paths:
       description: |-
         Create a developer certificate (a certificate that can be flashed to multiple devices to connect to the bootstrap server).
 
-        **Note:** The number of developer certificates allowed per account is limited. Please see [Setting up a Certificate Authority](../provisioning-process/integrating-with-a-third-party-ca.html#setting-up-a-ca).
+        **Note:** The number of developer certificates allowed per account is limited. Please see [Setting up a Certificate Authority](https://www.pelion.com/docs/device-management/current/provisioning-process/integrating-with-a-third-party-ca.html).
 
         **Example:**
         ```
@@ -330,12 +330,12 @@ definitions:
       name:
         type: string
         maxLength: 100
-        description: Name of the developer certificate. Must be unique. Maximum 100 characters. Please see [TrustedCertificateReq](../service-api-references/account-management.html#trustedcertificatereq).
+        description: Name of the developer certificate. Must be unique. Maximum 100 characters. Please see [TrustedCertificateReq](https://www.pelion.com/docs/device-management-api/account-management/).
       description:
         x-nullable: true
         type: string
         maxLength: 500
-        description: Description for the developer certificate. Maximum 500 characters. Please see [TrustedCertificateReq](../service-api-references/account-management.html#trustedcertificatereq).
+        description: Description for the developer certificate. Maximum 500 characters. Please see [TrustedCertificateReq](https://www.pelion.com/docs/device-management-api/account-management/).
 
   DeveloperCertificateResponseData:
     type: object

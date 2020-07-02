@@ -4,7 +4,7 @@ info:
   description: 'The Bootstrap API allows web applications to control the device bootstrapping process.
 
 
-  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+   See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
   version: "2"
 # array of all schemes that your API supports
 schemes:

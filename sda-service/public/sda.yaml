@@ -16,8 +16,8 @@ info:
   title: Secure Device Access API
   description: |
     The Secure Device Access (SDA) API lets you request an access token and manage [trust anchors](https://www.pelion.com/docs/device-management/current/sda/how-sda-works.html).
-    
-    See <a href="https://www.pelion.com/docs/device-management/latest/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
+
+    See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
 
 x-aliases:
   generic_list_fields: &generic_list_fields
@@ -303,7 +303,7 @@ paths:
     delete:
       tags:
         - Security and identity - secure device access
-      summary: Delete a trust anchor. 
+      summary: Delete a trust anchor.
       operationId: deleteTrustAnchor
       description: |
         Delete the specified trust anchor. Unrecoverable.

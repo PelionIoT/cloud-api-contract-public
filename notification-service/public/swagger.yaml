@@ -1,9 +1,9 @@
 swagger: '2.0'
 info:
   title: Notifications API
-  description: 'Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic) for more details on notification channels.
+  description: 'Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details on notification channels.
 
-  See [Troubleshooting the APIs](../service-api-references/troubleshooting-the-apis.html) for information on status and error codes.'
+   See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
   version: "2"
 # array of all schemes that your API supports
 schemes:
@@ -25,9 +25,9 @@ paths:
     put:
       summary: Register a callback URL.
       description: |-
-        Register a URL to which the server delivers notifications of changes to the subscribed resource. To push notifications, you must first place subscriptions. The maximum length of the URL, header keys, and values, all combined, is 400 characters. 
+        Register a URL to which the server delivers notifications of changes to the subscribed resource. To push notifications, you must first place subscriptions. The maximum length of the URL, header keys, and values, all combined, is 400 characters.
 
-        Notifications are delivered as PUT requests to the HTTP server, which the client defines with a subscription server message. The given URL must be accessible, and respond to the PUT request with a response code of 200 or 204. 
+        Notifications are delivered as PUT requests to the HTTP server, which the client defines with a subscription server message. The given URL must be accessible, and respond to the PUT request with a response code of 200 or 204.
 
         Device Management Connect tests the callback URL with an empty JSON payload `{}` when the URL is registered. Callback implementation does not support URL redirection. For more information on notification messages, see [NotificationMessage](#NotificationMessage).
 
@@ -41,7 +41,7 @@ paths:
 
         **Expiration of a callback URL:**
 
-        A callback can expire when Device Management cannot deliver a notification due to a connection timeout or error response (4xx or 5xx). After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL is removed if all retries fail within 24 hours. More about [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
+        A callback can expire when Device Management cannot deliver a notification due to a connection timeout or error response (4xx or 5xx). After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL is removed if all retries fail within 24 hours. More about [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
 
         **Supported callback URL protocols:**
 
@@ -150,17 +150,17 @@ paths:
 
         A websocket channel can have only one active websocket connection at a time. If a websocket connection for a channel exists and a new connection to the same channel is made, the connection is accepted and the older connection is closed.
 
-        **Note**: Only one websocket channel for each API key can be active at a time. If you register a new websocket channel while another one is active, it replaces the previously active one. If another type of channel is already present, you need to delete it before registering a websocket channel.   
+        **Note**: Only one websocket channel for each API key can be active at a time. If you register a new websocket channel while another one is active, it replaces the previously active one. If another type of channel is already present, you need to delete it before registering a websocket channel.
 
         **Expiration of a websocket:**
 
         A websocket channel is expired if the channel does not have an opened websocket connection for a 24-hour period. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue is removed. As long as the channel has an opened websocket connection or time between successive websocket connections is less than 24 hours,
         the channel is considered active, notifications are stored in its internal queue and delivered when a websocket connection is active. A channel can be also deleted explicitly with a DELETE call.
 
-        More about [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic).
+        More about [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic).
 
         **Configuration options:**
-        
+
         The event notification channel provides configurations options defined in [Serialization config](#SerializationConfigObjectV2)
 
         **Example:**
@@ -294,7 +294,7 @@ paths:
         If the connection is closed with code 1006 or 1012, the client should try to reconnect to maintain the notification flow. The client might disconnect several times in a relatively short period, for example, during service updates. This is normal. The desired client behavior is to reconnect after each disconnect.
 
         **Example:**
-        
+
         The curl examples provided are meant only for testing. For production devices, use a websocket client library.
         As the curl example doesn't know how to responsd to websocket ping, it will stop working shortly after receiving first ping.
         ```
@@ -515,7 +515,7 @@ definitions:
         type: integer
         minimum: 100
         maximum: 10000
-        description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](../integrate-web-app/event-notification.html#notification-sending-logic) for more details.
+        description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details.
         example: "500"
       cfg:
         type: object
@@ -662,7 +662,7 @@ definitions:
       rt:
         type: string
         description: |-
-          Application-specific resource type that describes this resource. It is created by the [client side application](../device-management/resource-setup-in-device-management-client.html).
+          Application-specific resource type that describes this resource. It is created by the [client side application](https://www.pelion.com/docs/device-management/current/resources/resource-setup-in-device-management-client.html).
           Not meant to be a human-readable name for the resource. Multiple resource types may be included, separated by a space.
         example: "light_sensor"
       ct:
@@ -704,7 +704,7 @@ definitions:
                 <td><b>400</b></td>
                 <td>The device rejected the request, possibly because it does not support the request method.
                 See how the supported methods are
-                [configured for the device resources](../device-management/collecting-resources.html#setting-the-operation-mode). </td>
+                [configured for the device resources](https://www.pelion.com/docs/device-management/current/resources/index.html). </td>
               </tr>
               <tr>
                 <td><b>404</b></td>
@@ -764,4 +764,3 @@ definitions:
         type: string
         description: 'Determines how long this value stays valid in the cache, in seconds. 0 means that the value is not stored in the cache.'
         example: 60
-        
