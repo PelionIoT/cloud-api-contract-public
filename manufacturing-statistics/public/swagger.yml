@@ -62,7 +62,7 @@ tags:
   - name: Factory manufacturing statistics
     description: Retrieve provisioning statistics for devices in your factories.
 paths:
-  /v3/manufacturing/statistics/report:
+  /v3/manufacturing/statistics:
     get:
       tags:
         - Factory manufacturing statistics
@@ -74,17 +74,16 @@ paths:
         Get manufacturing statistics report.
         **Example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/manufacturing/statistics-report?startDate=2019-10-20&endDate=2019-10-22 \
-        -H 'authorization: <valid access token>' \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/manufacturing/statistics?start=2020-06-23T21:00:00.000Z&end=2020-07-01T20:59:59.999Z --header 'Authorization: Bearer <valid access token>'
         ```
       parameters:
-        - description: The start date of the period on which the report is produced.
+        - description: The start date and time for the report.
           in: query
           name: start
           type: string
           required: true
           format: date-time
-        - description: The end date of the period on which the report is produced. Default is the current date-time.
+        - description: The end date and time for the report. The default value is the current date-time.
           in: query
           name: end
           type: string
@@ -95,20 +94,18 @@ paths:
           schema:
             $ref: '#/definitions/StatisticsReportListResponse'
           description: OK.
-        204:
-          description: No content.
-        401:
-          description: Unauthorized.
+        '400':
+          description: Validation error or bad request.
           schema:
-            $ref: "../../api-common-definitions/standard.yaml#/definitions/ErrorResponse"
-        403:
-          description: Forbidden.
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
           schema:
-            $ref: "../../api-common-definitions/standard.yaml#/definitions/ErrorResponse"
-        400:
-          description: Validation error.
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '403':
+          description: Access denied.
           schema:
-            $ref: "../../api-common-definitions/standard.yaml#/definitions/ErrorResponse"
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
 definitions:
   StatisticsReportResponse:
     type: object
