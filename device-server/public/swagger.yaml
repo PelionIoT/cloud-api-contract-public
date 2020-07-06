@@ -50,7 +50,7 @@ paths:
           required: true
           type: string
       tags:
-        - Endpoints
+        - Device data - resources
       responses:
         200:
           description: Successful response with an array of resources.
@@ -115,7 +115,7 @@ paths:
           required: false
           type: boolean
       tags:
-        - Resources
+        - Device data - resources
       responses:
         200:
           description: Resource value found in cache. Returns the string value of the resource.
@@ -210,7 +210,7 @@ paths:
           required: false
           type: boolean
       tags:
-        - Resources
+        - Device data - resources
       responses:
         202:
           description: Accepted. Returns an asynchronous response ID.
@@ -293,7 +293,7 @@ paths:
           required: false
           type: boolean
       tags:
-        - Resources
+        - Device data - resources
       responses:
         202:
           description: Accepted. Returns an asynchronous response ID.
@@ -353,7 +353,7 @@ paths:
           required: false
           type: boolean
       tags:
-        - Resources
+        - Device data - resources
       responses:
         202:
           description: Accepted. Returns an asynchronous response ID.
@@ -409,7 +409,7 @@ paths:
           required: true
           type: string
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         200:
           description: Successfully subscribed.
@@ -451,7 +451,7 @@ paths:
           required: true
           type: string
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         204:
           description: Successfully removed subscription.
@@ -473,7 +473,7 @@ paths:
           required: true
           type: string
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         200:
           description: Resource is subscribed.
@@ -502,7 +502,7 @@ paths:
           required: true
           type: string
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         200:
           description: List of subscribed resources.
@@ -531,7 +531,7 @@ paths:
           required: true
           type: string
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         204:
           description: Successfully removed.
@@ -549,7 +549,7 @@ paths:
         ```
       operationId: deletePreSubscriptions
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         204:
           description: Successfully removed subscriptions.
@@ -617,7 +617,7 @@ paths:
       consumes:
         - application/json
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       produces:
         - text/plain
       parameters:
@@ -650,7 +650,7 @@ paths:
       produces:
         - application/json
       tags:
-        - Subscriptions
+        - Device data - subscriptions
       responses:
         200:
           description: OK.
@@ -752,7 +752,7 @@ paths:
       consumes:
         - application/json
       tags:
-        - DeviceRequests
+        - Device data - requests
       produces:
         - application/json
       parameters:
