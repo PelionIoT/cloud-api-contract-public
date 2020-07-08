@@ -77,16 +77,14 @@ x-aliases:
       name: upload_job_id
       required: true
       type: string
-      minLength: 32
-      maxLength: 32
+      pattern: '[A-Fa-f0-9]{32}'
   campaign_id_parameter: &campaign_id_parameter
       description: The campaign ID.
       in: path
       name: campaign_id
       required: true
       type: string
-      minLength: 32
-      maxLength: 32
+      pattern: '[A-Fa-f0-9]{32}'
   summary_status_parameter: &summary_status_parameter
       description: The summary status. For example, fail.
       in: path
@@ -114,6 +112,7 @@ definitions:
       object:
         type: "string"
         description: "Entity name: always 'update-campaign-metrics'."
+        example: "update-campaign-metrics"
       created_at:
         type: "string"
         format: "date-time"
@@ -150,6 +149,7 @@ definitions:
       object:
         type: string
         description: "The entity name: always 'update-campaign-device-metadata'."
+        example: "update-campaign-device-metadata"
       <<: *common_properties
       campaign:
         type: "string"
@@ -177,6 +177,7 @@ definitions:
       id:
         type: string
         description: The metadata record ID.
+        pattern: '[A-Fa-f0-9]{32}'
         example: "015c3029f6f7000000000001001000c3"
       mechanism:
         type: string
@@ -196,6 +197,7 @@ definitions:
       object:
         type: string
         description: "The entity name: always 'list'."
+        example: "list"
       order:
         type: string
         enum:
@@ -246,10 +248,12 @@ definitions:
         example: "2017-05-22T12:37:55.576563Z"
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
       name:
         type: string
       root_manifest_id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
       started_at:
         type: string
         format: date-time
@@ -284,10 +288,14 @@ definitions:
         example: "2017-05-22T12:37:55.576563Z"
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: "015c3029f6f7000000000001001000c3"
       name:
         type: string
       root_manifest_id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: "015c6029f6f9000000000001001000f4"
       started_at:
         type: string
         format: date-time
@@ -334,6 +342,7 @@ definitions:
       object:
         description: "Entity name: always 'update-campaign'."
         type: string
+        example: "update-campaign"
       <<: *common_properties
       <<: *campaign_strategy
       active_at:
@@ -380,6 +389,7 @@ definitions:
       id:
         description: The campaign ID.
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
         example: "016e83ddc648000000000001001000f5"
       name:
         description: The campaign name.
@@ -466,6 +476,7 @@ definitions:
       object:
         description: "Entity name: always 'list'."
         type: string
+        example: "list"
       after:
         type: string
         example: null
@@ -491,8 +502,9 @@ definitions:
       description:
         description: An optional description of the campaign.
         type: string
+        format: free text
         maxLength: 2000
-        example: ""
+        example: "description"
       device_filter:
         description: The filter for the devices the campaign is targeting at.
         type: string
@@ -500,11 +512,12 @@ definitions:
       name:
         description: "The campaign's name."
         type: string
+        format: free text
         maxLength: 128
         example: "campaign"
       root_manifest_id:
         type: string
-        maxLength: 32
+        pattern: '[A-Fa-f0-9]{32}'
         example: "016e83dce36a00000000000100100201"
       state:
         description: 'DEPRECATED: The state of the campaign (use phase instead).'
@@ -568,8 +581,7 @@ definitions:
         default: "default_object_name"
       root_manifest_id:
         type: string
-        minLength: 32
-        maxLength: 32
+        pattern: '[A-Fa-f0-9]{32}'
         example: "016e83b46477000000000001001001f3"
       state:
         description: 'DEPRECATED: The state of the campaign (use phase instead)'
@@ -619,6 +631,8 @@ definitions:
         type: string
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: "015c3029f6f7000000000001001000c3"
       name:
         type: string
       updated_at:
@@ -645,6 +659,8 @@ definitions:
         type: string
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: "015c3029f6f7000000000001001000c3"
       name:
         type: string
       updated_at:
@@ -671,6 +687,7 @@ definitions:
       object:
         description: "Entity name: always 'firmware-image'."
         type: string
+        example: "firmware-image"
       datafile:
         description: The firmware image file URL.
         type: string
@@ -686,21 +703,25 @@ definitions:
       description:
         description: The description of the object.
         type: string
+        format: free text
         maxLength: 2000
         example: "a description"
       id:
         description: The firmware image ID.
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
         example: "016e652be671000000000001001001e5"
       name:
         description: The firmware image name.
         type: string
+        format: free text
         maxLength: 128
   FirmwareImagePage:
     properties:
       object:
         description: "Entity name: always 'list'."
         type: string
+        example: "list"
       after:
         type: string
         example: null
@@ -743,8 +764,12 @@ definitions:
         type: string
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: "015c3029f6f7000000000001001000c3"
       name:
         type: string
+        format: free text
+        maxLength: 128
       timestamp:
         format: date-time
         example: "2017-05-22T12:37:55.576563Z"
@@ -773,8 +798,12 @@ definitions:
         type: string
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
+        example: "015c3029f6f7000000000001001000c3"
       name:
         type: string
+        format: free text
+        maxLength: 128
       timestamp:
         format: date-time
         example: "2017-05-22T12:37:55.576563Z"
@@ -807,6 +836,7 @@ definitions:
       object:
         description: "Entity name: always 'firmware-manifest'."
         type: string
+        example: "firmware-manifest"
       manifest_schema_version:
         description: Version of the manifest schema (1 or 3).
         type: string
@@ -849,6 +879,7 @@ definitions:
       description:
         description: The description of the firmware manifest.
         type: string
+        format: free text
         maxLength: 2000
         example: ""
       device_class:
@@ -873,10 +904,12 @@ definitions:
       id:
         description: The firmware manifest ID.
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
         example: "12345678901234567890123456789012"
       name:
         description: The name of the manifest.
         type: string
+        format: free text
         maxLength: 128
         example: "manifest_name"
       timestamp:
@@ -895,6 +928,7 @@ definitions:
       object:
         description: "Entity name: always 'list'."
         type: string
+        example: "list"
       after:
         type: string
         example: null
@@ -928,10 +962,12 @@ definitions:
         example: false
       id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
         description: The upload job ID.
         example: "016e652be671000000000001001001e5"
       firmware_image_id:
         type: string
+        pattern: '[A-Fa-f0-9]{32}'
         description: ID of the firmware image - empty until the upload job is complete.
         example: "016e652be671000000000001001001a8"
       status:
@@ -948,6 +984,7 @@ definitions:
       object:
         type: "string"
         description: "Entity name: always 'list'."
+        example: "list"
       after:
         type: string
         example: null
@@ -975,6 +1012,7 @@ definitions:
       object:
         type: "string"
         description: "Entity name: always 'list'."
+        example: "list"
       after:
         type: string
         example: null
@@ -1003,6 +1041,7 @@ definitions:
       object:
         type: "string"
         description: "Entity name: always 'error'."
+        example: "error"
       code:
         type: integer
         format: int32
@@ -1034,6 +1073,7 @@ definitions:
       object:
         type: "string"
         description: "Entity name: always 'summary_status'."
+        example: "summary_status"
       summary_status:
         type: string
         enum:
@@ -1069,6 +1109,7 @@ definitions:
       object:
         type: "string"
         description: "The entity name: always 'list'."
+        example: "list"
       order:
         type: string
         enum:
@@ -1102,6 +1143,7 @@ definitions:
       object:
         type: "string"
         description: "Entity name: always 'event-type'."
+        example: "event-type"
       created_at:
         type: string
         format: date-time
@@ -1792,8 +1834,7 @@ paths:
           name: chunk_id
           required: true
           type: string
-          minLength: 32
-          maxLength: 32
+          pattern: '[A-Fa-f0-9]{32}'
       responses:
         200:
           description: Ok.
@@ -2049,10 +2090,13 @@ paths:
           name: description
           required: false
           type: string
+          format: free text
+          maxLength: 2000
         - description: The name of the firmware image.
           in: formData
           name: name
           type: string
+          format: free text
           maxLength: 128
       responses:
         '201':
@@ -2078,7 +2122,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-images/12345678901234567890123456789012 \
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-images/11234567f9012ab56790120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2087,8 +2131,7 @@ paths:
           name: image_id
           required: true
           type: string
-          minLength: 32
-          maxLength: 32
+          pattern: '[A-Fa-f0-9]{32}'
       responses:
         '204':
           description: Firmware image deleted.
@@ -2108,7 +2151,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/12345678901234567890123456789012 \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-images/1123456f9012ab567890120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2117,8 +2160,7 @@ paths:
           name: image_id
           required: true
           type: string
-          minLength: 32
-          maxLength: 32
+          pattern: '[A-Fa-f0-9]{32}'
       responses:
         '200':
           description: Retrieved result successfully.
@@ -2383,6 +2425,8 @@ paths:
           name: description
           required: false
           type: string
+          format: free text
+          maxLength: 2000
         - description: The key table of pre-shared keys for devices. The table is generated by the manifest tool. File name must not exceed 100 characters.
           in: formData
           name: key_table
@@ -2391,7 +2435,9 @@ paths:
         - description: The name of the firmware manifest.
           in: formData
           name: name
+          required: true
           type: string
+          format: free text
           maxLength: 128
       responses:
         '201':
@@ -2416,7 +2462,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/12345678901234567890123456789012 \
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/11234567f9012ab56780120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2425,8 +2471,7 @@ paths:
           name: manifest_id
           required: true
           type: string
-          minLength: 32
-          maxLength: 32
+          pattern: '[A-Fa-f0-9]{32}'
       responses:
         '204':
           description: Firmware manifest deleted.
@@ -2446,7 +2491,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/12345678901234567890123456789012 \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/firmware-manifests/1123467f9012ab567890120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2455,8 +2500,7 @@ paths:
           name: manifest_id
           required: true
           type: string
-          minLength: 32
-          maxLength: 32
+          pattern: '[A-Fa-f0-9]{32}'
       responses:
         '200':
           description: Retrieved result successfully.
@@ -2736,7 +2780,7 @@ paths:
           "description": "Campaign is for ...",
           "device_filter": "<filter_id>",
           "name": "campaign",
-          "root_manifest_id": "5678000000000000000000000000bd98",
+          "root_manifest_id": "56780000000000a5b70000000000bd98"
         }'
         ```
       parameters:
@@ -2767,7 +2811,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012 \
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/update-campaigns/1123457f9012ab567890120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2796,7 +2840,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012 \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/11234567f9012ab56890120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2823,7 +2867,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012 \
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/update-campaigns/1123007f9012ab567890120000789012 \
         -H 'Authorization: <valid access token>' \
         d '{
           "description": "Campaign is for ...",
@@ -2865,7 +2909,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/campaign-device-metadata \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/11234567f9012ab56790120000789012/campaign-device-metadata \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2906,7 +2950,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/5d645eaec2315a8997642e655cd94fa8/campaign-device-metadata/016e83ddc645000000000001001000f6 \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/5d645eaec2315a89900000655cd94fa8/campaign-device-metadata/016e83ddc645000000000001001000f6 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -2916,8 +2960,7 @@ paths:
           name: campaign_device_metadata_id
           required: true
           type: string
-          minLength: 32
-          maxLength: 32
+          pattern: '[A-Fa-f0-9]{32}'
       responses:
         200:
           description: "Request successful."
@@ -2938,7 +2981,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns/5d645eaec2315a8997642e655cd94fa8/start \
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns/5d645eaec2315a8900002e655cd94fa8/start \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -3019,7 +3062,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/metrics \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/1123467f9012ab567890120000789012/metrics \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -3037,7 +3080,7 @@ paths:
       x-deprecation:
         issued_at: "2019-04-10T13:41:00+00:00"
         end_of_life_at: "2020-04-10T13:41:00+00:00"
-        comment: Use the statistics endpoint instead.
+        comment: "Use GET /v3/update-campaigns/{campaign_id}/statistics instead."
         links: []
   /v3/update-campaigns/{campaign_id}/statistics:
     get:
@@ -3050,7 +3093,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/11234567f9012ab56780120000789012/statistics \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -3079,7 +3122,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics/12345678901234567890123456789012 \
+        curl https://api.us-east-1.mbedcloud.com/v3/update-campaigns/11230007f9012ab56789012000079012/statistics/11234567f012ab567890120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -3109,7 +3152,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics/12345678901234567890123456789012/event_types \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/1120007f9012ab567890120000789012/statistics/1234567f9012ab567890120000789012/event_types \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
@@ -3139,7 +3182,7 @@ paths:
         <br>
         **Usage example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/12345678901234567890123456789012/statistics/12345678901234567890123456789012/event_types/12345678901234567890123456789012 \
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/11234567f9000005678012000078901/statistics/11000067f9012ab56789010000789012/event_types/11234567f9012ab567890120000789012 \
         -H 'Authorization: <valid access token>'
         ```
       parameters:
