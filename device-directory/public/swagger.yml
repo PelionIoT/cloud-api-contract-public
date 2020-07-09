@@ -211,6 +211,19 @@ x-aliases:
       maxLength: 1024
       description: The description of the group.
       example: Devices on the factory floor.
+    component_attributes:
+      type: object
+      maxProperties: 10
+      additionalProperties:
+        type: string
+        maxLength: 128
+      description: |-
+        Up to ten component key-value attributes. The key represents the component name, while its value represents the corresponding component version.
+        Keys cannot begin with a number. Both key and value are limited to 128 characters. Updating this field replaces existing contents.
+        Component name must be the same as in device Component Name resource.
+        Component version must comply to semantic versioning. Maximum 3 digits per sub number, therefore max version number will be 999.999.999
+      example:
+        key: value
     custom_attributes:
       type: object
       maxProperties: 10
@@ -338,6 +351,10 @@ definitions:
         type: string
       ca_id:
         type: string
+      component_attributes:
+        type: object
+        additionalProperties:
+          type: string
       connector_expiration_date:
         format: date
         example: "2017-05-22"
@@ -419,6 +436,10 @@ definitions:
         type: string
       ca_id:
         type: string
+      component_attributes:
+        type: object
+        additionalProperties:
+          type: string
       connector_expiration_date:
         format: date
         example: "2017-05-22"
@@ -1992,6 +2013,12 @@ paths:
                   <td>&nbsp;</td>
                 </tr>
                 <tr>
+                  <td>component_attributes</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
                   <td>created_at</td>
                   <td>✓</td>
                   <td>✓</td>
@@ -2044,6 +2071,14 @@ paths:
             `custom_attributes__{param}={value}`
 
             `custom_attributes__tag=TAG1`
+
+            ###### By device group component attributes:
+
+            `component_attributes__{name}={version}`
+            `component_attributes__{name}__{operator}={version}`
+
+            `component_attributes__ble=1.2.3`
+            `component_attributes__main__gt=1.2.3`
 
             ##### Multi-field example
 

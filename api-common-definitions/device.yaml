@@ -101,6 +101,15 @@ definitions:
           maxLength: 500
           description: The certificate issuer's ID.
           example: "00000000000000000000000000000000"
+        component_attributes:
+          type: object
+          maxProperties: 10
+          additionalProperties:
+            type: string
+            maxLength: 128
+          description: Up to ten custom key-value attributes. Note that keys cannot begin with a number. Both keys and values are limited to 128 characters. Updating this field replaces existing contents.
+          example:
+            key: value
         connector_expiration_date:
           format: date
           type: string
