@@ -1,6 +1,15 @@
 swagger: '2.0'
 info:
-  description: The Manufacturing Statistics API enables secure factories to retrieve manufacturing statistics. This API is only available for authorized accounts. <br/>Please [contact us](https://cloud.mbed.com/contact) to enable this API for your account.
+  description: |-
+  
+    The Manufacturing Statistics API enables secure factories to retrieve manufacturing statistics. 
+  
+    This API is only available for authorized accounts. Please [contact us](https://cloud.mbed.com/contact) to enable this API for your account.
+  
+    For information on status and error codes, see <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a>.
+  
+    [Back to Device Management documentation](https://www.pelion.com/docs/device-management/resource-management-restructure/service-api-references/service-api-documentation.html).
+  
   version: v3
   title: Manufacturing Statistics API
   contact: {}
@@ -94,18 +103,6 @@ paths:
           schema:
             $ref: '#/definitions/StatisticsReportListResponse'
           description: OK.
-        '400':
-          description: Validation error or bad request.
-          schema:
-            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
-        '401':
-          description: Authentication failure.
-          schema:
-            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
-        '403':
-          description: Access denied.
-          schema:
-            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
 definitions:
   StatisticsReportResponse:
     type: object
