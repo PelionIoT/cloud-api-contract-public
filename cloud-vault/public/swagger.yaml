@@ -130,7 +130,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/certificate-issuers \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         -d '{
           "issuer_type": "GLOBAL_SIGN",
@@ -228,7 +228,7 @@ paths:
 
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/certificate-issuers/01621560be51507b9d48a91b00000000 \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         -d '{
           "description": "Sample GlobalSign certificate issuer - updated.",
@@ -291,7 +291,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/certificate-issuers/0162155dc77d507b9d48a91b00000000 \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         ```
       operationId: deleteCertificateIssuer
       parameters:
@@ -337,7 +337,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/certificate-issuers/01621a36719d507b9d48a91b00000000/verify \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         ```
       operationId: verifyCertificateIssuer
@@ -412,7 +412,7 @@ paths:
 
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations/lwm2m \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         -d '{
           "certificate_issuer_id": "01621a36719d507b9d48a91b00000000"
@@ -459,7 +459,7 @@ paths:
 
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         -d '{
           "reference": "customer.dlms",
@@ -506,13 +506,13 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         ```
         <br>
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-issuer-configurations?reference__eq=dlms \
-        -H 'Authorization: Bearer <valid_access_token>' \
+        -H 'Authorization: Bearer <api_key>' \
         -H 'content-type: application/json;charset=UTF-8' \
         ```
         **Note:** This endpoint does not implement pagination, and therefore ignores list control parameters such as `limit` or `after`.

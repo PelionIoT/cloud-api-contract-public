@@ -83,7 +83,7 @@ paths:
         Get manufacturing statistics report.
         **Example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/manufacturing/statistics?start=2020-06-23T21:00:00.000Z&end=2020-07-01T20:59:59.999Z --header 'Authorization: Bearer <valid access token>'
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/manufacturing/statistics?start=2020-06-23T21:00:00.000Z&end=2020-07-01T20:59:59.999Z --header 'Authorization: Bearer <api_key>'
         ```
       parameters:
         - description: The start date and time for the report.
