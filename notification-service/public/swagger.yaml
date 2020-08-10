@@ -152,6 +152,8 @@ paths:
 
         **Note**: Only one websocket channel for each API key can be active at a time. If you register a new websocket channel while another one is active, it replaces the previously active one. If another type of channel is already present, you need to delete it before registering a websocket channel.
 
+        **Note**: The current version does not yet have the capability to determine the channel status and will always return status 'unknown' and queue size '-1'.
+
         **Expiration of a websocket:**
 
         A websocket channel is expired if the channel does not have an opened websocket connection for a 24-hour period. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue is removed. As long as the channel has an opened websocket connection or time between successive websocket connections is less than 24 hours,
@@ -199,6 +201,8 @@ paths:
       summary: Get websocket channel information.
       description: |-
         Returns 200 with websocket connection status, if websocket channel exists.
+
+        **Note**: The current version does not yet have the capability to determine the channel status and will always return status 'unknown' and queue size '-1'.
 
         **Example:**
 
@@ -465,10 +469,7 @@ definitions:
           type: string
         example: "{\"authorization\" : \"f4b93d6e-4652-4874-82e4-41a3ced0cd56\"}"
       serialization:
-        type: object
-        description: Serialization configuration for a channel.
-        schema:
-          $ref: '#/definitions/SerializationConfigData'
+        $ref: '#/definitions/SerializationConfigData'
 
   WebsocketChannel:
     type: object
@@ -486,22 +487,17 @@ definitions:
         example: 0
         description: "Number of events in the channel's event queue waiting to be delivered. If the server cannot determine the queue size the value will be set to `-1`."
       serialization:
-        type: object
-        description: Serialization configuration for a channel.
-        schema:
-          $ref: '#/definitions/SerializationConfigData'
+        $ref: '#/definitions/SerializationConfigData'
 
   RegisterWebsocketChannel:
     type: object
     properties:
       serialization:
-        type: object
-        description: Serialization configuration for a channel
-        schema:
-          $ref: '#/definitions/SerializationConfigData'
+        $ref: '#/definitions/SerializationConfigData'
 
   SerializationConfigData:
     type: object
+    description: Serialization configuration for a channel.
     required:
       - type
     properties:
@@ -518,13 +514,11 @@ definitions:
         description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details.
         example: "500"
       cfg:
-        type: object
-        description: Serialization configuration object according to configuration type.
-        schema:
-          $ref: '#/definitions/SerializationConfigObjectV2'
+        $ref: '#/definitions/SerializationConfigObjectV2'
 
   SerializationConfigObjectV2:
     type: object
+    description: Serialization configuration object according to configuration type.
     properties:
       deregistrations_as_object:
         type: boolean
