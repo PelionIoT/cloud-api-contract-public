@@ -1891,7 +1891,7 @@ paths:
           name: include
           type: string
         - description: |-
-            URL-encoded query string parameter to filter returned data
+            URL-encoded query string parameter to filter returned data.
 
             `?filter={URL-encoded query string}`
 
