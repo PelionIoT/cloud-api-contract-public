@@ -29,7 +29,7 @@ paths:
 
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/devices/01612df56f3b0a580a010fc700000000/certificates/customer.dlms/renew \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-length: 0'
         ```
       operationId: RequestCertificateRenewal
@@ -92,12 +92,12 @@ paths:
 
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-enrollments \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
 
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-enrollments?device_id__eq=01612df56f3b0a580a010fc700000000 \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getCertificateEnrollments
       parameters:
@@ -227,7 +227,7 @@ paths:
 
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/certificate-enrollments/01612df56f3b0a580a010fc700000000 \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getCertificateEnrollment
       parameters:

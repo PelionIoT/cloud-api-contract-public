@@ -6,7 +6,7 @@ info:
 
     Device Management Connect allows queueing requests and caching resource values.
 
-    Device Management Connect links pre-subscriptions and subscriptions to the API key you use to set the subscriptions. Therefore, you must use the same API key in subsequent requests.
+    Device Management Connect links pre-subscriptions and subscriptions to the application you use to set the subscriptions. Therefore, you must use access keys of the same application in subsequent requests.
 
      See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
   version: "2"
@@ -28,7 +28,7 @@ x-aliases:
   unauthorized: &unauthorized
     description: Unauthorized.
   forbidden: &forbidden
-    description: Forbidden. The authorization token used is not an API key.
+    description: Forbidden. The authorization token used is not an access key.
 paths:
   /v2/endpoints/{device-id}:
     get:
@@ -39,7 +39,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/endpoints/{device-id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getEndpointResources
       produces:
@@ -86,7 +86,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/endpoints/{device-id}/{resourcePath} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getResourceValue
       parameters:
@@ -166,7 +166,7 @@ paths:
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v2/endpoints/{device-id}/3338/0/5850 \
         -H "content-type: text/plain" \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -d '1'
         ```
       operationId: updateResourceValue
@@ -250,7 +250,7 @@ paths:
 
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v2/endpoints/{device-id}/3303/0/5605 \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: executeOrCreateResource
       consumes:
@@ -330,7 +330,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/endpoints/{device-id}/{resourcePath} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteResourcePath
       parameters:
@@ -390,7 +390,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v2/subscriptions/{device-id}/{resourcePath} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
 
         **Important:** You must also call a [`/notification/callback`](https://www.pelion.com/docs/device-management-api/notifications/) method for Device Management Connect to push resource change notifications.
@@ -475,7 +475,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/subscriptions/{device-id}/{resourcePath} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteResourceSubscription
       parameters:
@@ -513,7 +513,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/subscriptions/{device-id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getEndpointSubscriptions
       produces:
@@ -544,7 +544,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/subscriptions/{device-id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteEndpointSubscriptions
       parameters:
@@ -570,12 +570,12 @@ paths:
         To remove the pre-subscription data, put an empty array as a rule.
         To place dynamic observation rules for individual object instances and resources and define when the device sends observations, set [notification rules](https://www.pelion.com/docs/device-management/current/resources/resource-change-webapp.html).
 
-        **Note:** The subscription is bound to the API key your application is using. To get notifications of the resource value changes, you need to create an [event notification channel](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html) with the same API key.
+        **Note:** The subscription is bound to the application you are using. To get notifications of the resource value changes, you need to create an [event notification channel](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html) with an access key of the same application.
 
         **Example request:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v2/subscriptions \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '[
                {
@@ -635,7 +635,7 @@ paths:
         401:
           description: Unauthorized.
         403:
-          description: 'Forbidden: the authorization token used is not an API key.'
+          description: 'Forbidden: the authorization token used is not an access key.'
     get:
       summary: View pre-subscriptions.
       description: |-
@@ -644,7 +644,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/subscriptions \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getPreSubscriptions
       produces:
@@ -659,7 +659,7 @@ paths:
         401:
           description: Unauthorized.
         403:
-          description: 'Forbidden: the authorization token used is not an API key.'
+          description: 'Forbidden: the authorization token used is not an access key.'
     delete:
       summary: Remove pre-subscriptions.
       description: |-
@@ -668,7 +668,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/subscriptions \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deletePreSubscriptions
       tags:
@@ -679,7 +679,7 @@ paths:
         401:
           description: Unauthorized.
         403:
-          description: 'Forbidden: the authorization token used is not an API key.'
+          description: 'Forbidden: the authorization token used is not an access key.'
 
   /v2/device-requests/{device-id}:
     post:
@@ -695,7 +695,7 @@ paths:
 
             ```
             curl -X POST https://api.us-east-1.mbedcloud.com/v2/device-requests/{device_id}?async-id={async-response-id} \
-            -H 'Authorization: Bearer {api_key}' \
+            -H 'Authorization: Bearer {access_key}' \
             -H 'content-type: application/json' \
             -d '{"method": "GET", "uri": "/3200/0/5501"}'
             ```
@@ -860,7 +860,7 @@ paths:
 
         **Example:**
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/devices/{device-id}/echo -H 'Authorization: Bearer <api_key>'
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/devices/{device-id}/echo -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getDeviceEchoObject
       tags:

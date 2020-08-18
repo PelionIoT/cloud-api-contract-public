@@ -30,7 +30,7 @@ paths:
         **Example:**
         ```
         curl -X POST \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -F 'enrollment_identities=@/path/to/enrollments/enrollments.csv' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-deletes
 
@@ -125,7 +125,7 @@ paths:
         **Example:**
         ```
         curl -X GET \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-deletes/{id}
         ```
       produces:
@@ -167,7 +167,7 @@ paths:
         **Example:**
         ```
         curl -X POST \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -F 'enrollment_identities=@/path/to/enrollments/enrollments.csv' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-uploads
 
@@ -264,7 +264,7 @@ paths:
         **Example:**
         ```
         curl -X GET \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments-bulk-uploads/{id}
         ```
       produces:
@@ -310,7 +310,7 @@ paths:
         **Example:**
         ```
         curl -X POST \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments \
         -d '{"enrollment_identity": "A-35:e7:72:8a:07:50:3b:3d:75:96:57:52:72:41:0d:78:cc:c6:e5:53:48:c6:65:58:5b:fa:af:4d:2d:73:95:c5"}'
@@ -346,13 +346,13 @@ paths:
         **Example:**
         ```
         curl -X GET \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments
         ```
         With query parameters:
         ```
         curl -X GET \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         'https://api.us-east-1.mbedcloud.com/v3/device-enrollments?limit=10'
         ```
       tags:
@@ -405,7 +405,7 @@ paths:
         **Example:**
         ```
         curl -X GET \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments/{id}
         ```
       operationId: getDeviceEnrollment
@@ -438,7 +438,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         https://api.us-east-1.mbedcloud.com/v3/device-enrollments/{id}
         ```
       operationId: deleteDeviceEnrollment

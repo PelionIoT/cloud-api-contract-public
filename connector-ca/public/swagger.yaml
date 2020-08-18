@@ -31,7 +31,7 @@ paths:
         **Example:**
         ```
         curl -X POST http://api.us-east-1.mbedcloud.com/v3/developer-certificates \
-        -H "Authorization: Bearer <api_key>" \
+        -H "Authorization: Bearer <access_key>" \
         -H "content-type: application/json" \
         -d { "name": "<certificate_name>", "description": "<certificate_description>" }
         ```
@@ -127,7 +127,7 @@ paths:
         **Example:**
         ```
         curl -X GET http://api.us-east-1.mbedcloud.com/v3/developer-certificates/THE_CERTIFICATE_ID \
-        -H "Authorization: Bearer <api_key>"
+        -H "Authorization: Bearer <access_key>"
         ```
       operationId: getDeveloperCertificate
       tags:
@@ -194,7 +194,7 @@ paths:
         **Example:**
         ```
         curl -X GET http://api.us-east-1.mbedcloud.com/v3/server-credentials/bootstrap \
-        -H "Authorization: Bearer <api_key>"
+        -H "Authorization: Bearer <access_key>"
         ```
       operationId: getBootstrapServerCredentials
       deprecated: true
@@ -240,7 +240,7 @@ paths:
         **Example:**
         ```
         curl -X GET http://api.us-east-1.mbedcloud.com/v3/server-credentials/lwm2m \
-        -H "Authorization: Bearer <api_key>"
+        -H "Authorization: Bearer <access_key>"
         ```
       operationId: getL2M2MServerCredentials
       deprecated: true
@@ -286,7 +286,7 @@ paths:
         **Example:**
         ```
         curl -X GET http://api.us-east-1.mbedcloud.com/v3/server-credentials \
-        -H "Authorization: Bearer <api_key>"
+        -H "Authorization: Bearer <access_key>"
         ```
       operationId: getAllServerCredentials
       tags:

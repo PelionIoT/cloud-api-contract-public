@@ -19,7 +19,7 @@ x-aliases:
   unauthorized: &unauthorized
     description: Unauthorized.
   forbidden: &forbidden
-    description: Forbidden. The authorization token used is not an API key.
+    description: Forbidden. The authorization token used is not an access key.
 paths:
   /v2/notification/callback:
     put:
@@ -33,11 +33,11 @@ paths:
 
         **Optional headers in a callback message:**
 
-        You can set optional headers to a callback in a **Webhook** object. Device Management Connect includes the header and key pairs in the notification messages send them to callback URL. The callback URLs and headers are API key-specific.
+        You can set optional headers to a callback in a **Webhook** object. Device Management Connect includes the header and key pairs in the notification messages send them to callback URL. The callback URLs and headers are application-specific.
 
-        One possible use for additional headers is checking the origin of a PUT request, as well as distinguishing the application (API key) to which the notification belongs.
+        One possible use for additional headers is checking the origin of a PUT request, as well as distinguishing the application to which the notification belongs.
 
-        **Note**: Only one callback URL for each API key can be active. If you register a new URL while another one is active, it replaces the active one. There can be only one notification channel at a time for each API key. If another type of channel is already present, you need to delete it before setting the callback URL.
+        **Note**: Only one callback URL for each application can be active. If you register a new URL while another one is active, it replaces the active one. There can be only one notification channel at a time for each application. If another type of channel is already present, you need to delete it before setting the callback URL.
 
         **Expiration of a callback URL:**
 
@@ -57,11 +57,11 @@ paths:
 
         **Example:**
 
-        This example command shows how to set your callback URL and API key. It also sets an optional header authorization. When Device Management Connect calls your callback URL, the call contains the authorization header with the defined value.
+        This example command shows how to set your callback URL. It also sets an optional header authorization. When Device Management Connect calls your callback URL, the call contains the authorization header with the defined value.
 
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v2/notification/callback \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{
           "url": "{callback-url}",
@@ -103,7 +103,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/callback \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getWebhook
       produces:
@@ -130,7 +130,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/notification/callback \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deregisterWebhook
       tags:
@@ -150,7 +150,7 @@ paths:
 
         A websocket channel can have only one active websocket connection at a time. If a websocket connection for a channel exists and a new connection to the same channel is made, the connection is accepted and the older connection is closed.
 
-        **Note**: Only one websocket channel for each API key can be active at a time. If you register a new websocket channel while another one is active, it replaces the previously active one. If another type of channel is already present, you need to delete it before registering a websocket channel.
+        **Note**: Only one websocket channel for each application can be active at a time. If you register a new websocket channel while another one is active, it replaces the previously active one. If another type of channel is already present, you need to delete it before registering a websocket channel.
 
         **Note**: The current version does not yet have the capability to determine the channel status and will always return status 'unknown' and queue size '-1'.
 
@@ -168,7 +168,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v2/notification/websocket \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -d '{
           "serialization": {"type": "v2", "max_chunk_size": "100",
             "cfg": {"deregistrations_as_object": "true", "include_uid": "true", "include_timestamp": "true", "include_original_ep": "true"
@@ -208,7 +208,7 @@ paths:
 
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/websocket \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getWebsocket
       produces:
@@ -228,14 +228,14 @@ paths:
     delete:
       summary: Delete websocket channel.
       description: |-
-        Delete a notification websocket channel bound to the API key. This is required to change the channel from websocket to another type.
+        Delete a notification websocket channel bound to the application. This is required to change the channel from websocket to another type.
 
         Deleting the websocket channel also removes the channel's notification queue. Any unsent notifications are lost when the channel is deleted.
         **Example:**
 
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/notification/websocket \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteWebsocket
       tags:
@@ -280,7 +280,7 @@ paths:
             </tr>
             <tr>
               <td><b>1008</b></td>
-              <td>Policy violation. Set if the API key is lost or invalidated after a successful WebSocket handshake.</td>
+              <td>Policy violation. Set if the access key is lost or invalidated after a successful WebSocket handshake.</td>
             </tr>
             <tr>
               <td><b>1011</b></td>
@@ -330,7 +330,7 @@ paths:
           type: string
           required: false
           description: |-
-            API key or user token must be present in the `Sec-WebSocket-Protocol` header **if Authorization header cannot be provided**: `Sec-WebSocket-Protocol:"wss,pelion_ak_{api_key}"`.
+            Access key or user token must be present in the `Sec-WebSocket-Protocol` header **if Authorization header cannot be provided**: `Sec-WebSocket-Protocol:"wss,pelion_ak_{access_key}"`.
             Refer to the notification service documentation for examples.
         - in: header
           name: Origin
@@ -370,18 +370,18 @@ paths:
         links: ["https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
       summary: Get notifications using Long Poll
       description: |-
-        In this case, notifications are delivered through HTTP long poll requests. The HTTP request is kept open until one or more event notifications are delivered to the client, or the request times out (response code 204). In both cases, the client should open a new polling connection after the previous one closes. Only a single long polling connection per API key can be ongoing at any given time. We recommend using a persistent connection (Connection keep-alive header in the request) to avoid excess TLS handshakes.
+        In this case, notifications are delivered through HTTP long poll requests. The HTTP request is kept open until one or more event notifications are delivered to the client, or the request times out (response code 204). In both cases, the client should open a new polling connection after the previous one closes. Only a single long polling connection per application can be ongoing at any given time. We recommend using a persistent connection (Connection keep-alive header in the request) to avoid excess TLS handshakes.
 
         The pull channel is implicitly created by the first GET call to `/v2/notification/pull`. It refreshes on each GET call. If the channel is not polled for a long time (10 minutes), it expires and is deleted. This means that no notifications will stay in the queue between polls. A channel can be also be deleted explicitly with a DELETE call.
 
         **Note:** If you cannot have a public-facing callback URL, for example, when developing on your local machine, you can use long polling to check for new messages. However, **long polling is deprecated** and will likely be replaced in the future. It is meant only for experimentation, not commercial use. The proper method to receive notifications is a **notification callback**.
 
-        There can only be one notification channel per API key in Device Management Connect. If a notification channel of other type already exists for the API key, delete it before creating a long poll notification channel.
+        There can only be one notification channel per application in Device Management Connect. If a notification channel of other type already exists for the application, delete it before creating a long poll notification channel.
 
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/pull \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: longPollNotifications
       produces:
@@ -418,7 +418,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v2/notification/pull \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteLongPollChannel
       tags:
@@ -440,7 +440,7 @@ paths:
         **Example:**
 
             curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/channel \
-            -H 'Authorization: Bearer <api_key>'
+            -H 'Authorization: Bearer <access_key>'
 
       operationId: getChannelMetadata
       responses:

@@ -9,8 +9,12 @@ host: api.us-east-1.mbedcloud.com
 tags:
   - name: Account - profile
     description: Manage your organization account profile.
+  - name: Account - access keys
+    description: Manage access keys.
   - name: Account - API keys
     description: Manage API keys.
+  - name: Account - applications
+    description: Manage applications.
   - name: Account - email notification logs
     description: Fetch log of email notifications sent on important account events.
   - name: Account - identity providers
@@ -31,8 +35,12 @@ tags:
     description: Manage branding images in the service portal UI.
   - name: Tenant accounts - accounts
     description: Create a tenant account or manage profiles.
+  - name: Tenant accounts - access keys
+    description: Manage access keys of a tenant account.
   - name: Tenant accounts - API keys
     description: Manage API keys of a tenant account.
+  - name: Tenant accounts - applications
+    description: Manage applications of a tenant account.
   - name: Tenant accounts - identity providers
     description: Manage identity providers of a tenant account.
   - name: Tenant accounts - entitlement limitations
@@ -155,7 +163,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccounts
       produces:
@@ -205,7 +213,7 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
@@ -253,7 +261,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"display_name": "MyAccount1", "aliases": [ "my-account" ], "admin_name": "accountAdmin1", "email": "example_admin@myaccount.info", "country": "United Kingdom", "end_market": "Smart City", "address_line1": "110 Fulbourn Rd", "city": "Cambridge", "contact": "J. Doe", "company": "Arm"}'
         ```
@@ -311,7 +319,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/me?include=policies \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getMyAccountInfo
       produces:
@@ -351,7 +359,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/me \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"phone_number": "12345678"}'
         ```
@@ -403,12 +411,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -478,7 +486,7 @@ paths:
 
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountInfo
       produces:
@@ -486,7 +494,7 @@ paths:
       parameters:
         - name: account_id
           in: path
-          description: The ID of the account to fetch.
+          description: The ID of the account to retrieve.
           required: true
           type: string
         - name: include
@@ -528,7 +536,7 @@ paths:
 
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"phone_number": "12345678"}'
         ```
@@ -586,7 +594,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountApiKeys
       produces:
@@ -606,12 +614,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -647,6 +655,12 @@ paths:
           description: An account with the given ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys
+        links: []
     post:
       tags:
         - Tenant accounts - API keys
@@ -658,7 +672,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "MyKey1"}'
         ```
@@ -700,6 +714,12 @@ paths:
           description: An account with the given ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys
+        links: []
   '/v3/accounts/{account_id}/api-keys/{apikey_id}':
     get:
       tags:
@@ -712,7 +732,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id} \
-         -H 'Authorization: Bearer <api_key>'
+         -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountApiKey
       produces:
@@ -745,6 +765,12 @@ paths:
           description: An account or API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id}
+        links: []
     put:
       tags:
         - Tenant accounts - API keys
@@ -756,7 +782,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestApiKey25"}'
         ```
@@ -801,6 +827,12 @@ paths:
           description: An account ID or API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id}
+        links: []
     delete:
       tags:
         - Tenant accounts - API keys
@@ -812,7 +844,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteAccountApiKey
       produces:
@@ -843,6 +875,12 @@ paths:
           description: An account or API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id}
+        links: []
   '/v3/accounts/{account_id}/api-keys/{apikey_id}/groups':
     get:
       tags:
@@ -855,7 +893,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id}/groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getGroupsOfAccountApikey
       produces:
@@ -870,12 +908,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -911,6 +949,12 @@ paths:
           description: An account or API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/groups
+        links: []
     post:
       tags:
         - Tenant accounts - API keys
@@ -922,7 +966,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -992,7 +1036,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -1059,7 +1103,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id}/groups/add \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -1110,6 +1154,12 @@ paths:
           description: The API key is a member of the group already.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/groups/add
+        links: []
   '/v3/accounts/{account_id}/api-keys/{apikey_id}/groups/remove':
     post:
       tags:
@@ -1122,7 +1172,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id}/groups/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -1169,6 +1219,12 @@ paths:
           description: An account or API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/groups/remove
+        links: []
   '/v3/accounts/{account_id}/api-keys/{apikey_id}/reset-secret':
     post:
       tags:
@@ -1181,7 +1237,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/api-keys/{apikey_id}/reset-secret \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: resetAccountApiKeySecret
       produces:
@@ -1209,7 +1265,7 @@ paths:
           schema:
             $ref: '#/definitions/ApiKeyInfoResp'
         '400':
-          description: 'Error in input data, for example, invalid API key name.'
+          description: Error in input data format.
           schema:
             $ref: '#/definitions/ErrorResponse'
         '401':
@@ -1224,6 +1280,865 @@ paths:
           description: An account or API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated.
+        links: []
+  '/v3/accounts/{account_id}/access-keys':
+    get:
+      tags:
+        - Tenant accounts - access keys
+      summary: Get all access keys.
+      description: |-
+        Retrieve an array of access keys.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/access-keys \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllAccountAccessKeys
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+        - name: application_id__eq
+          in: query
+          description: Application filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKeyList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/access-keys/{access_key_id}':
+    get:
+      tags:
+        - Tenant accounts - access keys
+      summary: Get access key.
+      description: |-
+        Retrieve details of an access key.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAccountAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/accounts/{account_id}/applications:
+    get:
+      tags:
+        - Tenant accounts - applications
+      summary: Get all applications.
+      description: |-
+        Retrieve an array of applications.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllAccountApplications
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/ApplicationList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - Tenant accounts - applications
+      summary: Create a new application.
+      description: |-
+        Create a new application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications -d '{"name": "MyApplication1"}' \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json'
+        ```
+      operationId: createAccountApplication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The details of the application to create.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+      responses:
+        '201':
+          description: New entity created.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+        '400':
+          description: 'Error in input data, for example, missing name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}':
+    get:
+      tags:
+        - Tenant accounts - applications
+      summary: Get application.
+      description: |-
+        Retrieve details of an application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAccountApplication
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Tenant accounts - applications
+      summary: Update application details.
+      description: |-
+        Update application details.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id} \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"name": "TestApplication25"}'
+        ```
+      operationId: updateAccountApplication
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application to update.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: New applicationattributes to store.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/ApiKeyInfoResp'
+        '400':
+          description: 'Error in input data, for example, invalid display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Tenant accounts - applications
+      summary: Delete application.
+      description: |-
+        Delete the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: deleteAccountApplication
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application to delete.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Deleted successfully.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/access-keys':
+    get:
+      tags:
+        - Tenant accounts - applications
+      summary: Get all access keys associated with the application.
+      description: |-
+        Retrieve an array of access keys associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllAccountApplicationAccessKeys
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKeyList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - Tenant accounts - applications
+      summary: Create a new application access key.
+      description: |-
+        Create a new access key for the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys -d '{"name": "MyKey1"}' \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json'
+        ```
+      operationId: createAccountApplicationAccessKey
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The details of the access key to create.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+      responses:
+        '201':
+          description: New entity created.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '400':
+          description: 'Error in input data, for example, missing display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id}':
+    get:
+      tags:
+        - Tenant accounts - applications
+      summary: Get access key.
+      description: |-
+        Retrieve details of an access key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAccountApplicationAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Tenant accounts - applications
+      summary: Update access key details.
+      description: |-
+        Update access key details.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"name": "TestAccessKey"}'
+        ```
+      operationId: updateAccountApplicationAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to update.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: New access key attributes to store.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '400':
+          description: 'Error in input data, for example, invalid display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Tenant accounts - applications
+      summary: Delete access key associated with the application.
+      description: |-
+        Delete the access key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: deleteAccountApplicationAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to delete.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Deleted successfully.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/groups':
+    get:
+      tags:
+        - Tenant accounts - applications
+      summary: Get policy groups of an application.
+      description: |-
+        Retrieve an array of policy groups associated with an application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/groups \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getGroupsOfAccountApplication
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/GroupSummaryList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the given ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/groups/add':
+    post:
+      tags:
+        - Tenant accounts - applications
+      summary: Add application to a list of groups.
+      description: |-
+        Add application to groups.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/groups/add \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        ```
+      operationId: addAccountApplicationToGroups
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application to add to the group.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of IDs of the groups to update.
+          required: true
+          schema:
+            $ref: '#/definitions/GroupIdList'
+      responses:
+        '204':
+          description: Successful operation.
+        '400':
+          description: Error in input data.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, a group or application with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: The application is a member of the group already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/groups/remove':
+    post:
+      tags:
+        - Tenant accounts - applications
+      summary: Remove application from groups.
+      description: |-
+        Remove application from groups.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/groups/remove \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        ```
+      operationId: removeAccountApplicationFromGroups
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to retrieve.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application to remove from the group.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of IDs of the groups to update.
+          required: true
+          schema:
+            $ref: '#/definitions/GroupIdList'
+      responses:
+        '204':
+          description: Successful operation.
+        '400':
+          description: 'Error in input data, for example, invalid group ID.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/branding-colors':
     delete:
       tags:
@@ -1234,7 +2149,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllAccountColors
       produces:
         - application/json
@@ -1271,7 +2186,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/dark \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountDarkColors
       produces:
@@ -1310,7 +2225,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id)/branding-colors/dark \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         '[{ "reference": "primary",
            "color": "#f3f93e" }]'
@@ -1362,7 +2277,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/dark -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/dark -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllAccountDarkColors
       produces:
         - application/json
@@ -1399,7 +2314,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/dark/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountDarkColor
       produces:
@@ -1439,7 +2354,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id)/branding-colors/dark/primary \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{ "color": "#f3f93e" }'
         ```
@@ -1493,7 +2408,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/dark/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: resetAccountDarkColor
       produces:
@@ -1532,7 +2447,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/light \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountLightColors
       produces:
@@ -1571,7 +2486,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id)/branding-colors/light \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         '[{ "reference": "primary",
            "color": "purple" }]'
@@ -1623,7 +2538,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/light -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/light -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllAccountLightColors
       produces:
         - application/json
@@ -1660,7 +2575,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/light/{reference}
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountLightColor
       produces:
@@ -1700,7 +2615,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id)/branding-colors/light/primary \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{ "color": "purple" }'
         ```
@@ -1754,7 +2669,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-colors/light/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: resetAccountLightColor
       produces:
@@ -1791,7 +2706,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllAccountImages
       produces:
         - application/json
@@ -1828,7 +2743,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/dark \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountDarkImageData
       produces:
@@ -1865,7 +2780,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/dark -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/dark -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllAccountDarkImages
       produces:
         - application/json
@@ -1902,7 +2817,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/dark/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountDarkImageData
       produces:
@@ -1943,7 +2858,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/dark/{reference}/clear \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: clearAccountDarkImage
       produces:
@@ -1982,7 +2897,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/dark/{reference}/upload \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         -H 'content-type: image/png'  --data-binary '@myimage.png'
         ```
       operationId: uploadAccountDarkImage
@@ -2097,7 +3012,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/light \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountLightImageData
       produces:
@@ -2134,7 +3049,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/light -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/light -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllAccountLightImages
       produces:
         - application/json
@@ -2171,7 +3086,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/light/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountLightImageData
       produces:
@@ -2211,7 +3126,7 @@ paths:
 
         **Example:**
         ```curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/light/{reference}/clear \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: clearAccountLightImage
       produces:
@@ -2250,7 +3165,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/branding-images/light/{reference}/upload \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: image/png' --data-binary '@myimage.png'
         ```
       operationId: uploadAccountLightImage
@@ -2381,12 +3296,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -2501,7 +3416,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or identity provider not found.
+          description: An account or identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
     put:
@@ -2552,7 +3467,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or identity provider not found.
+          description: An account or identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
     delete:
@@ -2588,7 +3503,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or identity provider not found.
+          description: An account or identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/identity-providers/{identity_provider_id}/delete-sp-certificate':
@@ -2633,7 +3548,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or identity provider not found.
+          description: An account or identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/identity-providers/{identity_provider_id}/generate-sp-certificate':
@@ -2688,7 +3603,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or identity provider not found.
+          description: An account or identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/identity-providers/{identity_provider_id}/refresh-jwks':
@@ -2737,7 +3652,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or identity provider not found.
+          description: An account or identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/limitations':
@@ -2776,7 +3691,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account with the given ID not found.
+          description: An account with the given ID not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/limitations/{limitation_id}':
@@ -2844,12 +3759,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -2871,7 +3786,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account with the given ID not found.
+          description: An account with the given ID not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/notifications/{notification_id}':
@@ -2929,7 +3844,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountGroups
       produces:
@@ -2949,12 +3864,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -2996,7 +3911,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "MyGroup1"}'
         ```
@@ -3054,7 +3969,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountGroupSummary
       produces:
@@ -3098,7 +4013,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
@@ -3160,7 +4075,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/ \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestGroup2"}'
         ```
@@ -3218,7 +4133,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteAccountGroup
       produces:
@@ -3261,7 +4176,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getApiKeysOfAccountGroup
       produces:
@@ -3286,12 +4201,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -3317,6 +4232,12 @@ paths:
           description: An account or group with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/applications
+        links: []
     post:
       tags:
         - Tenant accounts - policy groups
@@ -3328,7 +4249,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: addApiKeysToAccountGroup
       produces:
@@ -3354,11 +4275,11 @@ paths:
         '200':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/GroupSummary'
         '400':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Authentication failure.
           schema:
@@ -3392,7 +4313,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"apikeys": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
@@ -3457,7 +4378,9 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/api-keys/add \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"apikeys": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
       operationId: addListedApiKeysToAccountGroup
       produces:
@@ -3470,7 +4393,7 @@ paths:
           type: string
         - name: group_id
           in: path
-          description: The ID of the group to retrieve API keys for.
+          description: The ID of the group to remove API keys from.
           required: true
           type: string
         - in: body
@@ -3483,11 +4406,11 @@ paths:
         '200':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/GroupSummary'
         '400':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Authentication failure.
           schema:
@@ -3504,6 +4427,12 @@ paths:
           description: The API key is a member of the account group already.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/applications/add
+        links: []
   '/v3/accounts/{account_id}/policy-groups/{group_id}/api-keys/remove':
     post:
       tags:
@@ -3516,7 +4445,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/api-keys/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"apikeys": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
@@ -3563,6 +4492,197 @@ paths:
           description: An account or group with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/applications/remove
+        links: []
+  '/v3/accounts/{account_id}/policy-groups/{group_id}/applications':
+    get:
+      tags:
+        - Tenant accounts - policy groups
+      summary: Get applications in a group.
+      description: |-
+        Retrieve an array of applications associated with a policy group.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/applications \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getApplicationsOfAccountGroup
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account.
+          required: true
+          type: string
+        - name: group_id
+          in: path
+          description: The ID of the group to retrieve applications for.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/ApplicationList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or group with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/policy-groups/{group_id}/applications/add':
+    post:
+      tags:
+        - Tenant accounts - policy groups
+      summary: Add applications to account group.
+      description: |-
+        Add applications to account groups.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/applications/add \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"applications": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
+        ```
+      operationId: addListedApplicationsToAccountGroup
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account.
+          required: true
+          type: string
+        - name: group_id
+          in: path
+          description: The ID of the group to add applications to.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of applications to add to the group.
+          required: true
+          schema:
+            $ref: '#/definitions/SubjectList'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/GroupSummary'
+        '400':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or group with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: The application is a member of the group already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/policy-groups/{group_id}/applications/remove':
+    post:
+      tags:
+        - Tenant accounts - policy groups
+      summary: Remove applications from a group.
+      description: |-
+        Remove applications from groups.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/applications/remove \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"applications": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
+        ```
+      operationId: removeListedApplicationsFromAccountGroup
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account.
+          required: true
+          type: string
+        - name: group_id
+          in: path
+          description: The ID of the group to remove applications from.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of applications to remove from the group.
+          required: true
+          schema:
+            $ref: '#/definitions/SubjectList'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/GroupSummary'
+        '400':
+          description: 'Error in input data, for example, the array of applications is missing.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or group with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/policy-groups/{group_id}/users':
     get:
       tags:
@@ -3575,7 +4695,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getUsersOfAccountGroup
       produces:
@@ -3600,12 +4720,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -3657,7 +4777,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: addUsersToAccountGroup
       produces:
@@ -3670,12 +4790,12 @@ paths:
           type: string
         - name: group_id
           in: path
-          description: The ID of the group to retrieve API keys for.
+          description: The ID of the group to add users to.
           required: true
           type: string
         - in: body
           name: body
-          description: A list of API keys to add to the group.
+          description: A list of user IDs to add to the group.
           required: true
           schema:
             $ref: '#/definitions/SubjectList'
@@ -3683,11 +4803,11 @@ paths:
         '200':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/GroupSummary'
         '400':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Authentication failure.
           schema:
@@ -3721,7 +4841,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
          -H 'content-type: application/json' \
         -d '{"users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
@@ -3786,7 +4906,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/users/add \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: addListedUsersToAccountGroup
       produces:
@@ -3799,12 +4919,12 @@ paths:
           type: string
         - name: group_id
           in: path
-          description: The ID of the group to retrieve API keys for.
+          description: The ID of the group to retrieve users for.
           required: true
           type: string
         - in: body
           name: body
-          description: A list of API keys to add to the group.
+          description: A list of users to add to the group.
           required: true
           schema:
             $ref: '#/definitions/SubjectList'
@@ -3812,11 +4932,11 @@ paths:
         '200':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/GroupSummary'
         '400':
           description: Successful operation.
           schema:
-            $ref: '#/definitions/ApiKeyInfoRespList'
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Authentication failure.
           schema:
@@ -3844,8 +4964,8 @@ paths:
 
         **Example:**
         ```
-        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>' \
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/policy-groups/{group_id}/users/remove \
+        -H 'Authorization: Bearer <access_key>' \
          -H 'content-type: application/json' \
         -d '{"users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
@@ -3904,7 +5024,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountCertificates
       produces:
@@ -3924,12 +5044,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -4006,7 +5126,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '403':
-          description: 'Forbidden, only available for admins of commercial accounts.'
+          description: 'Forbidden, only available for administrators of commercial accounts.'
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
@@ -4024,7 +5144,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"name": "myCert1", "description": "very important cert", "certificate": "certificate_data", "service": "lwm2m"}
         ```
@@ -4059,7 +5179,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '403':
-          description: 'Forbidden, only available for admins of commercial accounts.'
+          description: 'Forbidden, only available for administrators of commercial accounts.'
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
@@ -4078,7 +5198,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates/{cert_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountCertificate
       produces:
@@ -4104,11 +5224,11 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '403':
-          description: 'Forbidden, only available for admins of commercial accounts.'
+          description: 'Forbidden, only available for administrators of commercial accounts.'
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or certificate with the given ID not found.
+          description: An account or certificate with the given ID not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
     put:
@@ -4122,7 +5242,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates/{cert_id} \
-         -H 'Authorization: Bearer <api_key>' \
+         -H 'Authorization: Bearer <access_key>' \
          -H 'content-type: application/json' \
          -d {"description": "very important cert"}
          ```
@@ -4162,7 +5282,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '403':
-          description: 'Forbidden, only available for admins of commercial accounts.'
+          description: 'Forbidden, only available for administrators of commercial accounts.'
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
@@ -4180,7 +5300,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates/{cert_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteAccountCertificate
       produces:
@@ -4204,11 +5324,11 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '403':
-          description: 'Forbidden, only available for admins of commercial accounts.'
+          description: 'Forbidden, only available for administrators of commercial accounts.'
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Account or certificate with the given ID not found.
+          description: An account or certificate with the given ID not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/user-invitations':
@@ -4223,7 +5343,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/user-invitations \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountInvitations
       produces:
@@ -4243,12 +5363,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -4285,7 +5405,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accouns/{account_id}/user-invitations \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"email": "myemail@company.com"}
         ```
@@ -4335,7 +5455,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/user-invitations/{invitation_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountInvitation
       produces:
@@ -4379,7 +5499,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/user-invitations/{invitation_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteAccountInvitation
       produces:
@@ -4422,7 +5542,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllAccountUsers
       produces:
@@ -4442,12 +5562,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -4509,7 +5629,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"email": "myemail@company.com"}
         ```
@@ -4573,7 +5693,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAccountUser
       produces:
@@ -4617,7 +5737,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"username": "myusername"}'
         ```
@@ -4679,7 +5799,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteAccountUser
       produces:
@@ -4726,7 +5846,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getGroupsOfAccountUser
       produces:
@@ -4741,12 +5861,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -4793,7 +5913,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -4863,7 +5983,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -4930,7 +6050,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/groups/add \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -4993,7 +6113,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/groups/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5052,7 +6172,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/validate-email \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: validateAccountUserEmail
       produces:
@@ -5094,7 +6214,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllApiKeys
       produces:
@@ -5109,12 +6229,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -5148,6 +6268,12 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys
+        links: []
     post:
       tags:
         - Account - API keys
@@ -5158,7 +6284,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys -d '{"name": "MyKey1"}' \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json'
         ```
       operationId: createApiKey
@@ -5190,6 +6316,12 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys
+        links: []
   /v3/api-keys/me:
     get:
       tags:
@@ -5201,7 +6333,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/api-keys/me \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getMyApiKey
       produces:
@@ -5220,6 +6352,12 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated.
+        links: []
     put:
       tags:
         - Account - API keys
@@ -5230,7 +6368,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/api-keys/me \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestApiKey25"}'
         ```
@@ -5261,6 +6399,12 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated.
+        links: []
   /v3/api-keys/me/groups:
     get:
       tags:
@@ -5272,7 +6416,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/api-keys/me/groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getGroupsOfMyApiKey
       produces:
@@ -5287,12 +6431,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -5314,6 +6458,12 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated.
+        links: []
     post:
       tags:
         - Account - API keys
@@ -5324,7 +6474,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/me/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5379,7 +6529,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/api-keys/me/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5429,7 +6579,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/me/groups/add/ \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5466,6 +6616,12 @@ paths:
           description: The API key is a member of the group already.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups/add
+        links: []
   /v3/api-keys/me/groups/remove:
     post:
       tags:
@@ -5477,7 +6633,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/me/groups/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5510,6 +6666,12 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups/remove
+        links: []
   '/v3/api-keys/{apikey_id}':
     get:
       tags:
@@ -5521,7 +6683,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getApiKey
       produces:
@@ -5546,9 +6708,15 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: API key with the specified ID does not exist.
+          description: An API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id}
+        links: []
     put:
       tags:
         - Account - API keys
@@ -5558,7 +6726,7 @@ paths:
 
         **Example:**
         `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestApiKey25"}'
         ```
@@ -5595,9 +6763,15 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: The API key with the specified ID does not exist.
+          description: An API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id}
+        links: []
     delete:
       tags:
         - Account - API keys
@@ -5608,7 +6782,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteApiKey
       produces:
@@ -5631,9 +6805,15 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: The API key with the specified ID does not exist.
+          description: An API key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use DELETE https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id}
+        links: []
   '/v3/api-keys/{apikey_id}/groups':
     get:
       tags:
@@ -5646,7 +6826,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id}/groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getGroupsOfApikey
       produces:
@@ -5661,12 +6841,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -5697,6 +6877,12 @@ paths:
           description: An API key with the given ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups
+        links: []
     post:
       tags:
         - Account - API keys
@@ -5708,7 +6894,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5773,7 +6959,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5835,7 +7021,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id}/groups/add \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5881,6 +7067,12 @@ paths:
           description: The API key is a member of the group already.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups/add
+        links: []
   '/v3/api-keys/{apikey_id}/groups/remove':
     post:
       tags:
@@ -5893,7 +7085,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id}/groups/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -5935,6 +7127,12 @@ paths:
           description: An API key with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated. Use POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups/remove
+        links: []
   '/v3/api-keys/{apikey_id}/reset-secret':
     post:
       tags:
@@ -5946,7 +7144,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id}/reset-secret \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: resetSecret
       produces:
@@ -5969,6 +7167,778 @@ paths:
           schema:
             $ref: '#/definitions/ApiKeyInfoResp'
         '400':
+          description: Error in input data format.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An API key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated.
+        links: []
+  '/v3/access-keys':
+    get:
+      tags:
+        - Account - access keys
+      summary: Get all access keys.
+      description: |-
+        Retrieve an array of access keys.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/access-keys \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllAccessKeys
+      produces:
+        - application/json
+      parameters:
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+        - name: application_id__eq
+          in: query
+          description: Application filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKeyList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/access-keys/{access_key_id}':
+    get:
+      tags:
+        - Account - access keys
+      summary: Get access key.
+      description: |-
+        Retrieve details of an access key.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/applications:
+    get:
+      tags:
+        - Account - applications
+      summary: Get all applications.
+      description: |-
+        Retrieve an array of applications.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllApplications
+      produces:
+        - application/json
+      parameters:
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/ApplicationList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - Account - applications
+      summary: Create a new application.
+      description: |-
+        Create a new application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/applications -d '{"name": "MyApplication1"}' \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json'
+        ```
+      operationId: createApplication
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The details of the application to create.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+      responses:
+        '201':
+          description: New entity created.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+        '400':
+          description: 'Error in input data, for example, missing name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}':
+    get:
+      tags:
+        - Account - applications
+      summary: Get application.
+      description: |-
+        Retrieve details of an application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getApplication
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Account - applications
+      summary: Update applicationdetails.
+      description: |-
+        Update application details.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id} \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"name": "TestApplication25"}'
+        ```
+      operationId: updateApplication
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application to update.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: New applicationattributes to store.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/Application'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/ApiKeyInfoResp'
+        '400':
+          description: 'Error in input data, for example, invalid display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Account - applications
+      summary: Delete application.
+      description: |-
+        Delete the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/applications/{application_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: deleteApplication
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application to delete.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Deleted successfully.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/access-keys':
+    get:
+      tags:
+        - Account - applications
+      summary: Get all access keys associated with the application.
+      description: |-
+        Retrieve an array of access keys associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllApplicationAccessKeys
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKeyList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - Account - applications
+      summary: Create a new applicationaccess key.
+      description: |-
+        Create a new access key for the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys -d '{"name": "MyKey1"}' \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json'
+        ```
+      operationId: createApplicationAccessKey
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The details of the access key to create.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+      responses:
+        '201':
+          description: New entity created.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '400':
+          description: 'Error in input data, for example, missing display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/access-keys/{access_key_id}':
+    get:
+      tags:
+        - Account - applications
+      summary: Get access key.
+      description: |-
+        Retrieve details of an access key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getApplicationAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Account - applications
+      summary: Update access key details.
+      description: |-
+        Update access key details.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"name": "TestAccessKey"}'
+        ```
+      operationId: updateApplicationAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to update.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: New access key attributes to store.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccessKey'
+        '400':
+          description: 'Error in input data, for example, invalid display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Account - applications
+      summary: Delete access key associated with the application.
+      description: |-
+        Delete the access key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: deleteApplicationAccessKey
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: access_key_id
+          in: path
+          description: The ID of the access key to delete.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Deleted successfully.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/groups':
+    get:
+      tags:
+        - Account - applications
+      summary: Get policy groups of an application.
+      description: |-
+        Retrieve an array of policy groups associated with an application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getGroupsOfApplication
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/GroupSummaryList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the given ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/groups/add':
+    post:
+      tags:
+        - Account - applications
+      summary: Add application to a list of groups.
+      description: |-
+        Add application to groups.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups/add \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        ```
+      operationId: addApplicationToGroups
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application to add to the group.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of IDs of the groups to update.
+          required: true
+          schema:
+            $ref: '#/definitions/GroupIdList'
+      responses:
+        '204':
+          description: Successful operation.
+        '400':
+          description: Error in input data.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A group or application with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: The application is a member of the group already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/groups/remove':
+    post:
+      tags:
+        - Account - applications
+      summary: Remove application from groups.
+      description: |-
+        Remove application from groups.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/groups/remove \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        ```
+      operationId: removeApplicationFromGroups
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application to remove from the group.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of IDs of the groups to update.
+          required: true
+          schema:
+            $ref: '#/definitions/GroupIdList'
+      responses:
+        '204':
+          description: Successful operation.
+        '400':
           description: 'Error in input data, for example, invalid API key name.'
           schema:
             $ref: '#/definitions/ErrorResponse'
@@ -5981,7 +7951,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: An API key with the specified ID does not exist.
+          description: An application with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
   /v3/branding-colors:
@@ -5994,7 +7964,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllColors
       produces:
         - application/json
@@ -6025,7 +7995,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-colors/dark \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getDarkColors
       produces:
@@ -6055,7 +8025,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/branding-colors/dark \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         '[{ "reference": "primary",
            "color": "#f3f93e" }]'
@@ -6098,7 +8068,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors/dark -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors/dark -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllDarkColors
       produces:
         - application/json
@@ -6129,7 +8099,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-colors/dark/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getDarkColor
       produces:
@@ -6164,7 +8134,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/branding-colors/dark/primary \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{ "color": "#f3f93e" }'
         ```
@@ -6213,7 +8183,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors/light/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: resetDarkColor
       produces:
@@ -6246,7 +8216,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-colors/light \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getLightColors
       produces:
@@ -6276,7 +8246,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/branding-colors/light \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         '[{ "reference": "primary",
            "color": "purple" }]'
@@ -6319,7 +8289,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors/light -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors/light -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllLightColors
       produces:
         - application/json
@@ -6350,7 +8320,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-colors/light/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getLightColor
       produces:
@@ -6385,7 +8355,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/branding-colors/light/primary \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{ "color": "purple" }'
         ```
@@ -6434,7 +8404,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-colors/light/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: resetLightColor
       produces:
@@ -6466,7 +8436,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-images -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-images -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllImages
       produces:
         - application/json
@@ -6496,7 +8466,7 @@ paths:
 
         **Example:**
         `curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-images/dark \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllDarkImageData
       produces:
@@ -6524,7 +8494,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-images/dark -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-images/dark -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllDarkImages
       produces:
         - application/json
@@ -6555,7 +8525,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-images/dark/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getDarkImageData
       produces:
@@ -6591,7 +8561,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/branding-images/dark/{reference}/clear \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: clearDarkImage
       produces:
@@ -6625,7 +8595,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/branding-images/dark/{reference}/upload \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: image/png'  --data-binary '@myimage.png'
         ```
       operationId: uploadDarkImage
@@ -6729,7 +8699,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-images/light \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllLightImageData
       produces:
@@ -6757,7 +8727,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example usage:**
-        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-images/light -H 'Authorization: Bearer API_KEY'`
+        `curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/branding-images/light -H 'Authorization: Bearer <access_key>'`
       operationId: deleteAllLightImages
       produces:
         - application/json
@@ -6788,7 +8758,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/branding-images/light/{reference} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getLightImageData
       produces:
@@ -6824,7 +8794,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/branding-images/light/{reference}/clear \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: clearLightImage
       produces:
@@ -6858,7 +8828,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/branding-images/light/{reference}/upload \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: image/png' --data-binary '@myimage.png'
         ```
       operationId: uploadLightImage
@@ -6974,12 +8944,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -7076,7 +9046,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Identity provider not found.
+          description: An identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
     put:
@@ -7122,7 +9092,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Identity provider not found.
+          description: An identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
     delete:
@@ -7153,7 +9123,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Identity provider not found.
+          description: An identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/identity-providers/{identity_provider_id}/delete-sp-certificate':
@@ -7193,7 +9163,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Identity provider not found.
+          description: An identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/identity-providers/{identity_provider_id}/generate-sp-certificate':
@@ -7243,7 +9213,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Identity provider not found.
+          description: An identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/identity-providers/{identity_provider_id}/refresh-jwks':
@@ -7287,7 +9257,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Identity provider not found.
+          description: An identity provider not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   /v3/limitations:
@@ -7361,7 +9331,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/policy-groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllGroups
       produces:
@@ -7376,12 +9346,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -7419,7 +9389,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' -d '{"name": "MyGroup1"}'
         ```
       operationId: createGroup
@@ -7466,7 +9436,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getGroupSummary
       produces:
@@ -7505,7 +9475,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]}'
         ```
@@ -7562,7 +9532,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestGroup2"}'
         ```
@@ -7615,7 +9585,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteGroup
       produces:
@@ -7641,6 +9611,176 @@ paths:
           description: A group with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+  '/v3/policy-groups/{group_id}/applications':
+    get:
+      tags:
+        - Account - policy groups
+      summary: Get the applications of a policy group.
+      description: |-
+        Retrieve an array of applications associated with a policy group.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/applications \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getApplicationsOfGroup
+      produces:
+        - application/json
+      parameters:
+        - name: group_id
+          in: path
+          description: The ID of the group.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/ApplicationList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A group with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/policy-groups/{group_id}/applications/add':
+    post:
+      tags:
+        - Account - policy groups
+      summary: Add applications to the group.
+      description: |-
+        Add applications to the group.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/applications/remove \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{ "applications": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
+        ```
+      operationId: addListedApplicationsToGroup
+      produces:
+        - application/json
+      parameters:
+        - name: group_id
+          in: path
+          description: The ID of the group.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of applications to add to the group.
+          required: true
+          schema:
+            $ref: '#/definitions/SubjectList'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/GroupSummary'
+        '400':
+          description: 'Error in input data, for example, the group Id does not exist.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A group with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: The application is a member of the group already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/policy-groups/{group_id}/applications/remove':
+    post:
+      tags:
+        - Account - policy groups
+      summary: Remove applications from a group.
+      description: |-
+        Remove applications from groups.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/applications/remove \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{ "applications": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
+        ```
+      operationId: removeListedApplicationsFromGroup
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: group_id
+          in: path
+          description: The ID of the group.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: A list of applications to remove from the group.
+          required: true
+          schema:
+            $ref: '#/definitions/SubjectList'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/GroupSummary'
+        '400':
+          description: 'Error in input data, for example, the array of applications is missing.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A group with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/policy-groups/{group_id}/api-keys':
     get:
       tags:
@@ -7652,7 +9792,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getApiKeysOfGroup
       produces:
@@ -7672,12 +9812,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -7703,6 +9843,12 @@ paths:
           description: A group with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated, GET https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/applications
+        links: []
     post:
       tags:
         - Account - policy groups
@@ -7713,7 +9859,9 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{ "apikeys" : ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: addApiKeysToGroup
       produces:
@@ -7771,9 +9919,9 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
-        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        -d '{ "apikeys": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: removeApiKeysFromGroup
       consumes:
@@ -7829,8 +9977,10 @@ paths:
 
         **Example:**
         ```
-        curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/api-keys \
-        -H 'Authorization: Bearer <api_key>'
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/api-keys/add \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{ "apikeys" : ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: addListedApiKeysToGroup
       produces:
@@ -7872,6 +10022,12 @@ paths:
           description: The API key is a member of the group already.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated, POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/applications/add
+        links: []
   '/v3/policy-groups/{group_id}/api-keys/remove':
     post:
       tags:
@@ -7883,9 +10039,9 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/api-keys/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
-        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        -d '{ "apikeys" : ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: removeListedApiKeysFromGroup
       consumes:
@@ -7925,6 +10081,12 @@ paths:
           description: A group with that ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-08-01T00:00:00+00:00"
+        end_of_life_at: "2021-08-01T00:00:00+00:00"
+        comment: This endpoint is deprecated, POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/applications/remove
+        links: []
   '/v3/policy-groups/{group_id}/users':
     get:
       tags:
@@ -7937,7 +10099,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getUsersOfGroup
       produces:
@@ -7957,12 +10119,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -8014,7 +10176,9 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{ "users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: addUsersToGroup.
       produces:
@@ -8073,9 +10237,9 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/users \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
-        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        -d '{ "users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: removeUsersFromGroup
       consumes:
@@ -8133,9 +10297,9 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/users/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
-        -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
+        -d '{ "users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: removeListedUsersFromGroup
       consumes:
@@ -8187,7 +10351,9 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/policy-groups/{group_id}/users/add \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{ "users": ["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"] }'
         ```
       operationId: addListedUsersToGroup.
       produces:
@@ -8240,7 +10406,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/trusted-certificates \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllCertificates
       produces:
@@ -8255,12 +10421,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -8351,7 +10517,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/trusted-certificates \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"name": "myCert1", "description": "very important cert", "certificate": "certificate_data", "service": "lwm2m"}
         ```
@@ -8381,7 +10547,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '403':
-          description: 'Forbidden, only available for admins of commercial accounts.'
+          description: 'Forbidden, only available for administrators of commercial accounts.'
           schema:
             $ref: '#/definitions/ErrorResponse'
         '409':
@@ -8399,7 +10565,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/trusted-certificates/{cert_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getCertificate
       produces:
@@ -8424,7 +10590,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Certificate not found.
+          description: A certificate not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
     put:
@@ -8437,7 +10603,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/trusted-certificates/{cert_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"description": "very important cert"}
         ```
@@ -8476,7 +10642,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Certificate not found.
+          description: A certificate not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
         '409':
@@ -8493,7 +10659,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/trusted-certificates/{cert_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteCertificate
       produces:
@@ -8516,7 +10682,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '404':
-          description: Certificate not found.
+          description: A certificate not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   /v3/user-invitations:
@@ -8531,7 +10697,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/user-invitations \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllInvitations
       produces:
@@ -8546,12 +10712,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -8584,7 +10750,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/user-invitations \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"email": "myemail@company.com"}
         ```
@@ -8629,7 +10795,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/user-invitations/{invitation_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getInvitation
       produces:
@@ -8668,7 +10834,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/user-invitations/{invitation_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteInvitation
       produces:
@@ -8706,7 +10872,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/users \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getAllUsers
       produces:
@@ -8721,12 +10887,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -8784,7 +10950,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/users?action=invite \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d {"email": "myemail@company.com"}
         ```
@@ -8839,7 +11005,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/users/{user_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getUser
       produces:
@@ -8878,7 +11044,7 @@ paths:
         **Example:**
         ```
         curl -X PUT https://api.us-east-1.mbedcloud.com/v3/users/{user_id} \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"username": "myusername"}'
         ```
@@ -8935,7 +11101,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/users/{user_id} \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: deleteUser
       produces:
@@ -8977,7 +11143,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/users/{user_id}/groups \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getGroupsOfUser
       produces:
@@ -8992,12 +11158,12 @@ paths:
           format: int32
         - name: after
           in: query
-          description: The entity ID to fetch after the given one.
+          description: The entity ID to retrieve after the given one.
           required: false
           type: string
         - name: order
           in: query
-          description: 'Record order based on creation time. Acceptable values: ASC, DESC. Default: ASC.'
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
           required: false
           type: string
           default: ASC
@@ -9039,7 +11205,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/users/{user_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -9104,7 +11270,7 @@ paths:
         **Example:**
         ```
         curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/users/{user_id}/groups \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -9166,7 +11332,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/users/{user_id}/groups/add \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -9224,7 +11390,7 @@ paths:
         **Example:**
         ```
         curl -X POST https://api.us-east-1.mbedcloud.com/v3/users/{user_id}/groups/remove \
-        -H 'Authorization: Bearer <api_key>' \
+        -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '["0162056a9a1586f30242590700000000","0117056a9a1586f30242590700000000"]'
         ```
@@ -9958,7 +12124,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -10077,7 +12243,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: The entity ID to fetch after the given one.
+        description: The entity ID to retrieve after the given one.
       order:
         type: string
         description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
@@ -10535,7 +12701,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -10579,20 +12745,6 @@ definitions:
           - ACTIVE
           - INACTIVE
     description: 'Represents an API key in requests towards Device Management.'
-  BrandingColorUpdate:
-    type: object
-    required:
-      - reference
-    properties:
-      color:
-        type: string
-        example: '#f3f93e'
-        description: 'The color given as name (purple) or as a hex code.'
-        x-nullable: true
-      reference:
-        type: string
-        description: 'Color name.'
-        <<: *branding_colors
   BrandingColor:
     type: object
     properties:
@@ -10617,6 +12769,20 @@ definitions:
         example: '2018-02-14T15:24:14Z'
         description: 'Last update time in UTC.'
         readOnly: true
+  BrandingColorUpdate:
+    type: object
+    required:
+      - reference
+    properties:
+      color:
+        type: string
+        example: '#f3f93e'
+        description: 'The color given as name (purple) or as a hex code.'
+        x-nullable: true
+      reference:
+        type: string
+        description: 'Color name.'
+        <<: *branding_colors
   BrandingColorList:
     type: object
     required:
@@ -10639,7 +12805,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -10708,7 +12874,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -10955,11 +13121,21 @@ definitions:
         format: int32
         example: 1
         description: 'The number of users in this group.'
+      application_count:
+        type: integer
+        format: int32
+        example: 0
+        description: 'The number of applications in this group.'
       apikey_count:
         type: integer
         format: int32
         example: 0
         description: 'The number of API keys in this group.'
+        x-deprecation:
+          issued_at: "2020-08-01T00:00:00+00:00"
+          end_of_life_at: "2021-08-01T00:00:00+00:00"
+          comment: This property is deprecated. See 'application_count' property.
+          links: []
     description: 'This object contains basic information about groups.'
   GroupSummaryList:
     type: object
@@ -10983,7 +13159,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -11140,7 +13316,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -11302,7 +13478,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -11422,11 +13598,21 @@ definitions:
         description: 'An array of user IDs.'
         items:
           type: string
+      applications:
+        type: array
+        description: 'An array of applicationIDs.'
+        items:
+          type: string
       apikeys:
         type: array
         description: 'An array of API key IDs.'
         items:
           type: string
+        x-deprecation:
+          issued_at: "2020-08-01T00:00:00+00:00"
+          end_of_life_at: "2021-08-01T00:00:00+00:00"
+          comment: This field is deprecated, use 'applications'
+          links: []
     description: 'Represents arrays of user and API key IDs.'
   OIDCInfo:
     type: object
@@ -11509,6 +13695,7 @@ definitions:
       sub:
         type: string
         description: Custom claim name for 'sub'.
+        example: sub
         x-nullable: true
       email:
         type: string
@@ -11518,26 +13705,32 @@ definitions:
       email_verified:
         type: string
         description: Custom claim name for 'email_verified'.
+        example: email_verified
         x-nullable: true
       name:
         type: string
         description: Custom claim name for 'name'.
+        example: name
         x-nullable: true
       given_name:
         type: string
         description: Custom claim name for 'given_name'.
+        example: given_name
         x-nullable: true
       family_name:
         type: string
         description: Custom claim name for 'family_name'.
+        example: family_name
         x-nullable: true
       phone_number:
         type: string
         description: Custom claim name for 'phone_number'.
+        example: phone_number
         x-nullable: true
       updated_at:
         type: string
         description: Custom claim name for 'updated_at'.
+        example: updated_at
         x-nullable: true
       updated_at_pattern:
         type: string
@@ -11724,7 +13917,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -12000,7 +14193,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -12137,7 +14330,7 @@ definitions:
       after:
         type: string
         example: 01619571f3c00242ac12000600000000
-        description: 'The entity ID to fetch after the given one.'
+        description: 'The entity ID to retrieve after the given one.'
         pattern: '[a-f0-9]{32}'
       order:
         type: string
@@ -12228,3 +14421,4 @@ definitions:
     type: array
     items:
       type: string
+      example: 01705c6383f6c85b76f92f4e00000000

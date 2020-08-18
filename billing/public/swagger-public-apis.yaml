@@ -69,7 +69,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getServicePackages
       tags:
@@ -178,7 +178,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages-quota \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getServicePackageQuota
       tags:
@@ -244,7 +244,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages-quota-history \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getServicePackageQuotaHistory
       tags:
@@ -369,7 +369,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-report?month=2018-07 \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getBillingReport
       tags:
@@ -630,7 +630,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-report-active-devices?month=2018-07 \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getBillingReportActiveDevices
       tags:
@@ -739,7 +739,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-report-firmware-updates?month=2018-07 \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getBillingReportFirmwareUpdates
       tags:
@@ -855,7 +855,7 @@ paths:
         **Example:**
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/v3/billing-statistics?start=2019-11-01T00:00:00.000Z&end=2019-12-01T00:00:00.000Z&interval=1d \
-             -H 'Authorization: Bearer <api_key>'
+             -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getStatisticsView
       tags:
@@ -2012,7 +2012,7 @@ definitions:
 
   RestApiRequestsWithApiKeyTokenCounter:
     type: integer
-    description: The number of REST API requests from API key sessions in web applications or other service integrations.
+    description: The number of REST API requests made with access keys in web applications or other service integrations.
     format: int64
     minimum: 0
 

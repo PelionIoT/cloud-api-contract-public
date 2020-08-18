@@ -115,3 +115,249 @@ definitions:
         description: The ID of the user in the identity provider's service.
         readOnly: true
     description: 'Represents a user login profile in Device Management.'
+  AccessKey:
+    type: object
+    required:
+      - name
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always ''access-key'''
+        enum:
+          - access-key
+        readOnly: true
+      id:
+        type: string
+        example: 01619571f7020242ac12000600000000
+        description: 'The ID of the access key.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      etag:
+        type: string
+        example: '1'
+        description: 'API resource entity version.'
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+        example: '2020-02-13T09:35:20Z'
+        description: 'Creation UTC time RFC3339.'
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        example: '2020-02-14T15:24:14Z'
+        description: 'Last update UTC time RFC3339.'
+        readOnly: true
+      account_id:
+        type: string
+        example: 01619571e2e90242ac12000600000000
+        description: 'The ID of the account.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      application_id:
+        type: string
+        example: 01705c6383f6c85b76f92f4e00000000
+        description: 'The ID of the application.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      name:
+        type: string
+        maxLength: 100
+        example: Access key warp
+        description: 'The display name for the access key.'
+      description:
+        type: string
+        maxLength: 500
+        example: Access key to control the warp drive
+        description: 'The description of the access key.'
+      key:
+        type: string
+        example: ak_2MDE2MTk1NzFmNmU4MDI0MmFjMTIwMDA2MDAwMDAwMDA01619571f7020242ac12000600000000
+        description: 'The access key. The full key including the secret part is visible in the response for create only'
+        readOnly: true
+      expiration:
+        type: string
+        format: date-time
+        description: |-
+          Expiration time of the access key, as UTC time RFC3339.
+          Expiration makes the access key inoperative and the status will be EXPIRED.
+          The client using the expired access key is no longer able to use the REST API.
+          The access key expiration does not invalidate existing configurations meaning that subscribed events will continue to flow on existing channels.
+      status:
+        type: string
+        example: ACTIVE
+        description: |-
+          The status of the access key.
+          ACTIVE means that the access key is operational.
+          INACTIVE means that the access key is not operational and it prevents the clients to use the REST API. Inactivating the access key does not invalidate existing configurations meaning that subscribed events will continue to flow on existing channels.
+          The EXPIRED status is not allowed to be set directly, it is derived from the expiration attribute.
+        enum:
+          - ACTIVE
+          - INACTIVE
+          - EXPIRED
+      last_used_at:
+        type: string
+        format: date-time
+        example: '2020-02-14T15:24:14Z'
+        description: 'The time of the latest access key usage.'
+        readOnly: true
+    description: 'Represents an application in Device Management.'
+  AccessKeyList:
+    type: object
+    required:
+      - data
+      - has_more
+      - limit
+      - object
+      - total_count
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always `list`.'
+        enum:
+          - list
+      limit:
+        type: integer
+        format: int32
+        example: 50
+        description: 'The number of results to return, or equal to `total_count`.'
+      after:
+        type: string
+        example: 01619571f3c00242ac12000600000000
+        description: 'The entity ID to retrieve after the given one.'
+        pattern: '[a-f0-9]{32}'
+      order:
+        type: string
+        description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
+        enum:
+          - ASC
+          - DESC
+      total_count:
+        type: integer
+        format: int32
+        example: 20
+        description: 'The total number of records, if requested.'
+      has_more:
+        type: boolean
+        example: false
+        description: 'Flag indicating whether there are more results.'
+      data:
+        type: array
+        description: 'A list of entities.'
+        items:
+          $ref: '#/definitions/AccessKey'
+  Application:
+    type: object
+    required:
+      - name
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always ''application'''
+        enum:
+          - application
+        readOnly: true
+      id:
+        type: string
+        example: 01619571f7020242ac12000600000000
+        description: 'The ID of the application.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      etag:
+        type: string
+        example: '1'
+        description: 'API resource entity version.'
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+        example: '2020-02-18T09:16:40Z'
+        description: 'Creation UTC time RFC3339.'
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        example: '2020-02-19T11:54:32Z'
+        description: 'Last update UTC time RFC3339.'
+        readOnly: true
+      account_id:
+        type: string
+        example: 01619571e2e90242ac12000600000000
+        description: 'The ID of the account.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      name:
+        type: string
+        maxLength: 100
+        example: Application warp
+        description: 'The display name for the application.'
+      description:
+        type: string
+        maxLength: 500
+        example: Application to control the warp drive
+        description: 'The description of the application.'
+      groups:
+        type: array
+        description: 'A list of group IDs this application belongs to.'
+        items:
+          type: string
+          example: 01705c6383f6c85b76f92f4e00000000
+      status:
+        type: string
+        example: ACTIVE
+        description: 'The status of the application. When admin sets the application as inactive all related data and configurations are cleared from the system. If application is activated again, client must open new channels and set new subscriptions to start receiving events again.'
+        enum:
+          - ACTIVE
+          - INACTIVE
+      last_used_at:
+        type: string
+        format: date-time
+        example: '2020-02-14T15:24:14Z'
+        description: 'The time of the latest application usage.'
+        readOnly: true
+    description: 'Represents an application in Device Management.'
+  ApplicationList:
+    type: object
+    required:
+      - data
+      - has_more
+      - limit
+      - object
+      - total_count
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always `list`.'
+        enum:
+          - list
+      limit:
+        type: integer
+        format: int32
+        example: 50
+        description: 'The number of results to return, or equal to `total_count`.'
+      after:
+        type: string
+        example: 01619571f3c00242ac12000600000000
+        description: 'The entity ID to retrieve after the given one.'
+        pattern: '[a-f0-9]{32}'
+      order:
+        type: string
+        description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
+        enum:
+          - ASC
+          - DESC
+      total_count:
+        type: integer
+        format: int32
+        example: 20
+        description: 'The total number of records, if requested.'
+      has_more:
+        type: boolean
+        example: false
+        description: 'Flag indicating whether there are more results.'
+      data:
+        type: array
+        description: 'A list of entities.'
+        items:
+          $ref: '#/definitions/Application'
