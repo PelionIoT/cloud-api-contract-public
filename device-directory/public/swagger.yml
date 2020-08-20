@@ -923,7 +923,7 @@ paths:
          The following example suspends a device with category "Lost or stolen". You can see available categories with '/v3/device-block-categories/'.
          ```
          curl -X POST https://api.us-east-1.mbedcloud.com/v3/devices/<device_id>/suspend \
-         -H 'Authorization: Bearer <api_key>' \
+         -H 'Authorization: Bearer <access_key>' \
          -H 'content-type: application/json' \
          -d '{ "category": "lost_or_stolen", "description": "EXAMPLE: Customer contacted via phone and reported device being stolen. Specific time of the theft was not know. Device last used in May/2019"}'
          ```
@@ -959,7 +959,7 @@ paths:
           The following example enables a device to reconnect to Pelion Device Management. The category must match the reason device was suspended. This device was reported stolen, but was found:
           ```
           curl -X POST https://api.us-east-1.mbedcloud.com/v3/devices/<device_id>/resume \
-          -H 'Authorization: Bearer <api_key>' \
+          -H 'Authorization: Bearer <access_key>' \
           -H 'content-type: application/json' \
           -d '{ "category": "lost_or_stolen", "description": "Was found, was not stolen but miss placed"}'
           ```

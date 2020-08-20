@@ -22,7 +22,7 @@ paths:
         <br>
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/downloads/fcu/factory_configurator_utility.zip \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: downloadFactoryTool
       produces:
@@ -58,7 +58,7 @@ paths:
         <br>
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/downloads/fcu/inf \
-        -H 'Authorization: Bearer <api_key>' o
+        -H 'Authorization: Bearer <access_key>' 
         ```
       operationId: getFactoryToolInfo
       produces:
@@ -96,7 +96,7 @@ paths:
         <br>
         ```
         curl -X GET https://api.us-east-1.mbedcloud.com/downloads/fcu/release_notes \
-        -H 'Authorization: Bearer <api_key>'
+        -H 'Authorization: Bearer <access_key>'
         ```
       operationId: getFactoryToolReleaseNotes
       produces:
