@@ -211,19 +211,6 @@ x-aliases:
       maxLength: 1024
       description: The description of the group.
       example: Devices on the factory floor.
-    component_attributes:
-      type: object
-      maxProperties: 10
-      additionalProperties:
-        type: string
-        maxLength: 128
-      description: |-
-        Up to ten component key-value attributes. The key represents the component name, while its value represents the corresponding component version.
-        Keys cannot begin with a number. Both key and value are limited to 128 characters. Updating this field replaces existing contents.
-        Component name must be the same as in device Component Name resource.
-        Component version must comply to semantic versioning. Maximum 3 digits per sub number, therefore max version number will be 999.999.999
-      example:
-        key: value
     custom_attributes:
       type: object
       maxProperties: 10
