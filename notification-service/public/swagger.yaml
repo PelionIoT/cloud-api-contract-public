@@ -299,17 +299,11 @@ paths:
 
         **Example:**
 
-        The curl examples provided are meant only for testing. For production devices, use a websocket client library.
-        As the curl example doesn't know how to responsd to websocket ping, it will stop working shortly after receiving first ping.
+        The example is meant only for testing. For production devices, use a WebSocket client library. Websocat (https://github.com/vi/websocat) is a command-line client for WebSockets, like netcat or cURL. The example command opens a new WebSocket, waits for any data sent to the socket from the server, and prints it to `stdout`.
+
         ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v2/notification/websocket-connect \
-        -H "Authorization:Bearer {apikey}" \
-        -H "Connection:upgrade" \
-        -H "Upgrade:websocket" \
-        -H "Sec-WebSocket-Version: 13" \
-        -H "Sec-WebSocket-Key: {base64nonce}" \
-        --no-buffer \
-        --head
+        websocat wss://api.us-east-1.mbedcloud.com/v2/notification/websocket-connect \
+        -H "Sec-WebSocket-Protocol:wss,pelion_ak_<access_key>"
         ```
       operationId: connectWebsocket
       tags:
