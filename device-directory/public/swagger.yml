@@ -180,6 +180,11 @@ x-aliases:
         - neq
         - in
         - nin
+      net_id:
+        - eq
+        - neq
+        - in
+        - nin
       serial_number:
         - eq
         - neq

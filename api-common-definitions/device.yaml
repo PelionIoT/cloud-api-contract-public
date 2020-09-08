@@ -206,6 +206,12 @@ definitions:
           maxLength: 128
           description: The name given by the web application for the device. Device itself provides only the endpoint_name.
           example: "00000000-0000-0000-0000-000000000000"
+        net_id:
+          type: string
+          default: ""
+          maxLength: 40
+          description: Private network identifier. Used to group nodes connected to a specific border router.
+          example: "0000:0000:0000:0000:0000:0000:0000:0000"
         object:
           type: string
           description: The API resource entity.
