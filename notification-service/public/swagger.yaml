@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: Notifications API
-  description: 'Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details on notification channels.
+  description: 'Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](https://www.pelion.com/docs/device-management/current/resources/resource-change-webapp.html#configuring-notifications) for more details on notification channels.
 
    See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
   version: "2"
