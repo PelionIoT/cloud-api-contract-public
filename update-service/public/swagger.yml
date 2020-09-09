@@ -387,7 +387,7 @@ definitions:
         maxLength: 2000
         example: "This campaign updates Class XX devices to version 1.34"
       device_filter:
-        description: The filter for the devices the campaign is targeting at.
+        description: The filter for the devices the campaign targets. Refer to this using the filter ID.
         type: string
         example: "state__eq=registered"
       finished:
@@ -515,7 +515,7 @@ definitions:
         maxLength: 2000
         example: "description"
       device_filter:
-        description: The filter for the devices the campaign is targeting at.
+        description: The filter for the devices the campaign targets. Refer to this using the filter ID.
         type: string
         example: "state__eq=registered"
       name:
@@ -1772,10 +1772,7 @@ paths:
         -H 'Authorization: Bearer <api_key>' \
         -H 'Content-MD5: Q2h1Y2sgSW51ZwDIAXR5IQ==' \
         -H 'Content-Type: binary/octet-stream' \
-        -H 'Content-Length: 999' \
-        -d '{
-          "IGh0dHBzOi8vYXBpLnVzLWVhc3QtMS5tYmVkY2xvdWQuY29tLy92My9maXJtd2FyZS1pbWFnZXMvdXBsb2FkLWpvYnMve3VwbG9hZF9qb2JfaWR9W5rcw=="
-        }'
+        --data-binary '@chunkfile.bin'
         ```
       consumes:
         - application/octet-stream
@@ -2023,10 +2020,16 @@ paths:
             $ref: '#/definitions/FirmwareImagePage'
         '400':
           description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Unable to find content.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
       x-filter:
         created_at:
           - in
@@ -2089,11 +2092,12 @@ paths:
       consumes:
         - multipart/form-data
       parameters:
-        - description: The firmware image file to upload. File name must not exceed 100 characters.
+        - description: The firmware image file to upload. File name must not exceed 166 characters.
           in: formData
           name: datafile
           required: true
           type: file
+          maxLength: 166
         - description: The description of the firmware image.
           in: formData
           name: description
@@ -2114,12 +2118,20 @@ paths:
             $ref: '#/definitions/FirmwareImage'
         '400':
           description: Cannot validate the data used to create the firmware image.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '403':
           description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         413:
           description: Firmware image too large.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/firmware-images/{image_id}':
     delete:
       tags:
@@ -2146,10 +2158,16 @@ paths:
           description: Firmware image deleted.
         '400':
           description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Firmware image not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
     get:
       tags:
         - Device update - firmware images
@@ -2177,10 +2195,16 @@ paths:
             $ref: '#/definitions/FirmwareImage'
         '400':
           description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Firmware image can't be found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /v3/firmware-manifests/:
     get:
       tags:
@@ -2353,10 +2377,16 @@ paths:
             $ref: '#/definitions/FirmwareManifestPage'
         '400':
           description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Unable to find content.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
       x-filter:
         created_at:
           - in
@@ -2456,10 +2486,16 @@ paths:
         '400':
           description: |
             Validation error. The data used to create the firmware manifest did not validate and/or the manifest uploaded exceeded 2 KB in size.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '403':
           description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/firmware-manifests/{manifest_id}':
     delete:
       tags:
@@ -2486,10 +2522,16 @@ paths:
           description: Firmware manifest deleted.
         '400':
           description: Bad Request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Firmware manifest not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
     get:
       tags:
         - Device update - firmware manifests
@@ -2517,10 +2559,16 @@ paths:
             $ref: '#/definitions/FirmwareManifest'
         '400':
           description: Bad request.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Firmware manifest can't be found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /v3/update-campaigns:
     get:
       tags:
@@ -2709,10 +2757,16 @@ paths:
         '400':
           description: |
             Validation error: The data used to update the campaign did not validate.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Unable to find content.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
       x-filter:
         created_at:
           - in
@@ -2807,8 +2861,16 @@ paths:
         '400':
           description: |
             Validation error: The data used to create the campaign did not validate.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: Conflict, a campaign with the same name already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/update-campaigns/{campaign_id}':
     delete:
       tags:
@@ -2831,10 +2893,16 @@ paths:
         '400':
           description: |
             Validation error: The data used to update the campaign did not validate.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Update campaign can't be found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         409:
           description: Conflict - Cannot delete the campaign while in the current phase.
           schema:
@@ -2862,10 +2930,16 @@ paths:
         '400':
           description: |
             Validation error: The data used to update the campaign did not validate.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Unable to find campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
     put:
       tags:
         - Device update - campaigns
@@ -2880,7 +2954,7 @@ paths:
         -H 'Authorization: Bearer <api_key>' \
         d '{
           "description": "Campaign is for ...",
-          "device_filter": "id__eq=123400000000000000000000000ae45",
+          "device_filter": "123400000000000000000000000ae45",
           "name": "campaign",
           "root_manifest_id": "5678000000000000000000000000bd98",
         }'
@@ -3000,12 +3074,20 @@ paths:
           description: The campaign is starting.
         '400':
           description: Unable to change the phase of the campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Cannot find the campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '409':
           description: Cannot start the campaign while in the current phase.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /v3/update-campaigns/{campaign_id}/stop:
     post:
       tags:
@@ -3027,12 +3109,20 @@ paths:
           description: The campaign is stopping.
         '400':
           description: Unable to change the phase of the campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Cannot find the campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '409':
           description: Cannot stop the campaign while in the current phase.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /v3/update-campaigns/{campaign_id}/archive:
     post:
       tags:
@@ -3054,12 +3144,20 @@ paths:
           description: The campaign has been archived.
         '400':
           description: Unable to change the phase of the campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '401':
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '404':
           description: Cannot find the campaign.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         '409':
           description: Cannot archive the campaign while in the current phase.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   /v3/update-campaigns/{campaign_id}/metrics:
     get:
       tags:
@@ -3083,8 +3181,12 @@ paths:
             $ref: "#/definitions/CampaignMetrics"
         401:
           description: "Unauthorized."
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         404:
           description: "Unable to find campaign or the campaign hasn't started."
+          schema:
+            $ref: '#/definitions/ErrorResponse'
       deprecated: true
       x-deprecation:
         issued_at: "2019-04-10T13:41:00+00:00"
