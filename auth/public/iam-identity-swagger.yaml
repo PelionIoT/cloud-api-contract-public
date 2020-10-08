@@ -5111,6 +5111,11 @@ paths:
           description: 'Filter for subject. Finds all matches where the filter value is a case-insensitive substring of the result. Example: subject__like=cn=su matches CN=subject.'
           required: false
           type: string
+        - name: certificate_fingerprint__eq
+          in: query
+          description: Filter for certificate fingerprint.
+          required: false
+          type: string
         - name: valid__eq
           in: query
           description: 'Filter for finding certificates by validity. True returns certificates which are not yet expired. False returns certificates which have expired.'
@@ -10488,6 +10493,11 @@ paths:
           description: 'Subject filter. Finds all matches where the filter value is a case-insensitive substring of the result. Example: subject__like=cn=su matches CN=subject.'
           required: false
           type: string
+        - name: certificate_fingerprint__eq
+          in: query
+          description: Filter for certificate fingerprint.
+          required: false
+          type: string
         - name: valid__eq
           in: query
           description: 'Filter for finding certificates by validity. True returns certificates which are not yet expired. False returns certificates which have expired.'
@@ -13788,7 +13798,12 @@ definitions:
         description: 'DEPRECATED: Base64 encoded signature of the account ID signed by the certificate to upload. The signature must be hashed with SHA256.'
       enrollment_mode:
         type: boolean
-        description: 'Certificate is used in enrollment mode. Default value is false.'
+        description: 'DEPRECATED: Certificate is used in enrollment mode. Default value is false.'
+        x-deprecation:
+          issued_at: "2020-11-01T00:00:00+00:00"
+          end_of_life_at: "2021-11-01T00:00:00+00:00"
+          comment: 'This field is deprecated, do not use it anymore.'
+          links: []
     description: 'Represents a trusted certificate in upload requests.'
   TrustedCertificateResp:
     type: object
@@ -13889,7 +13904,12 @@ definitions:
       enrollment_mode:
         type: boolean
         example: false
-        description: 'If true, signature is not required. Default value false.'
+        description: 'DEPRECATED: Certificate is used in enrollment mode. Default value is false.'
+        x-deprecation:
+          issued_at: "2020-11-01T00:00:00+00:00"
+          end_of_life_at: "2021-11-01T00:00:00+00:00"
+          comment: 'This field is deprecated, do not use it anymore.'
+          links: []
       certificate_fingerprint:
         type: string
         example: a10fb2c8ba90e6de927bd0ae391dcc38f6115685de2d7024712af37ead0608f1
