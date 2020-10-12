@@ -1213,6 +1213,11 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/EventType"
+        enum: 
+        - "fail"
+        - "skipped"
+        - "info"
+        - "success"
 paths:
   /v3/firmware-images/upload-jobs:
     post:
@@ -3289,7 +3294,7 @@ paths:
       summary: Get an event type for a campaign
       operationId: Update_Campaign_event_types_retrieve
       description: |
-        Get the count for a specific event type; for example, succeeded, failed, or skipped.
+        Get the count for a specific event type, for example, succeeded, failed or skipped.
         <br>
         **Usage example:**
         ```
