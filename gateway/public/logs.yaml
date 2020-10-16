@@ -1,0 +1,302 @@
+swagger: '2.0'
+info:
+  title: Gateway Logs API
+  description: APIs to retreive or store device logs.
+  version: v3
+consumes:
+  - application/json
+x-aliases:
+  limit_param: &limit_param
+    - name: limit
+      in: query
+      type: integer
+      required: false
+      default: 100
+      minimum: 2
+      maximum: 1000
+      description: Limit the number of returned results. The default value is 100.
+  order_param: &order_param
+    - name: order
+      in: query
+      type: string
+      required: false
+      default: "DESC"
+      enum:
+      - ASC
+      - DESC
+      description: 'Record order. Acceptable values: ASC, DESC.'
+  after_param: &after_param
+    - name: after
+      in: query
+      type: string
+      required: false
+      description: The entity ID to fetch after the given one.
+  include_param: &include_param
+    - name: include
+      in: query
+      type: string
+      required: false
+      description: 'Comma-separated additional data to return. Currently supported: total_count'
+  timestamp_lte_param: &timestamp_lte_param
+    - name: timestamp__lte
+      in: query
+      type: string
+      format: date-time
+      required: false
+      description: RFC 3339 UTC timestamp range upper limit.
+  timestamp_gte_param: &timestamp_gte_param
+    - name: timestamp__gte
+      in: query
+      type: string
+      format: date-time
+      required: false
+      description: RFC 3339 UTC timestamp range lower limit.
+  app_name_param: &app_name_param
+    - name: app_name__eq
+      in: query
+      type: string
+      required: false
+      description: Name of the application on a device that generated logs.
+  type_param: &type_param
+    - name: type__eq
+      in: query
+      type: string
+      required: false
+      description: Device log type filter.
+  message_param: &message_param
+    - name: message__eq
+      in: query
+      type: string
+      required: false
+      description: Device log message filter.
+  level_param: &level_param
+    - name: level__gte
+      in: query
+      type: string
+      required: false
+      description: Minimum severity level of logs to retrieve.
+      enum:
+      - DEBUG
+      - TRACE
+      - INFO
+      - WARNING
+      - ERROR
+      - CRITICAL
+paths: 
+  /v3/devices/{device_id}/logs:
+    get:
+      operationId: "ListSingleGatewayDeviceLogs"
+      summary: "Return the logs for a specific device."
+      description: |
+        Retrieve logs for a given device based on a combination of filters.
+
+        **Example usage:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <valid access token>' \
+        https://api.us-east-1.mbedcloud.com/v3/devices/{device_id}/logs
+        ```
+      tags:
+      - Gateway Logs Public API
+      parameters:
+      - name: device_id
+        in: path
+        type: string
+        required: true
+        description: The id of the device
+      - <<: *limit_param
+      - <<: *after_param
+      - <<: *order_param
+      - <<: *include_param
+      - <<: *timestamp_lte_param
+      - <<: *timestamp_gte_param
+      - <<: *app_name_param
+      - <<: *type_param
+      - <<: *message_param
+      - <<: *level_param
+      responses:
+        '200':
+          description: Retrieved logs successfully
+          schema:
+            $ref: "#/definitions/LogsPage"
+        '400':
+          description: Bad request
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '401':
+          description: Not authenticated
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+  /v3/device-logs:
+    get:
+      operationId: "ListGatewayDeviceLogs"
+      summary: "List all device logs based on filters"
+      description: |
+        List logs for all devices based on a combination of filters.
+
+        **Example usage:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <valid access token>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-logs
+        ```
+      tags:
+      - Gateway Logs Public API
+      parameters:
+      - name: device_id__in
+        in: query
+        type: string
+        required: false
+        description: The device ID for which to retrieve logs.
+      - <<: *limit_param
+      - <<: *after_param
+      - <<: *order_param
+      - <<: *include_param
+      - <<: *timestamp_lte_param
+      - <<: *timestamp_gte_param
+      - <<: *app_name_param
+      - <<: *type_param
+      - <<: *message_param
+      - <<: *level_param
+      responses:
+        '200':
+          description: Retrieved logs successfully
+          schema:
+            $ref: "#/definitions/LogsPage"
+        '400':
+          description: Bad request
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '401':
+          description: Not authenticated
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+  /v3/device-logs/{device_log_id}:
+    get:
+      operationId: "GetDeviceLogBasedOnLogID"
+      summary: "Retrieve a device log by ID."
+      description: |
+        Retrieve a device log from a device by log ID.
+
+        **Example usage:**
+        ```
+        curl -X GET \
+        -H 'Authorization: Bearer <valid access token>' \
+        https://api.us-east-1.mbedcloud.com/v3/device-logs/(device_log_id)
+        ```
+      tags:
+      - Gateway Logs Public API
+      parameters:
+      - name: device_log_id
+        in: path
+        type: string
+        required: true
+        description: The ID of the device log.
+      responses:
+        '200':
+          description: Retrieved result successfully
+          schema:
+            $ref: "#/definitions/Log"
+        '401':
+          description: Not authenticated
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+        '404':
+          description: Not found
+          schema:
+            $ref: '../../api-common-definitions/standard.yaml#/definitions/ErrorResponse'
+definitions:
+  Log:
+    type: object
+    properties:
+      object:
+        type: string
+        description: Device log resource name.
+        example: "device-log"
+      id:
+        type: string
+        description: mUUID Entity ID. Each device log has a unique ID.
+        pattern: /^[(0-9)(a-f)]{32}$/
+        example: "2d238a89038b4ddb84699dd36a901063"
+      etag:
+        type: string
+        description: Entity instance signature, or Unix timestamp of last customer update.
+        example: "stdout"
+      created_at:
+        type: string
+        format: date-time
+        description: RFC 3339 UTC timestamp indicating when the resource entity was created.
+        example: "2017-07-21T17:32:28Z"
+      device_id:
+        type: string
+        description: Device ID.
+        example: "00005a4e027f0a580a01081c00000000"
+      account_id:
+        type: string
+        description: The ID of the account associated with the device.
+        example: "0168e7bff4f2263cf4be560700000000"
+      type:
+        type: string
+        description: Device log type.
+        example: "syslog"
+      timestamp:
+        type: string
+        format: date-time
+        description: RFC 3339 UTC timestamp indicating indicating the device time the message was printed.
+        example: "2017-07-21T17:40:28Z"
+      level:
+        type: string
+        description: Log entry severity level.
+        enum:
+        - DEBUG
+        - TRACE
+        - INFO
+        - WARNING
+        - ERROR
+        - CRITICAL
+        example: "ERROR"
+      app_name:
+        type: string
+        description: A tag indicating which application or software module produced the log message.
+        example: "modbus"
+      message:
+        type: string
+        description: Log message body.
+        example: "ModbusRTU Driver: Failed to start undefined"
+  LogsPage:
+    type: object
+    properties:
+      object:
+        type: string
+        description: 'Always `list`.'
+        example: "list"
+      limit:
+        type: integer
+        description: Limit applied on number of device log resource objects retrieved in the page (2-1000).
+        example: 100
+        minimum: 2
+        maximum: 1000
+      after:
+        type: string
+        x-nullable: true
+        description: An offset token for current page.
+      order:
+        type: string
+        description: Entry order based on creation time.
+        example: "DESC"
+      has_more:
+        type: boolean
+        description: Indicates whether more results are available.
+        example: false
+      total_count:
+        format: integer
+        type: integer
+        example: 1
+      data:
+        type: array
+        items:
+          $ref: "#/definitions/Log"
