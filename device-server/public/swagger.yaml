@@ -1154,15 +1154,9 @@ definitions:
         type: boolean
         description: System-level subscription status of the resource. If any of the applications has placed a subscription, the status is true. Overlapping subscriptions from multiple applications do not increase the load on the device as the server handles the multiplexing.
       desired:
-        type: object
-        description: Resource value written, or queued to be written to the device.
-        items:
-          $ref: '#/definitions/EchoResourceDesired'
+        $ref: '#/definitions/EchoResourceDesired'
       reported:
-        type: object
-        description: Reported resource data from the device.
-        items:
-          $ref: '#/definitions/EchoResourceReported'
+        $ref: '#/definitions/EchoResourceReported'
 
   EchoResourceDesired:
     type: object
