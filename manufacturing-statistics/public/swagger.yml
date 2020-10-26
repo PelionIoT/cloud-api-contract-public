@@ -8,8 +8,7 @@ info:
   
     For information on status and error codes, see <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a>.
   
-    [Back to Device Management documentation](https://www.pelion.com/docs/device-management/resource-management-restructure/service-api-references/service-api-documentation.html).
-  
+    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).  
   version: v3
   title: Manufacturing Statistics API
   contact: {}

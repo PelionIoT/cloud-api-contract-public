@@ -278,7 +278,9 @@ info:
   description: |-
       This is the API documentation for the Device Directory service. Device Directory stores metadata, enabling searching and filtering. Device Directory also provides device history information, for example, firmware update and suspend events.
 
-       See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+      See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+
+      See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   title: Device Directory API
   version: '3'
 host: api.us-east-1.mbedcloud.com

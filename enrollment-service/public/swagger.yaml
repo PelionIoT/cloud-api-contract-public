@@ -3,6 +3,8 @@ info:
   title: Enrollment API
   description: |-
     Connect Enrollment Service allows users to claim ownership of a device not yet associated with an account. A device without an assigned account could be one purchased from the open market (OEM dealer) or transferred from one account to another. Refer to the documentation on [Device ownership: First-to-claim](https://www.pelion.com/docs/device-management/current/connecting/device-ownership-first-to-claim-by-enrollment-list.html).
+
+    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   version: '3'
 # the domain of the service
 host: api.us-east-1.mbedcloud.com

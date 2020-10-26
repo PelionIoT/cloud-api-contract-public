@@ -1,10 +1,13 @@
 swagger: '2.0'
 info:
   title: Connect CA API
-  description: 'Connect CA API allows services to get device credentials.
+  description: |-
+    Connect CA API allows services to get device credentials.
 
 
-   See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.'
+    See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+
+    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   version: "3"
 # the domain of the service
 host: api.us-east-1.mbedcloud.com

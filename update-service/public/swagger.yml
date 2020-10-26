@@ -1,7 +1,11 @@
 swagger: '2.0'
 host: api.us-east-1.mbedcloud.com
 info:
-  description: This is the API documentation for the Device Management deployment service, which is part of the Update service.
+  description: |-
+  
+    This is the API documentation for the Device Management deployment service, which is part of the Update service.
+
+    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   title: Update Service Public API
   version: '3'
 schemes:
