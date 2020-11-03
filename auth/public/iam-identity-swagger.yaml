@@ -108,6 +108,9 @@ x-aliases:
       - brand_logo_square
       - brand_logo_landscape
       - brand_logo_email
+      - app_logo_landscape
+      - app_logo_portrait
+      - app_logo_square
       - desktop_background_landscape
       - desktop_background_square
       - desktop_background_portrait
@@ -6168,6 +6171,51 @@ paths:
           description: 'An account, user, or group with that ID does not exist.'
           schema:
             $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/users/{user_id}/remove':
+    post:
+      tags:
+        - Tenant accounts - users
+      summary: Remove user from the account.
+      description: |-
+        Remove user from the account.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/users/{user_id}/remove \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: removeAccountUserFromAccount
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account.
+          required: true
+          type: string
+        - name: user_id
+          in: path
+          description: The ID of the user to remove from the account.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Successful operation.
+        '400':
+          description: Error removing user from the account.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: 'An account or user with that ID does not exist.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/users/{user_id}/validate-email':
     post:
       tags:
@@ -11431,6 +11479,47 @@ paths:
             $ref: '#/definitions/UserInfoResp'
         '400':
           description: Error in input data.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A user with that ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/users/{user_id}/remove':
+    post:
+      tags:
+        - Account - users
+      summary: Remove user from the account.
+      description: |-
+        Remove user from the account.
+
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/users/{user_id}/remove \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: removeUserFromAccount
+      parameters:
+        - name: user_id
+          in: path
+          description: The ID of the user to remove from the account.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Successful operation.
+        '400':
+          description: Error removing user from the account.
           schema:
             $ref: '#/definitions/ErrorResponse'
         '401':
