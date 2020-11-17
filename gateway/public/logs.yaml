@@ -5,7 +5,7 @@ info:
   
     APIs to retrieve or store device logs.
 
-    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
+    See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   version: v3
 consumes:
   - application/json

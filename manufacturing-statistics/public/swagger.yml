@@ -6,9 +6,9 @@ info:
   
     This API is only available for authorized accounts. Please [contact us](https://cloud.mbed.com/contact) to enable this API for your account.
   
-    For information on status and error codes, see <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a>.
+    For information on status and error codes, see <a href="https://developer.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a>.
   
-    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).  
+    See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).  
   version: v3
   title: Manufacturing Statistics API
   contact: {}

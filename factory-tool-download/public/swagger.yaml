@@ -4,9 +4,9 @@ info:
   description: |-
   
     This is the API documentation for the Factory Configurator Utility (FCU) download service, which authorized customers can use to download the FCU archive for factory provisioning. <br/>Please [contact us](https://cloud.mbed.com/contact) to enable FCU download for your account. 
-    <br/>For more information about FCU, please see the [Pelion factory provisioning documentation](https://www.pelion.com/docs/device-management-provision/latest/introduction/index.html).
+    <br/>For more information about FCU, please see the [Pelion factory provisioning documentation](https://developer.pelion.com/docs/device-management-provision/latest/introduction/index.html).
 
-    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
+    See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   version: 1.0.0
 host: api.us-east-1.mbedcloud.com
 schemes:

@@ -15,11 +15,11 @@ info:
   version: '1.0'
   title: Secure Device Access API
   description: |-
-    The Secure Device Access (SDA) API lets you request an access token and manage [trust anchors](https://www.pelion.com/docs/device-management/current/sda/how-sda-works.html).
+    The Secure Device Access (SDA) API lets you request an access token and manage [trust anchors](https://developer.pelion.com/docs/device-management/current/sda/how-sda-works.html).
 
-    See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+    See <a href="https://developer.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
 
-    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
+    See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
 
 x-aliases:
   generic_list_fields: &generic_list_fields

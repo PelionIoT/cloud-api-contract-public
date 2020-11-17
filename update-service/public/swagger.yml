@@ -5,7 +5,7 @@ info:
   
     This is the API documentation for the Device Management deployment service, which is part of the Update service.
 
-    See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
+    See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   title: Update Service Public API
   version: '3'
 schemes:
@@ -2087,7 +2087,7 @@ paths:
       operationId: Firmware_Image_create
       description: |
         Create a firmware image.
-        <BR/> **Note:** Only use this API for images smaller than 100 MB. For larger images, [upload in chunks](https://www.pelion.com/docs/device-management/current/updating-firmware/uploading-a-large-firmware-image.html).
+        <BR/> **Note:** Only use this API for images smaller than 100 MB. For larger images, [upload in chunks](https://developer.pelion.com/docs/device-management/current/updating-firmware/uploading-a-large-firmware-image.html).
         <br>
         **Usage example:**
         ```
@@ -3104,7 +3104,7 @@ paths:
       summary: Stop a campaign.
       operationId: Update_Campaign_stop
       description: |
-        Stop a campaign. Stopping is a process that requires the campaign go through several [phases](https://www.pelion.com/docs/device-management/current/updating-firmware/device-management-update-using-the-apis.html).
+        Stop a campaign. Stopping is a process that requires the campaign go through several [phases](https://developer.pelion.com/docs/device-management/current/updating-firmware/device-management-update-using-the-apis.html).
         <br>
         **Usage example:**
         ```
@@ -3174,7 +3174,7 @@ paths:
       summary: Get campaign metrics
       operationId: Update_Campaign_metrics
       description: |
-        Get [information](https://www.pelion.com/docs/device-management/current/updating-firmware/campaign-metrics-in-portal.html) for a campaign based on **SUCCESS**, **FAIL**, or **SKIPPED** criteria for each device.
+        Get [information](https://developer.pelion.com/docs/device-management/current/updating-firmware/campaign-metrics-in-portal.html) for a campaign based on **SUCCESS**, **FAIL**, or **SKIPPED** criteria for each device.
         <br>
         **Usage example:**
         ```

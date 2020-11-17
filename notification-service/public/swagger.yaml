@@ -3,9 +3,9 @@ info:
   title: Notifications API
   description: |-
   
-    Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](https://www.pelion.com/docs/device-management/current/resources/event-notification.html) for more details on notification channels.
+    Pelion Device Management Notifications API allows web applications to register a channel for receiving notifications from devices. Please read [notification sending logic](https://developer.pelion.com/docs/device-management/current/resources/event-notification.html) for more details on notification channels.
 
-    See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+    See <a href="https://developer.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
   version: "2"
 # array of all schemes that your API supports
 schemes:
@@ -43,7 +43,7 @@ paths:
 
         **Expiration of a callback URL:**
 
-        A callback can expire when Device Management cannot deliver a notification due to a connection timeout or error response (4xx or 5xx). After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL is removed if all retries fail within 24 hours. More about [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
+        A callback can expire when Device Management cannot deliver a notification due to a connection timeout or error response (4xx or 5xx). After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL is removed if all retries fail within 24 hours. More about [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
 
         **Supported callback URL protocols:**
 
@@ -161,7 +161,7 @@ paths:
         A websocket channel is expired if the channel does not have an opened websocket connection for a 24-hour period. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue is removed. As long as the channel has an opened websocket connection or time between successive websocket connections is less than 24 hours,
         the channel is considered active, notifications are stored in its internal queue and delivered when a websocket connection is active. A channel can be also deleted explicitly with a DELETE call.
 
-        More about [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic).
+        More about [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic).
 
         **Configuration options:**
 
@@ -363,7 +363,7 @@ paths:
         issued_at: "2017-02-10T15:23:00+00:00"
         end_of_life_at: "2020-06-30T00:00:00+00:00"
         comment: Long polling is deprecated and should be used for development purposes only.
-        links: ["https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
+        links: ["https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
       summary: Get notifications using Long Poll
       description: |-
         In this case, notifications are delivered through HTTP long poll requests. The HTTP request is kept open until one or more event notifications are delivered to the client, or the request times out (response code 204). In both cases, the client should open a new polling connection after the previous one closes. Only a single long polling connection per application can be ongoing at any given time. We recommend using a persistent connection (Connection keep-alive header in the request) to avoid excess TLS handshakes.
@@ -406,7 +406,7 @@ paths:
         issued_at: "2017-02-10T15:23:00+00:00"
         end_of_life_at: "2020-06-30T00:00:00+00:00"
         comment: Long polling is deprecated and should be used for development purposes only.
-        links: ["https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
+        links: ["https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html"]
       summary: Delete notification Long Poll channel.
       description: |-
         Delete a notification Long Poll channel. This is required to change the channel from Long Poll to another type. Do not make a GET `/v2/notification/pull` call for two minutes after deleting the channel, because it can implicitly recreate the pull channel. You can also have some random responses with payload or 410 GONE with "CHANNEL_DELETED" as a payload or 200/204 until the old channel is purged.
@@ -507,7 +507,7 @@ definitions:
         type: integer
         minimum: 100
         maximum: 10000
-        description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details.
+        description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details.
         example: "500"
       cfg:
         $ref: '#/definitions/SerializationConfigObjectV2'
@@ -652,7 +652,7 @@ definitions:
       rt:
         type: string
         description: |-
-          Application-specific resource type that describes this resource. It is created by the [client side application](https://www.pelion.com/docs/device-management/current/resources/resource-setup-in-device-management-client.html).
+          Application-specific resource type that describes this resource. It is created by the [client side application](https://developer.pelion.com/docs/device-management/current/resources/resource-setup-in-device-management-client.html).
           Not meant to be a human-readable name for the resource. Multiple resource types may be included, separated by a space.
         example: "light_sensor"
       ct:
@@ -694,7 +694,7 @@ definitions:
                 <td><b>400</b></td>
                 <td>The device rejected the request, possibly because it does not support the request method.
                 See how the supported methods are
-                [configured for the device resources](https://www.pelion.com/docs/device-management/current/resources/index.html). </td>
+                [configured for the device resources](https://developer.pelion.com/docs/device-management/current/resources/index.html). </td>
               </tr>
               <tr>
                 <td><b>404</b></td>

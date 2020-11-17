@@ -278,9 +278,9 @@ info:
   description: |-
       This is the API documentation for the Device Directory service. Device Directory stores metadata, enabling searching and filtering. Device Directory also provides device history information, for example, firmware update and suspend events.
 
-      See <a href="https://www.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
+      See <a href="https://developer.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
 
-      See documentation for [all public APIs](https://www.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
+      See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   title: Device Directory API
   version: '3'
 host: api.us-east-1.mbedcloud.com
@@ -904,9 +904,9 @@ paths:
         - Device directory - lifecycle
       summary: Suspend a device.
       description: |-
-        [Suspending a device](https://www.pelion.com/docs/device-management/current/device-management/managing-devices-in-your-account.html#suspending-and-resuming-devices) prevents it from connecting to Device Management. If a device is currently connected, it disconnects and shows as deregistered.
+        [Suspending a device](https://developer.pelion.com/docs/device-management/current/device-management/managing-devices-in-your-account.html#suspending-and-resuming-devices) prevents it from connecting to Device Management. If a device is currently connected, it disconnects and shows as deregistered.
 
-        You can also receive [deregistration events](https://www.pelion.com/docs/device-management-api/connect/) in [notification channels](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html).
+        You can also receive [deregistration events](https://developer.pelion.com/docs/device-management-api/connect/) in [notification channels](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html).
 
         API operations needing device transactions fail while a device is suspended.
 
@@ -923,7 +923,7 @@ paths:
          ```
       operationId: Device_suspend
       parameters:
-        - description: The [Device ID](https://www.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.
+        - description: The [Device ID](https://developer.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.
           in: path
           name: id
           required: true
@@ -944,7 +944,7 @@ paths:
         - Device directory - lifecycle
       summary: Return a device to service.
       description: |-
-          [Returning a device to service](https://www.pelion.com/docs/device-management/current/device-management/managing-devices-in-your-account.html#using-the-api-suspending-and-resuming-devices) allows the device to connect to Device Management again. The connection is established according to the device's reconnection logic. The device reports a [registration event](https://www.pelion.com/docs/device-management-api/connect/) through a [notification channel](https://www.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html).
+          [Returning a device to service](https://developer.pelion.com/docs/device-management/current/device-management/managing-devices-in-your-account.html#using-the-api-suspending-and-resuming-devices) allows the device to connect to Device Management again. The connection is established according to the device's reconnection logic. The device reports a [registration event](https://developer.pelion.com/docs/device-management-api/connect/) through a [notification channel](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html).
 
           The default reconnection logic is a progressive back-off for 2, 4, 8, or 16 seconds, up to one week. All API functionality is restored.
 
@@ -1060,7 +1060,7 @@ paths:
       description: |-
         List all or a filtered list of device events for the account. Device events are events significant to operation or lifetime, such as creation, firmware update, and suspension.
 
-        To see statistics for device connectivity and usage, use the [Statistics API](https://www.pelion.com/docs/device-management-api/connect-statistics/).
+        To see statistics for device connectivity and usage, use the [Statistics API](https://developer.pelion.com/docs/device-management-api/connect-statistics/).
 
          **Example:**
          Following example gets device-events limiting returned results to max 5 events
@@ -1646,7 +1646,7 @@ paths:
       description: Delete device. Only available for devices with a developer certificate. Attempting to delete a device with a production certificate returns a 400 response.
       operationId: Device_destroy
       parameters:
-        - description: The [Device ID](https://www.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.
+        - description: The [Device ID](https://developer.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.
           in: path
           name: id
           required: true
@@ -1665,7 +1665,7 @@ paths:
         - Device directory - devices
       summary: Get a device.
       description: |-
-          Retrieve information about a specific device. This API returns [DeviceData](https://www.pelion.com/docs/device-management-api/device-directory/). If you want to see the structure of resources in the device or the actual resource values, use the [Connect API](https://www.pelion.com/docs/device-management-api/connect/).
+          Retrieve information about a specific device. This API returns [DeviceData](https://developer.pelion.com/docs/device-management-api/device-directory/). If you want to see the structure of resources in the device or the actual resource values, use the [Connect API](https://developer.pelion.com/docs/device-management-api/connect/).
 
           **Example:**
           Following example must be updated with the device's ID to the URL. The id is from of "01667c6e992c00000000000100100370"
@@ -1675,7 +1675,7 @@ paths:
           ```
       operationId: Device_retrieve
       parameters:
-        - description: The [Device ID](https://www.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.
+        - description: The [Device ID](https://developer.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.
           in: path
           name: id
           required: true
@@ -1708,7 +1708,7 @@ paths:
         ```
       operationId: Device_update
       parameters:
-        - description: 'The [Device ID](https://www.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.'
+        - description: 'The [Device ID](https://developer.pelion.com/docs/device-management/current/connecting/device-identity.html) created by Device Management.'
           in: path
           name: id
           required: true
@@ -2266,7 +2266,7 @@ paths:
         - Device directory - groups
       summary: Get a group.
       description: |-
-              Returns [DeviceGroup](https://www.pelion.com/docs/device-management-api/device-directory/) info what contains info of the group, for example, name and updated date. To list the devices in the group, use '/v3/device-groups/{device-group-id}/devices/'.
+              Returns [DeviceGroup](https://developer.pelion.com/docs/device-management-api/device-directory/) info what contains info of the group, for example, name and updated date. To list the devices in the group, use '/v3/device-groups/{device-group-id}/devices/'.
       operationId: Group_retrieve
       parameters:
         - description: The group ID
