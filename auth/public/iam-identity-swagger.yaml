@@ -95,6 +95,14 @@ x-aliases:
       - error_font_color
       - success_font_color
       - warning_font_color
+      - menu_background_color
+      - menu_text_color
+      - nav_menu_background
+      - nav_menu_background_font_color
+      - nav_menu_active_background
+      - nav_menu_active_background_font_color
+      - nav_menu_highlight
+      - nav_menu_highlight_font_color
   branding_color_param: &branding_color_param
     - name: reference
       in: path
@@ -3687,7 +3695,7 @@ paths:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/AccountLimitationList'
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccountLimitationList'
         '401':
           description: Authentication failure.
           schema:
@@ -3726,7 +3734,7 @@ paths:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/AccountLimitation'
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccountLimitation'
         '401':
           description: Authentication failure.
           schema:
@@ -9335,7 +9343,7 @@ paths:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/AccountLimitationList'
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccountLimitationList'
         '401':
           description: Authentication failure.
           schema:
@@ -9363,7 +9371,7 @@ paths:
         '200':
           description: successful operation
           schema:
-            $ref: '#/definitions/AccountLimitation'
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/AccountLimitation'
         '401':
           description: Authentication failure.
           schema:
@@ -11896,7 +11904,7 @@ definitions:
         type: array
         description: List of account limitation objects.
         items:
-          $ref: '#/definitions/AccountLimitation'
+          $ref: '../../api-common-definitions/iam.yaml#/definitions/AccountLimitation'
       password_recovery_expiration:
         type: integer
         format: int32
@@ -12189,7 +12197,7 @@ definitions:
         type: array
         description: List of account limitation objects.
         items:
-          $ref: '#/definitions/AccountLimitation'
+          $ref: '../../api-common-definitions/iam.yaml#/definitions/AccountLimitation'
       password_recovery_expiration:
         type: integer
         format: int32
@@ -12253,124 +12261,6 @@ definitions:
         description: 'A list of entities.'
         items:
           $ref: '#/definitions/AccountInfo'
-  AccountLimitation:
-    type: object
-    properties:
-      name:
-        type: string
-        description: Name of the account limitation.
-      description:
-        type: string
-        description: Description of the account limitation.
-        readOnly: true
-      quota:
-        type: integer
-        format: int32
-        description: Quota of the account limitation.
-      limit:
-        type: integer
-        format: int32
-        description: The value of the limit.
-      billing_period:
-        type: integer
-        format: int32
-        description: Billing period of the account limitation.
-      inherited:
-        type: boolean
-        description: Flag indicating whether this limitation is inherited.
-        readOnly: true
-      inherited_from:
-        type: string
-        description: Indicates where this limit is inherited from.
-        readOnly: true
-      inherited_type:
-        type: string
-        description: Indicates the type of the entity where the limitation is inherited from.
-        readOnly: true
-      object:
-        type: string
-        description: 'Entity name: always ''limitation'''
-        enum:
-          - user
-          - api-key
-          - group
-          - account
-          - account_template
-          - trusted_cert
-          - list
-          - error
-          - agreement
-          - signed_agreement
-          - policy
-          - limitation
-          - identity_provider
-          - user_session
-          - user_invitation
-          - notification_entry
-          - branding_color
-          - branding_image
-      id:
-        type: string
-        example: 01619571d01d0242ac12000600000000
-        description: Entity ID.
-      etag:
-        type: string
-        example: '1'
-        description: API resource entity version.
-      created_at:
-        type: string
-        format: date-time
-        example: '2018-02-13T09:35:20Z'
-        description: Creation UTC time RFC3339.
-      updated_at:
-        type: string
-        format: date-time
-        example: '2018-02-14T15:24:14Z'
-        description: Last update UTC time RFC3339.
-    description: This object represents an account limitation.
-  AccountLimitationList:
-    type: object
-    required:
-      - data
-      - has_more
-      - limit
-      - object
-      - total_count
-    properties:
-      object:
-        type: string
-        description: 'Entity name: always ''list'''
-        enum:
-          - list
-      limit:
-        type: integer
-        format: int32
-        example: 50
-        description: 'The number of results to return, (range: 2-1000), or equals to `total_count`'
-      after:
-        type: string
-        example: 01619571f3c00242ac12000600000000
-        description: The entity ID to retrieve after the given one.
-      order:
-        type: string
-        description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
-        enum:
-          - ASC
-          - DESC
-      total_count:
-        type: integer
-        format: int32
-        example: 20
-        description: 'The total number or records, if requested. It might be returned also for small lists.'
-      has_more:
-        type: boolean
-        example: false
-        description: Flag indicating whether there is more results.
-      data:
-        type: array
-        description: A list of entities.
-        items:
-          $ref: '#/definitions/AccountLimitation'
   AccountUpdateReq:
     type: object
     properties:

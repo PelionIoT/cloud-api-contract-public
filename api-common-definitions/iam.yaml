@@ -1,6 +1,143 @@
 # This file contains common IAM object definitions.
 swagger: "2.0"
 definitions:
+  AccountLimitation:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the account limitation.
+        example: iam_limit_user_count
+      description:
+        type: string
+        description: Description of the account limitation.
+        readOnly: true
+      quota:
+        type: integer
+        format: int32
+        description: Quota of the account limitation.
+        example: 0
+      limit:
+        type: integer
+        format: int32
+        description: The value of the limit.
+        example: 25
+      billing_period:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 120
+        description: Billing period of the account limitation.
+        example: 1
+      inherited:
+        type: boolean
+        description: Flag indicating whether this limitation is inherited.
+        readOnly: true
+      inherited_from:
+        type: string
+        description: Indicates where this limit is inherited from.
+        readOnly: true
+      inherited_type:
+        type: string
+        enum:
+          - account
+          - template
+          - tier_template
+        description: Indicates the type of the entity where the limitation is inherited from.
+        readOnly: true
+      inherited_value:
+        type: object
+        description: 'Used as default value if parent entity has this limitation defined. If parent entity does not have such a limitation, the value is null.'
+        properties:
+          quota:
+            type: integer
+            format: int32
+            description: Default quota as defined in the parent entity.
+            example: 0
+          limit:
+            type: integer
+            format: int32
+            description: Default value of the limit as defined in the parent entity.
+            example: 25
+          billing_period:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 120
+            description: Default billing period of the account limitation as defined in the parent entity.
+            example: 1
+      object:
+        type: string
+        description: 'Entity name: always ''limitation'''
+        enum:
+          - limitation
+        readOnly: true
+      id:
+        type: string
+        example: 01619571d01d0242ac12000600000000
+        description: Entity ID.
+        readOnly: true
+      etag:
+        type: string
+        example: '1'
+        description: API resource entity version.
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+        example: '2018-02-13T09:35:20Z'
+        description: Creation UTC time RFC3339.
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        example: '2018-02-14T15:24:14Z'
+        description: Last update UTC time RFC3339.
+        readOnly: true
+    description: This object represents an account limitation.
+  AccountLimitationList:
+    type: object
+    required:
+      - data
+      - has_more
+      - limit
+      - object
+      - total_count
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always ''list'''
+        enum:
+          - list
+      limit:
+        type: integer
+        format: int32
+        example: 50
+        description: 'The number of results to return, (range: 2-1000), or equals to `total_count`'
+      after:
+        type: string
+        example: 01619571f3c00242ac12000600000000
+        description: The entity ID to retrieve after the given one.
+      order:
+        type: string
+        description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
+        enum:
+          - ASC
+          - DESC
+      total_count:
+        type: integer
+        format: int32
+        example: 20
+        description: 'The total number or records, if requested. It might be returned also for small lists.'
+      has_more:
+        type: boolean
+        example: false
+        description: Flag indicating whether there is more results.
+      data:
+        type: array
+        description: A list of entities.
+        items:
+          $ref: '#/definitions/AccountLimitation'
   AccountResponse:
     type: object
     properties:
