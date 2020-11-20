@@ -1504,6 +1504,8 @@ paths:
       summary: List all devices.
       description: |-
         List all devices enrolled to Device Management for the account.
+        The URL length must be fewer than 4096 characters. Requests that exceed this limit, such as those including too many query parameters in a filter, fail with a bad request response.
+        devices with too long list of query parameters, the request is deemed as bad request.
 
         **Example:**
         Following example filters devices according to state field and returns only devices in 'registered' state:
