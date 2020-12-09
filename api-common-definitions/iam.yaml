@@ -14,12 +14,12 @@ definitions:
         readOnly: true
       quota:
         type: integer
-        format: int32
+        format: int64
         description: Quota of the account limitation.
         example: 0
       limit:
         type: integer
-        format: int32
+        format: int64
         description: The value of the limit.
         example: 25
       billing_period:
@@ -51,12 +51,12 @@ definitions:
         properties:
           quota:
             type: integer
-            format: int32
+            format: int64
             description: Default quota as defined in the parent entity.
             example: 0
           limit:
             type: integer
-            format: int32
+            format: int64
             description: Default value of the limit as defined in the parent entity.
             example: 25
           billing_period:
