@@ -431,11 +431,53 @@ paths:
         400:
           description: Bad request, malformed content.
         404:
-          description: Endpoint or its resource not found.
+          description: |-
+            Not found. Contains one of these errors:
+            <table>
+              <thead>
+                <tr>
+                  <th>Error message</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>DEVICE_NOT_FOUND</b></td>
+                  <td>The device cannot be found. Either it never connected, it deregistered or did not connect in time and is expired.</td>
+                </tr>
+                <tr>
+                  <td><b>URI_PATH_DOES_NOT_EXISTS</b></td>
+                  <td>The requested resource does not exist on the device. Check that the resource path is correct.</td>
+                </tr>
+              </tbody>
+            </table>
         429:
-          description: 'Cannot accept the request at the moment: the queue is full.'
+          description: |-
+            Cannot accept the request at the moment. Contains one of these errors:
+            <table>
+              <thead>
+                <tr>
+                  <th>Error message</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>LIMITS_EXCEEDED</b></td>
+                  <td>This account has reached its transaction quota limit.</td>
+                </tr>
+                <tr>
+                  <td><b>CONGESTION_CONTROL</b></td>
+                  <td>The subscription has been queued but cannot currently be sent to the device because too many requests are being directed at the device at this time.</td>
+                </tr>
+                <tr>
+                  <td><b>QUEUE_IS_FULL</b></td>
+                  <td>The Device Management service queue is full. The subscription will be rejected until some queued messages are delivered or expired.</td>
+                </tr>
+              </tbody>
+            </table>
         502:
-          description: 'Subscription failed: endpoint not connected.'
+          description: 'Subscription failed. Endpoint not connected.'
 
     get:
       summary: Read the subscription status for a specific resource.
@@ -754,7 +796,7 @@ paths:
 
         If Device Management does not reach the device, or the device fails to respond, the server queues the request and retries the delivery, for the period of time defined by `expiry-seconds`, the next time the device contacts the server.
 
-        The queue is limited to 20 requests.
+        The queue is limited to 20 requests per device. If the queue is full, subsequent messages will be rejected until some of the existing messages are delivered or expired.
 
         Device Management delivers requests from the queue in the order of insertion, one at a time, and not concurrently.
 
@@ -836,15 +878,7 @@ paths:
           description: Accepted.
         400:
           description: |-
-            Bad request. Contains one of the errors RESOURCE_NOT_FOUND, DEVICE_NOT_CONNECTED, MALFORMED_JSON_CONTENT,
-            MALFORMED_ASYNC_ID and QUEUE_IS_FULL
-          schema:
-            type: "string"
-        401:
-          description: Authentication failure.
-        404:
-          description: |-
-            Contains one of the following errors:
+            Bad request. Contains one of the errors:
             <table>
               <thead>
                 <tr>
@@ -854,18 +888,32 @@ paths:
               </thead>
               <tbody>
                 <tr>
-                  <td><b>DEVICE_NOT_FOUND</b></td>
-                  <td>The device is not in the device registry. It has either requested for register delete
-                  or it has not connected in time and is expired.</td>
+                  <td><b>LIMITS_EXCEEDED</b></td>
+                  <td>This account has reached its transaction quota limit.</td>
                 </tr>
                 <tr>
-                  <td><b>URI_PATH_DOES_NOT_EXISTS</b></td>
-                  <td>The device does not have requested resource. Check the resource path is correct.</td>
+                  <td><b>RESOURCE_NOT_FOUND</b></td>
+                  <td>The requested resource does not exist on the device. Check that the resource path is correct.</td>
+                </tr>
+                <tr>
+                  <td><b>MALFORMED_JSON_CONTENT</b></td>
+                  <td>The JSON payload could not be processed. Check that the payload is correct.</td>
+                </tr>
+                <tr>
+                  <td><b>MALFORMED_ASYNC_ID</b></td>
+                  <td>The required async-id input parameter is invalid.</td>
+                </tr>
+                <tr>
+                  <td><b>QUEUE_IS_FULL</b></td>
+                  <td>The Device Management service queue is full. Messages will be rejected until some queued messages are delivered or expired.</td>
                 </tr>
               </tbody>
             </table>
-          schema:
-            type: "string"
+        401:
+          description: Authentication failure.
+        404:
+          description: |-
+            Device not found. The device has deregistered or did not connect in time and is expired.
 
   /v3/devices/{device-id}/echo:
     get:
@@ -902,10 +950,10 @@ paths:
     delete:
       summary: Delete the Device Echo object.
       description: |-
-        Calling this API removes your application data and device from the Device Echo service. You can still find the device using 'GET /v3/devices/{id}' from the Device Directory API. 
+        Calling this API removes your application data and device from the Device Echo service. You can still find the device using 'GET /v3/devices/{id}' from the Device Directory API.
 
         For privacy reasons, you might need to delete device data that contains personal information about the device owner or user.
-        Private information is stored by the application; Pelion Device Management Client does not provide or store any private data. 
+        Private information is stored by the application; Pelion Device Management Client does not provide or store any private data.
 
         **Note:** If the device is able to connect, its data will reappear in Echo the next time the device sends that information to the service. To ensure data is permanently removed, suspend the device first by calling 'POST /v3/devices/{id}/suspend'.
 
