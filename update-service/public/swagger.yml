@@ -2,7 +2,7 @@ swagger: '2.0'
 host: api.us-east-1.mbedcloud.com
 info:
   description: |-
-  
+
     This is the API documentation for the Device Management deployment service, which is part of the Update service.
 
     See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
@@ -15,7 +15,10 @@ produces:
 x-aliases:
   campaign_strategy: &campaign_strategy
     campaign_strategy:
-      description: How the campaign adds devices. A `one-shot` campaign does not add new devices after it has started. A `continuous` campaign means that devices may be added to the campaign after it has started. The default is `one-shot`.
+      description: |-
+        How the campaign adds devices. A `one-shot` campaign does not add new devices after it has started. A `continuous` campaign means that devices may be added to the campaign after it has started. A `mesh` campaign adds only devices in the mesh network. The devices receive the update in groups, with each group consisting of a border router and nodes (the devices to update).
+
+        The default is `one-shot`.
       type: string
       enum:
         - one-shot
@@ -652,6 +655,8 @@ definitions:
         format: date-time
         example: "2017-05-22T12:37:55.576563Z"
         type: string
+      short_datafile:
+        type: string
   FirmwareImageInNinFilter:
     properties:
       created_at:
@@ -680,6 +685,8 @@ definitions:
         format: date-time
         example: "2017-05-22T12:37:55.576563Z"
         type: string
+      short_datafile:
+        type: string
   FirmwareImageGteLteFilter:
     properties:
       created_at:
@@ -702,7 +709,7 @@ definitions:
         type: string
         example: "firmware-image"
       datafile:
-        description: The firmware image file URL.
+        description: The firmware image file HTTP URL.
         type: string
         example: "http://bucket.com/myimage.elf"
       datafile_checksum:
@@ -729,6 +736,10 @@ definitions:
         type: string
         format: free text
         maxLength: 128
+      short_datafile:
+        description: The firmware image file CoAP URL.
+        type: string
+        example: "/fw/myimage.elf"
   FirmwareImagePage:
     properties:
       object:
@@ -1227,10 +1238,10 @@ paths:
     post:
       tags:
         - Device update - firmware images
-      summary: Create a new upload job.
+      summary: Create a new upload job for images larger than 100MB.
       operationId: Upload_Job_Create
       description: |
-        Create a new upload job
+        Create a new job to upload images larger than 100MB in chunks.
         <br>
         **Usage example:**
         ```
@@ -2083,11 +2094,11 @@ paths:
     post:
       tags:
         - Device update - firmware images
-      summary: Create an image
+      summary: Upload an image.
       operationId: Firmware_Image_create
       description: |
-        Create a firmware image.
-        <BR/> **Note:** Only use this API for images smaller than 100 MB. For larger images, [upload in chunks](https://developer.pelion.com/docs/device-management/current/updating-firmware/uploading-a-large-firmware-image.html).
+        Upload a firmware image.
+        <BR/> **Note:** Only use this API for images smaller than 100MB. For larger images, use the `/v3/firmware-images/upload-jobs` POST API to [upload the image in chunks](https://developer.pelion.com/docs/device-management/current/updating-firmware/uploading-a-large-firmware-image.html).
         <br>
         **Usage example:**
         ```
