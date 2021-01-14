@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
-  title: "Billing customer API"
+  title: "Usage Data API"
   description: |-
-    The Billing API allows commercial users to retrieve billing reports and service package details.
+    The Usage Data API allows users to get usage statistics and billing reports.
 
     See <a href="https://developer.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a> for information on status and error codes.
 
@@ -10,41 +10,15 @@ info:
     
     **Billing report:**
 
-    Billing reports for the previous month are generated automatically during the third business day of the current month. The reports are usually available by 02:00 AM UTC.
+    A billing report provides info on service usage in a billing period (calendar month). The report for a closed billing period is automatically generated on the third business day of the current month.
 
     **Service package:**
 
-    If you have a commercial account, you can create a service package with a specific number of firmware updates, referred to as the *service package quota*. You can only perform device updates equal to the number of firmware updates linked to an active service package. You must purchase a new service package or renew an active one if you have reached the quota for your active service package.
+    You can use Device Management through prepaid service packages. Here you can check available packages and quota status.
 
-    Aggregator customers share their service package quota with their own tenant accounts. A tenant can create campaigns using the parent account's service package quota. A tenant cannot create or manage service packages on its own. The quota usage history is recorded separately between the aggregator and tenants.
-
-    **Service package events:**
-
-    The following service package events are included in API responses:
-
-    `reservation`:
-
-    Creation of a new update campaign with an estimated number of firmware updates.
-
-    `reservation_release`:
-
-    Closing an update campaign. The unused quota reserved through the update campaign is added to the active service package quota at this point.
-
-    `reservation_termination`:
-
-    Termination of an update campaign due to the expiration of an active service package. The unused quota reserved through the update campaign cannot be used if the active service package has expired.
-
-    `package_creation`:
-
-    Creation of a new service package.
-
-    `package_renewal`:
-
-    Renewal of an active service package before it expires.
-
-    `package_termination`:
-
-    Expiration of an active service package. The unused quota linked to the expired service package cannot be used anymore.
+    **Statistics:**
+    
+    Statistics are low-level metrics you can use to monitor a device or web application's behavior.
 
   version: 3.14.0
 host: api.us-east-1.mbedcloud.com
@@ -64,15 +38,14 @@ paths:
     get:
       summary: Get all service packages.
       description: |-
-        Get information for all service packages for the current authenticated commercial account. The response is returned in
-        descending order by service package created timestamp: first the pending service package, then the active service package,
-        then the previous service packages.
+          Get information for all service packages for the current authenticated commercial account. The response is returned in descending order by service package created timestamp: first the pending service package, then the active service package, then the previous service packages.
 
-        **Example:**
-        ```
-        curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages \
-        -H 'Authorization: Bearer <access_key>'
-        ```
+          **Example:**
+        
+          ```
+          curl -X GET https://api.us-east-1.mbedcloud.com/v3/service-packages \
+          -H 'Authorization: Bearer <access_key>'
+          ```
       operationId: getServicePackages
       tags:
         - Usage - billing reports

@@ -20,8 +20,14 @@ schemes:
 paths:
   /v3/metrics:
     get:
-      summary: Provides account-specific statistics for other cloud services.
-      description: Get account-specific statistics.
+      deprecated: true
+      x-deprecation:
+        issued_at: "2020-10-12T15:23:00+00:00"
+        end_of_life_at: "2021-03-12T00:00:00+00:00"
+        comment: /v3/metrics is replaced by /v3/billing-statistics.
+        links: ["https://www.pelion.com/docs/device-management-api/billing/"]
+      summary: (DEPRECATED) Provides account-specific statistics for other cloud services.
+      description: (DEPRECATED) Get account-specific statistics.
       operationId: getMetrics
       tags:
         - Usage - service metrics
