@@ -39,7 +39,17 @@ x-aliases:
       operator_suspended:
         - eq
         - neq
+      issuer_fingerprint:
+        - eq
+        - neq
+        - in
+        - nin
       last_operator_suspended_category:
+        - eq
+        - neq
+        - in
+        - nin
+      last_operator_suspended_description:
         - eq
         - neq
         - in
@@ -53,6 +63,11 @@ x-aliases:
         - eq
         - neq
       last_system_suspended_category:
+        - eq
+        - neq
+        - in
+        - nin
+      last_system_suspended_description:
         - eq
         - neq
         - in
