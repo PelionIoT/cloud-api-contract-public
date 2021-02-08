@@ -691,10 +691,18 @@ definitions:
                 <td>Operation succeeded. The payload contains result of the operation from the device.</td>
               </tr>
               <tr>
+                <td><b>201</b></td>
+                <td>The device replied that a resource was succesfully created.</td>
+              </tr>
+              <tr>
                 <td><b>400</b></td>
                 <td>The device rejected the request, possibly because it does not support the request method.
                 See how the supported methods are
                 [configured for the device resources](https://developer.pelion.com/docs/device-management/current/resources/index.html). </td>
+              </tr>
+              <tr>
+                <td><b>406</b></td>
+                <td>The device replied that it cannot produce a response matching the requested content type.</td>
               </tr>
               <tr>
                 <td><b>404</b></td>
@@ -720,20 +728,24 @@ definitions:
                 or the device was suspended (DEVICE_BLOCKED). The request was never delivered to the device.</td>
               </tr>
               <tr>
+                <td><b>501</b></td>
+                <td>The request to the device could not be sent, because the server rejected it due to a validation
+                error.</td>
+              </tr>
+              <tr>
                 <td><b>502</b></td>
-                <td>The request to the device failed and the retry count was exceeded.
-                The last retry failed to establish TCP or TLS connection to the device.</td>
+                <td>The request could not be delivered to the device, because the device was not connected or otherwise
+                available at the time of the delivery attempt.</td>
               </tr>
               <tr>
                 <td><b>503</b></td>
-                <td>The request to the device failed and the retry count was exceeded.
-                The last retry failed, because the device is currently unavailable (NOT_CONNECTED).</td>
+                <td>The request was delivered to the device, but the device was not able to process the request at this
+                time.</td>
               </tr>
               <tr>
                 <td><b>504</b></td>
-                <td>The request to the device failed and the retry count was exceeded.
-                The last retry failed, because the device did not respond in time according to the protocol-specific
-                retransmission logic (TIMEOUT).</td>
+                <td>The request was sent to the device, but the device did not respond in time according to the
+                protocol-specific retransmission logic. In case of a CoAP device, it is about two minutes.</td>
               </tr>
             </tbody>
           </table>
