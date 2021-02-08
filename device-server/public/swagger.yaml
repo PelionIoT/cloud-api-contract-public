@@ -974,7 +974,7 @@ paths:
           format: UUID, 32 hexadecimal characters
           type: string
       responses:
-        200:
+        204:
           description: Device found and deleted.
         401:
           description: Authentication failure.
