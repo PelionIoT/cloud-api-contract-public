@@ -305,10 +305,24 @@ paths:
             'Success':
               lwm2m:
                 certificate: '-----BEGIN CERTIFICATE-----\nMIICMDCCAdWgAwIBAgIQJvkI/PHARqRKTSzxlCf5HzAKBggqhkjOPQQDAjBvMQsw\nCQYDVQQGEwJHQjEXMBUGA1UECBMOQ2FtYnJpZGdlc2hpcmUxEjAQBgNVBAcTCUNh\nbWJyaWRnZTEQMA4GA1UEChMHQVJNIEx0ZDEhMB8GA1UEAxMYQVJNIEludGVncmF0\naW9uIExXTTJNIENBMCAXDTE3MDIxMjEwMzc1MloYDzIwNTIwMjEyMTA0NzUyWjBv\nMQswCQYDVQQGEwJHQjEXMBUGA1UECBMOQ2FtYnJpZGdlc2hpcmUxEjAQBgNVBAcT\nCUNhbWJyaWRnZTEQMA4GA1UEChMHQVJNIEx0ZDEhMB8GA1UEAxMYQVJNIEludGVn\ncmF0aW9uIExXTTJNIENBMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEuuqAAS3w\n4bbFX/l2hDGpKaHHqP2grdmU5+xaM6EsjjZDmxjfznEUJLH7FjQOQ/wjd9QT1xGq\nOWCrot8ks+ugxaNRME8wCwYDVR0PBAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wHQYD\nVR0OBBYEFHuhpZSl5Y+VXdTO3A+Kvq2aa2Y+MBAGCSsGAQQBgjcVAQQDAgEAMAoG\nCCqGSM49BAMCA0kAMEYCIQDSBijFMToRjbbLKz/dKpoTMFJ3qtray865XOQyHAL6\nMAIhALOCJKKxZ2tpBw7Nd3SZBpxZsgDAs7s3W8Ab+9lwmLke\n-----END CERTIFICATE-----'
-                url: 'coaps://mds.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                url: 'coaps://lwm2m.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                urls:
+                  coaps:
+                    tcp: 'coaps://tcp-lwm2m.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                    tcp_alt: 'coaps://tcp-lwm2m.us-east-1.mbedcloud.com:443?aid=015843e32ec902420a015e0700000000'
+                    udp: 'coaps://udp-lwm2m.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                  ws_dtls_tunnel:
+                    ws: 'ws://ws-tunnel-lwm2m.us-east-1.mbedcloud.com:80/dtls?aid=015843e32ec902420a015e0700000000'
+                    wss: 'wss://ws-tunnel-lwm2m.us-east-1.mbedcloud.com:443/dtls?aid=015843e32ec902420a015e0700000000'
               bootstrap:
                 certificate: '-----BEGIN CERTIFICATE-----\nMIICNTCCAdugAwIBAgIQXCeldn1YhYpDkaBhq8+mWTAKBggqhkjOPQQDAjByMQsw\nCQYDVQQGEwJHQjEXMBUGA1UECBMOQ2FtYnJpZGdlc2hpcmUxEjAQBgNVBAcTCUNh\nbWJyaWRnZTEQMA4GA1UEChMHQVJNIEx0ZDEkMCIGA1UEAxMbQVJNIEludGVncmF0\naW9uIEJvb3RzdHJhcENBMCAXDTE3MDUxNTE5NDkxMVoYDzIwNTIwNTE1MTk1OTEw\nWjByMQswCQYDVQQGEwJHQjEXMBUGA1UECBMOQ2FtYnJpZGdlc2hpcmUxEjAQBgNV\nBAcTCUNhbWJyaWRnZTEQMA4GA1UEChMHQVJNIEx0ZDEkMCIGA1UEAxMbQVJNIElu\ndGVncmF0aW9uIEJvb3RzdHJhcENBMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\ni3yGw4hU5l/gV04brCmC6n2RAGOnSgW8VMVxJzMZGy76Qfh6mgxd/LM3AZnFyb54\nWx3ssBod3ORvVwT0Osqo0qNRME8wCwYDVR0PBAQDAgGGMA8GA1UdEwEB/wQFMAMB\nAf8wHQYDVR0OBBYEFBPvafpiPwCG9AW4tuay8dtpELQ5MBAGCSsGAQQBgjcVAQQD\nAgEAMAoGCCqGSM49BAMCA0gAMEUCIQCiUIgPVegmSeb1cYYzKQVM+f0fFJiShdlc\nSAKewnmoWQIgPv48oL/TDxWDVrzy+hYmesFoqryRPGlENvl0oYJ2em4=\n-----END CERTIFICATE-----'
-                url: 'coaps://coap.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                url: 'coaps://bootstrap.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                urls:
+                  coaps:
+                    tcp: 'coaps://tcp-bootstrap.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+                    tcp_alt: 'coaps://tcp-bootstrap.us-east-1.mbedcloud.com:443?aid=015843e32ec902420a015e0700000000'
+                    udp: 'coaps://udp-bootstrap.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+
         400:
           description: Bad request.
           schema:
@@ -402,12 +416,52 @@ definitions:
   CredentialsResponseData:
     type: object
     properties:
-        certificate:
-           type: string
-           description: PEM-format X.509 server certificate used to validate the server certificate received during the TLS/DTLS handshake.
-        url:
-           type: string
-           description: Server URI that the client connects to.
+      object:
+        type: string
+        description: 'Entity name: always ''server-credentials'''
+        enum:
+          - server-credentials
+      created_at:
+        type: string
+        format: date-time
+        example: '2018-02-13T09:35:20Z'
+        description: This representation creation UTC time (RFC3339).
+      certificate:
+        type: string
+        description: PEM-format X.509 server certificate used to validate the server certificate received during the TLS/DTLS handshake.
+      url:
+        type: string
+        description: The default server URL that the client connects to. This field is for backwards compatibility, please prefer to use a URL under the `urls` object.
+      urls:
+        type: object
+        description: Describes all server URLs for different connectivity options.
+        properties:
+          coaps:
+            type: object
+            properties:
+              tcp:
+                type: string
+                description: The default TCP URL for the server.
+                example: 'coaps://tcp-lwm2m.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+              tcp_alt:
+                type: string
+                description: Alternative TCP URL for the server.
+                example: 'coaps://tcp-lwm2m.us-east-1.mbedcloud.com:443?aid=015843e32ec902420a015e0700000000'
+              udp:
+                type: string
+                description: The default UDP URL for the server.
+                example: 'coaps://udp-lwm2m.us-east-1.mbedcloud.com:5684?aid=015843e32ec902420a015e0700000000'
+          ws_dtls_tunnel:
+            type: object
+            properties:
+              ws:
+                type: string
+                description: The websocket tunneling URL for the server.
+                example: 'ws://ws-tunnel-lwm2m.us-east-1.mbedcloud.com:80/dtls?aid=015843e32ec902420a015e0700000000'
+              wss:
+                type: string
+                description: The secure websocket tunneling URL for the server.
+                example: 'wss://ws-tunnel-lwm2m.us-east-1.mbedcloud.com:443/dtls?aid=015843e32ec902420a015e0700000000'
 
   AllServerCredentialsResponseData:
     type: object
