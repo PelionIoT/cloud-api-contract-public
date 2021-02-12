@@ -43,7 +43,7 @@ paths:
 
         **Expiration of a callback URL:**
 
-        A callback can expire when Device Management cannot deliver a notification due to a connection timeout or error response (4xx or 5xx). After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL is removed if all retries fail within 24 hours. More about [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
+        A callback URL can expire either by idle timeout or after continuous delivery failures. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue are removed. If there are no notifications passing through to the callback URL for 48 hours, the callback URL becomes eligible for removal. If Device Management cannot deliver notifications due to a connection timeout or error response (4xx or 5xx) the system starts retrying delivery. After each delivery failure, Device Management sets an exponential back-off time and makes a retry attempt after that. The first retry delay is 1 second, then 2s, 4s, 8s, up to a maximum delay of two minutes. The retry delay is applied when the response is received, or in case of timeout, after the timeout expires. The request timeout is 20 seconds; in the case of timeout, the first retry happens 20 + 1 seconds after the first delivery attempt, then 20 + 2 seconds, and so on. The callback URL becomes eligible for removal if all retries fail for 24 hours. More about [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) in the Device Management documentation.
 
         **Supported callback URL protocols:**
 
@@ -158,7 +158,7 @@ paths:
 
         **Expiration of a websocket:**
 
-        A websocket channel is expired if the channel does not have an opened websocket connection for a 24-hour period. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue is removed. As long as the channel has an opened websocket connection or time between successive websocket connections is less than 24 hours,
+        A websocket channel can expire by idle timeout or if no websocket connection has been opened for the channel for 48 hours. If there are no notifications passing through to the websocket for 48 hours, the websocket channel becomes eligible for removal. See [notification sending logic](https://developer.pelion.com/docs/device-management/current/resources/event-notification.html) for more details. Channel expiration means the channel is deleted and any undelivered notifications stored in its internal queue are removed. As long as the channel has an opened websocket connection or time between successive websocket connections is less than 48 hours,
         the channel is considered active, notifications are stored in its internal queue and delivered when a websocket connection is active. A channel can be also deleted explicitly with a DELETE call.
 
         More about [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic).
@@ -505,8 +505,8 @@ definitions:
         example: "v2"
       max_chunk_size:
         type: integer
-        minimum: 100
-        maximum: 10000
+        minimum: 50
+        maximum: 20000
         description: Maximum number of messages in NotificationMessage container delivered in one request. Default is 10000. Using a very low value for high troughput applications may cause lag in notification delivery, as a new chunk is sent only after the previous one has been acknowledged. Using a high value is recommended and safe, as chunks are sent quickly after notifications are received from devices. See [notification sending logic](https://developer.pelion.com/docs/device-management/current/integrate-web-app/event-notification.html#notification-sending-logic) for more details.
         example: "500"
       cfg:
