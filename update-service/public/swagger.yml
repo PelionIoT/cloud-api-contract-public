@@ -179,7 +179,6 @@ definitions:
           - failed_connector_channel_update
           - deployed
           - manifestremoved
-          - deregistered
         type: string
       description:
         type: string
@@ -276,10 +275,6 @@ definitions:
         example: "2017-05-22T12:37:55.576563Z"
       state:
         type: string
-      when:
-        type: string
-        format: date-time
-        example: "2017-05-22T12:37:55.576563Z"
       updated_at:
         format: date-time
         type: string
@@ -318,10 +313,6 @@ definitions:
         example: "2017-05-22T12:37:55.576563Z"
       state:
         type: string
-      when:
-        type: string
-        format: date-time
-        example: "2017-05-22T12:37:55.576563Z"
       updated_at:
         format: date-time
         type: string
@@ -344,11 +335,6 @@ definitions:
         type: string
         format: date-time
         example: "2017-05-22T12:37:55.576563Z"
-      when:
-        type: string
-        format: date-time
-        example: "2017-05-22T12:37:55.576563Z"
-        x-nullable: true
       updated_at:
         format: date-time
         type: string
@@ -458,35 +444,17 @@ definitions:
         type: string
         enum:
           - draft
-          - scheduled
-          - allocatingquota
-          - allocatedquota
-          - quotaallocationfailed
-          - checkingmanifest
           - checkedmanifest
-          - devicefetch
-          - devicecopy
-          - devicecheck
           - publishing
-          - deploying
-          - deployed
           - manifestremoved
-          - expired
           - stopping
           - autostopped
           - userstopped
-          - conflict
         x-deprecation:
           issued_at: "2019-03-18T14:55:20+00:00"
           end_of_life_at: "2020-03-18T14:55:20+00:00"
           comment: Use phase instead
           links: []
-      when:
-        description: The scheduled start time for the campaign. The campaign will start within 1 minute when then start time has elapsed.
-        type: string
-        format: date-time
-        example: "2017-05-22T12:37:55.576563Z"
-        x-nullable: true
   UpdateCampaignPage:
     properties:
       object:
@@ -539,36 +507,18 @@ definitions:
         description: 'DEPRECATED: The state of the campaign (use phase instead).'
         enum:
           - draft
-          - scheduled
-          - allocatingquota
-          - allocatedquota
-          - quotaallocationfailed
-          - checkingmanifest
           - checkedmanifest
-          - devicefetch
-          - devicecopy
-          - devicecheck
           - publishing
-          - deploying
-          - deployed
           - manifestremoved
-          - expired
           - stopping
           - autostopped
           - userstopped
-          - conflict
         type: string
         x-deprecation:
           issued_at: "2019-03-18T14:55:20+00:00"
           end_of_life_at: "2020-03-18T14:55:20+00:00"
           comment: Use phase instead
           links: []
-      when:
-        description: The scheduled start time for the update campaign. Not in use.
-        type: string
-        format: date-time
-        example: "2017-05-22T12:37:55.576563Z"
-        x-nullable: true
       approval_required:
         type: boolean
         default: false
@@ -603,19 +553,12 @@ definitions:
         description: 'DEPRECATED: The state of the campaign (use phase instead)'
         enum:
           - draft
-          - scheduled
         type: string
         x-deprecation:
           issued_at: "2019-03-18T14:55:20+00:00"
           end_of_life_at: "2020-03-18T14:55:20+00:00"
           comment: Use phase instead
           links: []
-      when:
-        description: The scheduled start time for the update campaign. Not in use.
-        type: string
-        format: date-time
-        example: "2017-05-22T12:37:55.576563Z"
-        x-nullable: true
       approval_required:
         type: boolean
         default: false
@@ -2708,12 +2651,6 @@ paths:
                   <td>✓</td>
                   <td>✓</td>
                 </tr>
-                <tr>
-                  <td>when</td>
-                  <td>✓</td>
-                  <td>✓</td>
-                  <td>✓</td>
-                </tr>
               </tbody>
             </table>
             &nbsp;
@@ -2726,7 +2663,7 @@ paths:
 
 
             **Filtering by campaign properties**
-            `state__eq=[draft|scheduled|devicefectch|devicecopy|publishing|deploying|deployed|manifestremoved|expired]`
+            `state__eq=[draft|publishing|manifestremoved|autostopped|userstopped]`
 
             `root_manifest_id__eq=43217771234242e594ddb433816c498a`
 
@@ -2834,11 +2771,6 @@ paths:
           - in
           - nin
         updated_at:
-          - in
-          - nin
-          - lte
-          - gte
-        when:
           - in
           - nin
           - lte
