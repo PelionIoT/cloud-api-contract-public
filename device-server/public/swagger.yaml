@@ -730,6 +730,7 @@ paths:
       summary: Send an asynchronous request to read, write or post to a device resource.
       description: |-
         This API provides an interface to call CoAP (Constrained Application Protocol) methods on a device and send commands to device resources.
+        For LWM2M details, please see the [Lightweight Machine to Machine Technical specification](http://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf) section 5.4 for read, write, write-attributes, execute, create and delete operations.
 
         As part of the request body, you must specify the CoAP method you want to call on the device:
 
@@ -764,6 +765,7 @@ paths:
 
         - Use the POST method to execute or create a resource on a LWM2M supporting device.
 
+          The create operation targets an object, and the targeted object must exist in the device. The object must allow WRITE/POST to create object instances and resources.
           When you create a resource, `uri` must refer to an object, and `payload-b64` must be in LWM2M TLV format for example:
 
             ```
@@ -906,6 +908,50 @@ paths:
                 <tr>
                   <td><b>QUEUE_IS_FULL</b></td>
                   <td>The Device Management service queue is full. Messages will be rejected until some queued messages are delivered or expired.</td>
+                </tr>
+                <tr>
+                  <td><b>MALFORMED_DEVICE_ID</b></td>
+                  <td>The device ID in the URI path is malformed.</td>
+                </tr>
+                <tr>
+                  <td><b>MALFORMED_RETRY</b></td>
+                  <td>The retry query parameter value is not an integer between 0 and 10.</td>
+                </tr>
+                <tr>
+                  <td><b>MALFORMED_ASYNC_ID</b></td>
+                  <td>The device request asynchronous ID is malformed.</td>
+                </tr>
+                <tr>
+                  <td><b>MISSING_ASYNC_ID</b></td>
+                  <td>The device request asynchronous ID is not found within the query parameters.</td>
+                </tr>
+                <tr>
+                  <td><b>MALFORMED_EXPIRY_SECONDS</b></td>
+                  <td>The expiry seconds query parameter value is not an integer between 60 and 2,592,000.</td>
+                </tr>
+                <tr>
+                  <td><b>INVALID_METHOD_IN_BODY</b></td>
+                  <td>The allowed methods in message body are GET, PUT, POST and DELETE.</td>
+                </tr>
+                <tr>
+                  <td><b>INVALID_URI_IN_BODY</b></td>
+                  <td>The URI in the message body is invalid.</td>
+                </tr>
+                <tr>
+                  <td><b>INVALID_ACCEPT_IN_BODY</b></td>
+                  <td>The accept in the body is invalid. The allowed value length is 1 to 40 characters.</td>
+                </tr>
+                <tr>
+                  <td><b>INVALID_NULL_CHARACTER_IN_BODY</b></td>
+                  <td>The body payload contains null characters.</td>
+                </tr>
+                <tr>
+                  <td><b>INVALID_CONTENT_TYPE_IN_BODY</b></td>
+                  <td>The content type in the body is invalid. The allowed value length is 1 to 40 characters.</td>
+                </tr>
+                <tr>
+                  <td><b>INVALID_PAYLOAD_B64_IN_BODY</b></td>
+                  <td>The payload in the body is not base64 encoded or exceeds the allowed value length of 1,398,102.</td>
                 </tr>
               </tbody>
             </table>
