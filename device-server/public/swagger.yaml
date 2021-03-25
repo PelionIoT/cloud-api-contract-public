@@ -902,10 +902,6 @@ paths:
                   <td>The JSON payload could not be processed. Check that the payload is correct.</td>
                 </tr>
                 <tr>
-                  <td><b>MALFORMED_ASYNC_ID</b></td>
-                  <td>The required async-id input parameter is invalid.</td>
-                </tr>
-                <tr>
                   <td><b>QUEUE_IS_FULL</b></td>
                   <td>The Device Management service queue is full. Messages will be rejected until some queued messages are delivered or expired.</td>
                 </tr>
@@ -919,7 +915,7 @@ paths:
                 </tr>
                 <tr>
                   <td><b>MALFORMED_ASYNC_ID</b></td>
-                  <td>The device request asynchronous ID is malformed.</td>
+                  <td>The required async-id input parameter is invalid.</td>
                 </tr>
                 <tr>
                   <td><b>MISSING_ASYNC_ID</b></td>
