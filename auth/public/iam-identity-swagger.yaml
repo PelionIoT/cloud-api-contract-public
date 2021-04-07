@@ -13762,7 +13762,7 @@ definitions:
         description: 'Human readable description of this certificate.'
       certificate:
         type: string
-        description: 'A chain of X509.v3 trusted certificates in PEM format. The chain must contain all certificates from root to leaf. Otherwise, the signature parameter is required.'
+        description: 'A chain of X509.v3 trusted certificates in PEM format. The chain must contain all certificates from root to leaf.'
       service:
         type: string
         description: 'Service name where the certificate must be used.'
@@ -13960,7 +13960,7 @@ definitions:
         description: 'Human readable description of this certificate.'
       certificate:
         type: string
-        description: 'A chain of X509.v3 trusted certificates in PEM format. The chain must contain all certificates from root to leaf. Otherwise, the signature parameter is required.'
+        description: 'A chain of X509.v3 trusted certificates in PEM format. The chain must contain all certificates from root to leaf.'
       service:
         type: string
         description: 'Service name where the certificate must be used. Service cannot be updated for developer certificates.'
