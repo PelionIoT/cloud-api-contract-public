@@ -1592,7 +1592,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example:**
-        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id} \
+        ```curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id} \
         -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestApplication25"}'
@@ -1869,7 +1869,7 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example:**
-        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id} \
+        ```curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/access-keys/{access_key_id} \
         -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestAccessKey"}'
@@ -1965,6 +1965,317 @@ paths:
             $ref: '#/definitions/ErrorResponse'
         '404':
           description: An account, application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/verification-keys':
+    get:
+      tags:
+        - Tenant accounts - applications
+      summary: Get all verification keys associated with the application.
+      description: |-
+        Retrieve an array of verification keys associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/verification-keys \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllAccountApplicationVerificationKeys
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to manage.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: issuer__eq
+          in: query
+          description: Issuer filter.
+          required: false
+          type: string
+        - name: subject__eq
+          in: query
+          description: Subject filter.
+          required: false
+          type: string
+        - name: fingerprint__eq
+          in: query
+          description: Fingerprint filter.
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKeyList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - Tenant accounts - applications
+      summary: Create a new verification key.
+      description: |-
+        Create a new verification key for the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/verification-keys -d '{"name": "MyKey1", "certificate": "..." }' \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json'
+        ```
+      operationId: createAccountApplicationVerificationKey
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to manage.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The details of the verification key to create.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+      responses:
+        '201':
+          description: New entity created.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+        '400':
+          description: 'Error in input data, for example, missing display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: A verification key with the given name or certificate exists in the account already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/applications/{application_id}/verification-keys/{verification_key_id}':
+    get:
+      tags:
+        - Tenant Accounts - applications
+      summary: Get verification key.
+      description: |-
+        Retrieve details of a verification key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/verification-keys/{verification_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAccountApplicationVerificationKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to manage.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: verification_key_id
+          in: path
+          description: The ID of the verification key to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, application or verification key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Tenant accounts - applications
+      summary: Update verification key details.
+      description: |-
+        Update verification key details.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/verification-keys/{verification_key_id} \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"name": "TestVerificationKey"}'
+        ```
+      operationId: updateAccountApplicationVerificationKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to manage.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: verification_key_id
+          in: path
+          description: The ID of the verification key to update.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: New verification key attributes to store.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+        '400':
+          description: 'Error in input data, for example, invalid display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, application or verification key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: A verification key with the given name or certificate exists in the account already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Tenant accounts - applications
+      summary: Delete verification key associated with the application.
+      description: |-
+        Delete the verification key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/applications/{application_id}/verification-keys/{verification_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: deleteAccountApplicationVerificationKey
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: The ID of the account to manage.
+          required: true
+          type: string
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: verification_key_id
+          in: path
+          description: The ID of the verification key to delete.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Deleted successfully.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account, application or verification key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/applications/{application_id}/groups':
@@ -6789,7 +7100,8 @@ paths:
         Update API key details.
 
         **Example:**
-        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id} \
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/api-keys/{apikey_id} \
         -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestApiKey25"}'
@@ -7507,7 +7819,8 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example:**
-        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id} \
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id} \
         -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestApplication25"}'
@@ -7759,7 +8072,8 @@ paths:
         <b>Note:</b> This endpoint is restricted to administrators.
 
         **Example:**
-        `curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id} \
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/access-keys/{access_key_id} \
         -H 'Authorization: Bearer <access_key>' \
         -H 'content-type: application/json' \
         -d '{"name": "TestAccessKey"}'
@@ -7845,6 +8159,292 @@ paths:
             $ref: '#/definitions/ErrorResponse'
         '404':
           description: An application or access key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/verification-keys':
+    get:
+      tags:
+        - Account - applications
+      summary: Get all verification keys associated with the application.
+      description: |-
+        Retrieve an array of verification keys associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/verification-keys \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllApplicationVerificationKeys
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: issuer__eq
+          in: query
+          description: Issuer filter.
+          required: false
+          type: string
+        - name: subject__eq
+          in: query
+          description: Subject filter.
+          required: false
+          type: string
+        - name: fingerprint__eq
+          in: query
+          description: Fingerprint filter.
+          required: false
+          type: string
+        - name: status__eq
+          in: query
+          description: Status filter.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKeyList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - Account - applications
+      summary: Create a new verification key.
+      description: |-
+        Create a new verification key for the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/verification-keys -d '{"name": "MyKey1", "certificate": "..." }' \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json'
+        ```
+      operationId: createApplicationVerificationKey
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The details of the verification key to create.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+      responses:
+        '201':
+          description: New entity created.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+        '400':
+          description: 'Error in input data, for example, missing display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: A verification key with the given name or certificate exists in the account already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/applications/{application_id}/verification-keys/{verification_key_id}':
+    get:
+      tags:
+        - Account - applications
+      summary: Get verification key.
+      description: |-
+        Retrieve details of a verification key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/verification-keys/{verification_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getApplicationVerificationKey
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: verification_key_id
+          in: path
+          description: The ID of the verification key to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application or verification key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Account - applications
+      summary: Update verification key details.
+      description: |-
+        Update verification key details.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/verification-keys/{verification_key_id} \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"name": "TestVerificationKey"}'
+        ```
+      operationId: updateApplicationVerificationKey
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: verification_key_id
+          in: path
+          description: The ID of the verification key to update.
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: New verification key attributes to store.
+          required: true
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '../../api-common-definitions/iam.yaml#/definitions/VerificationKey'
+        '400':
+          description: 'Error in input data, for example, invalid display name.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application or verification key with the specified ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: A verification key with the given name or certificate exists in the account already.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Account - applications
+      summary: Delete verification key associated with the application.
+      description: |-
+        Delete the verification key associated with the application.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X DELETE https://api.us-east-1.mbedcloud.com/v3/applications/{application_id}/verification-keys/{verification_key_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: deleteApplicationVerificationKey
+      produces:
+        - application/json
+      parameters:
+        - name: application_id
+          in: path
+          description: The ID of the application.
+          required: true
+          type: string
+        - name: verification_key_id
+          in: path
+          description: The ID of the verification key to delete.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Deleted successfully.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An application or verification key with the specified ID does not exist.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/applications/{application_id}/groups':

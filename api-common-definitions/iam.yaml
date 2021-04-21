@@ -339,7 +339,7 @@ definitions:
         example: '2020-02-14T15:24:14Z'
         description: 'The time of the latest access key usage.'
         readOnly: true
-    description: 'Represents an application in Device Management.'
+    description: 'Represents an access key in Device Management.'
   AccessKeyList:
     type: object
     required:
@@ -384,6 +384,160 @@ definitions:
         description: 'A list of entities.'
         items:
           $ref: '#/definitions/AccessKey'
+  VerificationKey:
+    type: object
+    required:
+      - name
+      - certificate
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always ''verification-key'''
+        enum:
+          - verification-key
+        readOnly: true
+      id:
+        type: string
+        example: 01619571f7020242ac12000600000000
+        description: 'The ID of the verification key.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      etag:
+        type: string
+        example: '1'
+        description: 'API resource entity version.'
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+        example: '2020-02-13T09:35:20Z'
+        description: 'Creation UTC time RFC3339.'
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        example: '2020-02-14T15:24:14Z'
+        description: 'Last update UTC time RFC3339.'
+        readOnly: true
+      account_id:
+        type: string
+        example: 01619571e2e90242ac12000600000000
+        description: 'The ID of the account.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      application_id:
+        type: string
+        example: 01705c6383f6c85b76f92f4e00000000
+        description: 'The ID of the application.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      kid:
+        type: string
+        maxLength: 100
+        example: 124#iss
+        description: 'Key ID, optional. If present, it may help identifying the verification key when verifying the access key.'
+      name:
+        type: string
+        maxLength: 100
+        example: Warp verification key
+        description: 'The display name for the verification key.'
+      description:
+        type: string
+        maxLength: 500
+        example: Verification key to control the warp drive
+        description: 'The description of the verification key.'
+      certificate:
+        type: string
+        example: '-----BEGIN CERTIFICATE----- ... -----END CERTIFICATE-----'
+        description: 'X509.v3 trusted certificate in PEM format.'
+      issuer:
+        type: string
+        example: CN=issuer
+        description: 'Issuer of the verification key.'
+        readOnly: true
+      subject:
+        type: string
+        example: CN=subject
+        description: 'Subject of the verification key.'
+        readOnly: true
+      expiration:
+        type: string
+        format: date-time
+        example: '2021-02-14T17:52:07Z'
+        description: |-
+          Expiration time of the verification key, as UTC time RFC3339.
+          Expiration makes the verification key inoperative and the status will be EXPIRED.
+          The client using an access key verified with this key is no longer able to use the REST API.
+          The verification key expiration does not invalidate existing configurations meaning that subscribed events will continue to flow on existing channels.
+        readOnly: true
+      fingerprint:
+        type: string
+        example: a10fb2c8ba90e6de927bd0ae391dcc38f6115685de2d7024712af37ead0608f1
+        description: 'A SHA-256 fingerprint of the verification key.'
+        readOnly: true
+      status:
+        type: string
+        example: ACTIVE
+        description: |-
+          The status of the verification key.
+          ACTIVE means that the verification key is operational.
+          INACTIVE means that the verification key is not operational and it prevents the clients to use the REST API with an access key verified with this key . Inactivating the access key does not invalidate existing configurations meaning that subscribed events will continue to flow on existing channels.
+          The EXPIRED status is not allowed to be set directly, it is derived from the verification key's expiration attribute.
+        enum:
+          - ACTIVE
+          - INACTIVE
+          - EXPIRED
+      last_used_at:
+        type: string
+        format: date-time
+        example: '2020-02-14T15:24:14Z'
+        description: 'The time of the latest access key usage verified by this key.'
+        readOnly: true
+    description: 'Represents a verification key in Device Management.'
+  VerificationKeyList:
+    type: object
+    required:
+      - data
+      - has_more
+      - limit
+      - object
+      - total_count
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always `list`.'
+        enum:
+          - list
+      limit:
+        type: integer
+        format: int32
+        example: 50
+        description: 'The number of results to return, or equal to `total_count`.'
+      after:
+        type: string
+        example: 01619571f3c00242ac12000600000000
+        description: 'The entity ID to retrieve after the given one.'
+        pattern: '[a-f0-9]{32}'
+      order:
+        type: string
+        description: 'The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC.'
+        enum:
+          - ASC
+          - DESC
+      total_count:
+        type: integer
+        format: int32
+        example: 20
+        description: 'The total number of records, if requested.'
+      has_more:
+        type: boolean
+        example: false
+        description: 'Flag indicating whether there are more results.'
+      data:
+        type: array
+        description: 'A list of entities.'
+        items:
+          $ref: '#/definitions/VerificationKey'
   Application:
     type: object
     required:
