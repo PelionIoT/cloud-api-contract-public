@@ -14227,9 +14227,17 @@ definitions:
         type: string
         description: "Client secret needed to authenticate and gain access to identity provider's API."
         x-nullable: true
+      use_pkce:
+        type: boolean
+        description: 'Enable or disable Proof Key for Code Exchange during OIDC flow.'
+        x-nullable: true
       redirect_uri:
         type: string
         description: "The URI needed to authenticate and gain access to identity provider's API. Leave this empty to use the default redirect URI."
+        x-nullable: true
+      logout_redirect_uri:
+        type: string
+        description: "The URI to redirect the browser after the logout is performed on the federated identity provider. Leave this empty to use the default logout redirect URI."
         x-nullable: true
       authorization_endpoint:
         type: string
@@ -14257,7 +14265,7 @@ definitions:
         x-nullable: true
       auto_enrollment:
         type: boolean
-        description: 'For future use.'
+        description: 'Enable to allow users to be enrolled automatically to the organization. When disabled the users must be invited by an administrator.'
         x-nullable: true
       keys:
         type: array
