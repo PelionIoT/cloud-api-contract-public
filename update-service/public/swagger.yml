@@ -2933,6 +2933,33 @@ paths:
           description: Fields apart from 'name', 'description' and 'state' cannot be modified when the state is not 'draft'.
         '404':
           description: Update campaign can't be found.
+  '/v3/update-campaigns/{campaign_id}/clone':
+    post:
+      tags:
+        - Device update - campaigns
+      summary: Clone a campaign.
+      operationId: Clone_Campaign_update
+      description: |
+        Clone an update campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/update-campaigns/1123007f9012ab567890120000789012/clone \
+        -H 'Authorization: Bearer <access_key>' \
+        d '{}'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        '200':
+          description: Cloned update campaign.
+          schema:
+            $ref: '#/definitions/UpdateCampaign'
+        '400':
+          description: |
+            Validation error: The data used to update the campaign did not validate.
+        '401':
+          description: Not authenticated.
   '/v3/update-campaigns/{campaign_id}/campaign-device-metadata':
     get:
       tags:
