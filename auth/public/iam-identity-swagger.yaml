@@ -451,6 +451,81 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/ErrorResponse'
+  /v3/accounts/me/subtenant-configuration:
+    get:
+      tags:
+        - Account - branding configuration
+      summary: Get branding configuration of the subtenant.
+      description: |-
+        Retrieve branding configuration.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/me/subtenant-configuration \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getSubtenantConfiguration
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/SubtenantConfiguration'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Account - branding configuration
+      summary: Updates branding configuration of the subtenant.
+      description: |-
+        Updates branding configuration.
+        <b>Note:</b> This endpoint is restricted to administrators.
+
+        **Example:**
+        ```
+        curl -X PUT https://api.us-east-1.mbedcloud.com/v3/accounts/me/subtenant-configuration \
+        -H 'Authorization: Bearer <access_key>' \
+        -H 'content-type: application/json' \
+        -d '{"branding_inherited": "false"}'
+        ```
+      operationId: updateSubtenantConfiguration
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Details of the subtenant's branding configuration to update.
+          required: true
+          schema:
+            $ref: '#/definitions/SubtenantConfiguration'
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/SubtenantConfiguration'
+        '400':
+          description: Error in input data format.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/me/notifications/{notification_id}':
     get:
       tags:
@@ -14747,6 +14822,10 @@ definitions:
         format: int64
         example: 1518630727688
         description: 'A timestamp of the latest change of the user password, in milliseconds.'
+      is_password_change_needed:
+        type: boolean
+        example: false
+        description: A flag indicating whether the password change flow should be started after next login.
       account_id:
         type: string
         example: 01619571e2e90242ac12000600000000
@@ -15014,6 +15093,10 @@ definitions:
           - ACTIVE
           - RESET
           - INACTIVE
+      is_password_change_needed:
+        type: boolean
+        example: false
+        description: A flag indicating whether the password change flow should be started after next login. Can be changed by the Aggregator Admin only.
       is_totp_enabled:
         type: boolean
         x-nullable: true
@@ -15037,3 +15120,50 @@ definitions:
     items:
       type: string
       example: 01705c6383f6c85b76f92f4e00000000
+  SubtenantConfiguration:
+    type: object
+    properties:
+      object:
+        type: string
+        description: 'Entity name: always `subtenant-configuration`.'
+        enum:
+          - subtenant-configuration
+      id:
+        type: string
+        example: 01619571e2e90242ac12000600000000
+        description: 'Entity ID.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      etag:
+        type: string
+        example: '1'
+        description: 'API resource entity version.'
+        readOnly: true
+      account_id:
+        type: string
+        example: 01619571e2e90242ac12000600000000
+        description: 'ID of the aggregator account.'
+        pattern: '[a-f0-9]{32}'
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+        example: '2018-02-13T09:35:20Z'
+        description: 'Creation UTC time RFC3339.'
+        readOnly: true
+      updated_at:
+        type: string
+        format: date-time
+        example: '2018-02-14T15:24:14Z'
+        description: 'Last update UTC time RFC3339.'
+        readOnly: true
+      branding_inherited:
+        type: boolean
+        example: true
+        description: Flag indicating whether subtenants should inherit the branding information from the parent.
+      branding_overwrite_allowed:
+        type: boolean
+        example: false
+        description: Flag indicating whether branding overwrite is allowed.
+    description: 'Represents a subtenant configuration.'
+
