@@ -6006,6 +6006,11 @@ paths:
           description: An optional filter to retrieve users with a specified login profile.
           required: false
           type: string
+        - name: password_change_needed__eq
+          in: query
+          description: An optional filter to retrieve users that do or do not require password change.
+          required: false
+          type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -11670,6 +11675,11 @@ paths:
           description: An optional filter to retrieve users with a specified login profile.
           required: false
           type: string
+        - name: password_change_needed__eq
+          in: query
+          description: An optional filter to retrieve users that do or do not require password change.
+          required: false
+          type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -14236,6 +14246,10 @@ definitions:
         description: 'Public X509 certificate of the service provider in PEM format. This is a read-only attribute, see API documentation about how to generate a new one or how to delete it.'
         readOnly: true
         x-nullable: true
+      auto_enrollment:
+        type: boolean
+        description: 'Flag indicating whether the identity provider supports auto enrollment on login. When disabled the users must be invited by an administrator.'
+        x-nullable: true
     description: 'Represents SAML2 specific attributes in responses.'
   SAML2Req:
     type: object
@@ -14262,6 +14276,10 @@ definitions:
       sp_entity_id:
         type: string
         description: 'Entity ID of the service provider. We recommend that you leave it empty and let the system generate it.'
+      auto_enrollment:
+        type: boolean
+        description: 'Enable to allow users to be enrolled automatically to the organization. When disabled the users must be invited by an administrator.'
+        x-nullable: true
   SubjectList:
     type: object
     properties:
