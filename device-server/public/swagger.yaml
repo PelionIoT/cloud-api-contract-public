@@ -72,7 +72,9 @@ paths:
         links: ["https://developer.pelion.com/docs/device-management-api/connect/"]
       summary: (DEPRECATED) Read from a resource.
       description: |-
-        (DEPRECATED) Requests the resource value either from the device or cache. If the value is not in the cache, the request goes all the
+        (DEPRECATED) Use `POST /v2/device-requests/{device-id}` API instead.
+
+        Requests the resource value either from the device or cache. If the value is not in the cache, the request goes all the
         way to the device. When the response is available, an `AsyncIDResponse` JSON object is received in the notification channel.
         The resource values can also be in cache based on `max_age` defined by the device. The value found from the cache is returned
         immediately in the response.
@@ -151,7 +153,9 @@ paths:
         links: ["https://developer.pelion.com/docs/device-management-api/connect/"]
       summary: (DEPRECATED) Write to a Resource or use write-attributes (notification rules) for a Resource.
       description: |-
-        (DEPRECATED) With this API, you can [write a new value to existing Resources](https://developer.pelion.com/docs/device-management/current/resources/handle-resource-webapp.html) or use the **write** attribute to set [notification rules](https://developer.pelion.com/docs/device-management/current/resources/resource-change-webapp.html) for the Resources. The notification rules only work on the device client side and may not be supported by all clients.
+        (DEPRECATED) Use `POST /v2/device-requests/{device-id}` API instead.
+
+        With this API, you can [write a new value to existing Resources](https://developer.pelion.com/docs/device-management/current/resources/handle-resource-webapp.html) or use the **write** attribute to set [notification rules](https://developer.pelion.com/docs/device-management/current/resources/resource-change-webapp.html) for the Resources. The notification rules only work on the device client side and may not be supported by all clients.
 
         This API can also be used to transfer files to the device. Device Management Connect LwM2M server implements Option 1 from RFC7959. The maximum block size is 1024 bytes.
         Note block size versus transferred file size in low-quality networks. The customer application needs to know what type of file is transferred (for example, TXT)
@@ -240,7 +244,9 @@ paths:
         links: ["https://developer.pelion.com/docs/device-management-api/connect/"]
       summary: (DEPRECATED) Execute a function on a Resource or create new Object instance.
       description: |-
-        (DEPRECATED) [Execute a function](https://developer.pelion.com/docs/device-management/current/resources/handle-resource-webapp.html#the-execute-operation) on an existing resource and create a new Object instance on the device. The resource path does not have to exist; you can set it with the call. The maximum length of the resource path is 255 characters.
+        (DEPRECATED) Use `POST /v2/device-requests/{device-id}` API instead.
+
+        [Execute a function](https://developer.pelion.com/docs/device-management/current/resources/handle-resource-webapp.html#the-execute-operation) on an existing resource and create a new Object instance on the device. The resource path does not have to exist; you can set it with the call. The maximum length of the resource path is 255 characters.
 
         All resource APIs are asynchronous. These APIs respond only if the device is on and connected to Device Management Connect, and there is an active notification channel.
 
@@ -324,7 +330,9 @@ paths:
         links: ["https://developer.pelion.com/docs/device-management-api/connect/"]
       summary: (DEPRECATED) Delete a resource path.
       description: |-
-        (DEPRECATED) A request to delete a resource path must be handled by both Device Management Client and Device Management
+        (DEPRECATED) Use `POST /v2/device-requests/{device-id}` API instead.
+
+        A request to delete a resource path must be handled by both Device Management Client and Device Management
         Connect.
 
         All resource APIs are asynchronous. These APIs respond only if the device is on and connected to Device Management Connect, and there is an active notification channel.
@@ -796,24 +804,29 @@ paths:
 
         **Queueing behavior**
 
-        If Device Management does not reach the device, or the device fails to respond, the server queues the request and retries the delivery, for the period of time defined by `expiry-seconds`, the next time the device contacts the server.
+        If Device Management does not reach the device, or the device fails to respond, the server queues the request and retries the delivery, for the period of time defined by `expiry-seconds`.
 
         The queue is limited to 20 requests per device. If the queue is full, subsequent messages will be rejected until some of the existing messages are delivered or expired.
 
         Device Management delivers requests from the queue in the order of insertion, one at a time, and not concurrently.
 
-        Delivery attempts follow protocol-specific retransmission logic. There can be multiple transmissions, depending on the protocol. For CoAP, the retransmissions have an exponential backoff of 2, 4, 8, 16, and up to 64 seconds, taking in total over two minutes.
-        If the device does not respond within this two-minute period, the delivery fails, Device Management performs one retry and then puts the request back into the queue until the retry count reaches its limit.
+        Delivery attempts follow protocol-specific retransmission logic. There can be multiple transmissions, depending
+        on the protocol. For CoAP, the retransmissions have an exponential backoff of 2, 4, 8, 16, and up to 64 seconds,
+        taking in total over two minutes. If the device does not respond within this few minutes period,
+        the delivery fails, and Device Management puts the request back into the queue to be redelivered.
 
-        Device Management attempts to redeliver the request when the device next contacts the server.
+        Device Management attempts to redeliver the request when the device next time contacts the server. If the request
+        delivery fails during too many redeliveries, the server will then discard the request, and send an error in an
+        `AsyncIDResponse`. For example, retries could be exhausted if the device periodically contacts the server and
+        receives the request from the queue, but then fails to respond to the server.
 
-        When Device Management reaches the `retry` or `expiry-seconds` limit, the server discards the request and sends an error in `AsyncIDResponse`.
+        If the request is not yet delivered, and Device Management reaches the `expiry-seconds` limit, the server
+        discards the request and sends an error in the `AsyncIDResponse`. For example, the device may lose its network
+        connectivity, and the requests in the queue may expire and get discarded before the device regains connectivity.
 
-        For example:
-
-        - Retries could be exhausted if the device periodically contacts the server and receives the request from the queue, but then fails to respond to the server.
-
-        - The device may lose its network connectivity, and the requests in the queue may expire and get discarded before the device regains connectivity. When Device Management delivers the request to the device, the status code in `AsyncIDResponse` is *2xx* or *4xx*, based on the device's response. If Device Management could not deliver the request, the server generates a status code of *429* or *5xx*.
+        When Device Management delivers the request to the device, the status code in `AsyncIDResponse` is
+        *2xx* or *4xx*, based on the device's response. If Device Management could not deliver the request,
+        the server generates a status code of *429* or *5xx*.
 
       operationId: createAsyncRequest
       consumes:
@@ -839,10 +852,9 @@ paths:
           pattern: '^[\w\-]{1,40}$'
         - name: "retry"
           in: "query"
-          description: "The number of attempts to deliver the request to the device after the first delivery attempt.
-          For example, two retries sums up to the total of three delivery attempts. When retries are exhausted,
-          Device Management discards the request and delivers an error in the AsyncIDResponse. The default number of retries for
-          a non-queue mode device is `0`. The default number of retries for a queue-mode device is `2`."
+          description: "(DEPRECATED) Retry parameter is deprecated and will be ignored. The server will apply a number
+          of retries to each request. When retries are exhausted, Device Management discards the request and delivers
+          an error in the AsyncIDResponse."
           required: false
           type: integer
           minimum: 0
@@ -851,8 +863,7 @@ paths:
           in: "query"
           description: "The time period during which the delivery is attempted, in seconds. If the device is not
           reachable within this period, Device Management discards the request and delivers an error in the AsyncIDResponse.
-          The default time period during which the delivery is attempted is two hours for a non-queue mode device and three days for
-          a queue-mode device."
+          The default time period during which the delivery is attempted is three days."
           required: false
           type: integer
           minimum: 60
