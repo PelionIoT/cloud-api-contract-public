@@ -232,7 +232,7 @@ definitions:
         example: "null"
       has_more:
         type: boolean
-        description: A flag indicating whether there are more results.
+        description: Indicates whether there are more results.
         example: "false"
       data:
         type: array
@@ -354,7 +354,7 @@ definitions:
         example: "2017-05-22T12:37:55.576563Z"
       approval_required:
         type: boolean
-        description: Flag indicating whether approval is needed to start the campaign.
+        description: Indicates whether approval is needed to start the campaign.
         example: "false"
       archived_at:
         description: The time the campaign was archived.
@@ -363,7 +363,7 @@ definitions:
         example: "2017-05-22T12:37:55.576563Z"
       autostop:
         type: boolean
-        description: Flag indicating whether the campaign should be auto-stopped on reaching a threshold.
+        description: Indicates whether the campaign should be auto-stopped on reaching a threshold.
         example: "false"
       autostop_success_percent:
         description: Percent of successful device updates to auto stop the campaign.
@@ -663,12 +663,23 @@ definitions:
         description: The size of the datafile in bytes.
         format: int64
         type: integer
+      datafile_encryption:
+        description: Indicates whether the datafile is encrypted.
+        type: boolean
       description:
         description: The description of the object.
         type: string
         format: free text
         maxLength: 2000
         example: "a description"
+      encrypted_datafile_checksum:
+        description: The checksum (sha256) generated for the encrypted datafile.
+        type: string
+        example: "e979fe432d6a19b0e70a93b33ac29094cd5fe35a8fd5fbedfd183d8d107d6a7e"
+      encrypted_datafile_size:
+        description: The size of the encrypted datafile in bytes.
+        format: int64
+        type: integer
       id:
         description: The firmware image ID.
         type: string
@@ -925,7 +936,7 @@ definitions:
       <<: *upload_job_editable_body
       complete:
         type: boolean
-        description: A flag that indicates job completion.
+        description: Indicates job completion.
         example: false
       id:
         type: string
@@ -1094,7 +1105,7 @@ definitions:
         example: "null"
       has_more:
         type: boolean
-        description: A flag indicating whether there are more results.
+        description: Indicates whether there are more results.
         example: "false"
       total_count:
         type: integer
@@ -1161,7 +1172,7 @@ definitions:
         example: "null"
       has_more:
         type: boolean
-        description: A flag indicating whether there are more results.
+        description: Indicates whether there are more results.
         example: "false"
       total_count:
         type: integer
@@ -1894,7 +1905,25 @@ paths:
                   <td>&nbsp;</td>
                 </tr>
                 <tr>
+                  <td>datafile_encryption</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
                   <td>description</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>encrypted_datafile_checksum</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td>encrypted_datafile_size</td>
                   <td>✓</td>
                   <td>✓</td>
                   <td>&nbsp;</td>
@@ -2019,6 +2048,16 @@ paths:
           - neq
           - in
           - nin
+        encrypted_datafile_checksum:
+          - eq
+          - neq
+          - in
+          - nin
+        encrypted_datafile_size:
+          - eq
+          - neq
+          - in
+          - nin
         id:
           - eq
           - neq
@@ -2050,6 +2089,7 @@ paths:
         -H 'Content-Type: multipart/form-data' \
         -F 'datafile=@myimage.bin;type=application/octet-stream'
         -F 'description=bla bla' \
+        -F 'datafile_encryption=false' \
         -F 'name=My Linux Image'
         ```
       consumes:
@@ -2074,6 +2114,12 @@ paths:
           type: string
           format: free text
           maxLength: 128
+        - description: Indicates whether the datafile needs to be encrypted.
+          in: formData
+          name: datafile_encryption
+          type: boolean
+          required: false
+          default: false
       responses:
         '201':
           description: Firmware image created. The API gateway enforces the account-specific file size.
