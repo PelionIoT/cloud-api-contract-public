@@ -2219,7 +2219,11 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
-        413:
+        '409':
+          description: 'Conflict: a firmware image with the same name already exists.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '413':
           description: Firmware image too large.
           schema:
             $ref: '#/definitions/ErrorResponse'
@@ -2587,6 +2591,10 @@ paths:
           description: Forbidden.
           schema:
             $ref: '#/definitions/ErrorResponse'
+        '409':
+          description: 'Conflict: a manifest with the same name already exists.'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/v3/firmware-manifests/{manifest_id}':
     delete:
       tags:
@@ -2948,7 +2956,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResponse'
         '409':
-          description: Conflict, a campaign with the same name already exists
+          description: 'Conflict: a campaign with the same name already exists.'
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/update-campaigns/{campaign_id}':
