@@ -4,6 +4,8 @@ info:
   description: |-
 
     This is the API documentation for the Device Management deployment service, which is part of the Update service.
+    
+    For information on status and error codes, see <a href="https://developer.pelion.com/docs/device-management/current/service-api-references/troubleshooting-the-apis.html">Troubleshooting the APIs</a>.
 
     See documentation for [all public APIs](https://developer.pelion.com/docs/device-management/current/service-api-references/service-api-documentation.html).
   title: Update Service Public API
@@ -241,8 +243,88 @@ definitions:
           $ref: "#/definitions/CampaignDeviceMetadata"
       total_count:
         type: integer
+        description: The total number or records, if requested. The API might also return this total for small lists.
+        example: "1"
+  MeshStatisticsPage:
+    type: object
+    properties:
+      object:
+        type: string
+        description: "The entity name: always 'list'."
+        example: "list"
+      order:
+        type: string
+        enum:
+          - ASC
+          - DESC
+        description: "The order of the records to return. Acceptable values: ASC, DESC. Default: ASC."
+        example: "ASC"
+      limit:
+        type: integer
+        description: How many objects to retrieve in the page. The minimum limit is 2 and the maximum is 1000. Limit values outside of this range are set to the closest limit.
+        example: "50"
+        minimum: 2
+        maximum: 1000
+      after:
+        type: string
+        description: The entity ID to fetch after the given one.
+        example: "null"
+      has_more:
+        type: boolean
+        description: Indicates whether there are more results.
+        example: "false"
+      data:
+        type: array
+        description: A list of entities.
+        items:
+          $ref: "#/definitions/MeshStatistics"
+      total_count:
+        type: integer
         description: The total number or records, if requested. It may be returned also for small lists.
         example: "1"
+  MeshStatistics:
+    type: "object"
+    properties:
+      id:
+        type: string
+        description: The border router device ID.
+        example: "015c2fec9bba0000000000010010036f"
+      stage:
+        type: string
+        description: The sub-campaign stage the border router is currently in.
+        enum:
+          - Manifest Received
+          - Firmware Downloaded
+          - Device Updated
+        example: "Firmware Downloaded"
+      successful_rate:
+        type: number
+        description: The percentage of devices that successly completed the current stage of the sub-campaign.
+        example: "75.0"
+      last_updated:
+        type: string
+        format: date-time
+        example: "2017-05-22T12:37:55.576563Z"
+      estimated_duration:
+        type: integer
+        description: Border-router-estimated session duration in seconds.
+        example: 30
+      success:
+        type: integer
+        description: Number of devices that successfully completed the current stage of the sub-campaign.
+        example: 2
+      failed:
+        type: integer
+        description: Number of devices that could not be updated.
+        example: 2
+      pending:
+        type: integer
+        description: Number of devices for which Device Management has not yet received the expected status notification in the current stage of the sub-campaign.
+        example: 2
+      skipped:
+        type: integer
+        description: Number of devices that were skipped.
+        example: 2
   UpdateCampaignEqNeqFilter:
     properties:
       created_at:
@@ -3334,6 +3416,33 @@ paths:
           description: Not Authenticated.
           schema:
             $ref: '#/definitions/ErrorResponse'
+        404:
+          description: Not Found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/update-campaigns/{campaign_id}/mesh-statistics':
+    get:
+      tags:
+        - Device update - campaigns
+      summary: Get statistics for a mesh campaign.
+      operationId: Update_Campaign_Mesh_Statistics
+      description: |
+        List campaign statistics for all border routers in a mesh campaign.
+        <br>
+        **Usage example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/update-campaigns/11234567f9012ab56790120000789012/mesh-statistics \
+        -H 'Authorization: Bearer <api_key>'
+        ```
+      parameters:
+        - <<: *campaign_id_parameter
+      responses:
+        200:
+          description: "Request successful."
+          schema:
+            $ref: "#/definitions/MeshStatisticsPage"
+        401:
+          description: "Unauthorized"
         404:
           description: Not Found.
           schema:
