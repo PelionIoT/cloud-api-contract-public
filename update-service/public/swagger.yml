@@ -1095,38 +1095,6 @@ definitions:
       total_count:
         format: int32
         type: integer
-  ErrorResponse:
-    type: object
-    properties:
-      object:
-        type: "string"
-        description: "Entity name: always 'error'."
-        example: "error"
-      code:
-        type: integer
-        format: int32
-        example: 400
-        description: Response code.
-      type:
-        type: string
-        example: validation_error
-      message:
-        type: string
-        example: A human readable informative explanation
-      fields:
-        type: array
-        items:
-          type: object
-          properties:
-            name:
-              type: string
-              example: field_name
-            message:
-              type: string
-              example: A human readable validation error
-      request_id:
-        type: string
-        example: request_id
   EventTypeSummary:
     type: object
     properties:
@@ -1269,6 +1237,167 @@ definitions:
         - "skipped"
         - "info"
         - "success"
+  #
+  # Error responses
+  #
+  BadRequestErrorResponse:
+    description: 400 Bad request response.
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'error'."
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 400
+        description: Response code.
+      type:
+        type: string
+        example: validation_error
+      message:
+        type: string
+        example: A human-readable informative explanation.
+      fields:
+        type: array
+        items:
+          $ref: "#/definitions/BadRequestErrorResponseField"
+      request_id:
+        type: string
+        example: request_id
+
+  BadRequestErrorResponseField:
+    description: Single field that failed validation.
+    type: object
+    properties:
+      name:
+        type: string
+        example: field_name
+      message:
+        type: string
+        example: A human-readable validation error.
+
+  UnauthorizedErrorResponse:
+    description: 401 Unauthorized response.
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'error'."
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 401
+        description: Response code. Always set to 401.
+      type:
+        description: "Error type. Always set to `unauthorized`."
+        type: string
+        example: unauthorized
+      message:
+        type: string
+        description: A human-readable message with detailed info.
+      request_id:
+        type: string
+        example: request_id
+
+  ForbiddenErrorResponse:
+    description: 403 Forbidden.
+    type: object
+    properties:
+      object:
+        type: "string"
+        description: "Entity name: always 'error'."
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 403
+        description: Response code. Always set to 403.
+      type:
+        description: "Error type. Always set to `forbidden`."
+        type: string
+        example: unauthorized
+      message:
+        type: string
+        description: A human-readable message with detailed info.
+      request_id:
+        type: string
+        example: request_id
+  
+  ReportNotFoundErrorResponse:
+    description: 404 Not found response.
+    type: object
+    properties:
+      object:
+        type: string
+        description: "Entity name: always 'error'."
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 404
+        description: Response code. Always set to 404.
+      type:
+        description: "Error type. Always set to `report_not_found`."
+        type: string
+        example: report_not_found
+      message:
+        type: string
+        description: A human-readable message with detailed info.
+      request_id:
+        type: string
+        example: request_id
+  
+  ConflictErrorResponse:
+    description: 409 Conflict.
+    type: object
+    properties:
+      object:
+        type: string
+        description: "Entity name: always 'error'."
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 409
+        description: Response code. Always set to 409.
+      type:
+        description: "Error type. Always set to `conflict`."
+        type: string
+        example: conflict
+      message:
+        type: string
+        description: A human-readable message with detailed info.
+      request_id:
+        type: string
+        example: request_id
+  
+  RequestTooLargeErrorResponse:
+    description: 413 Request too large.
+    type: object
+    properties:
+      object:
+        type: string
+        description: "Entity name: always 'error'."
+        example: "error"
+      code:
+        type: integer
+        format: int32
+        example: 413
+        description: Response code. Always set to 413.
+      type:
+        description: "Error type. Always set to `Request entity too large`."
+        type: string
+        example: Request Entity Too Large
+      message:
+        type: string
+        description: A human-readable message with detailed info.
+      request_id:
+        type: string
+        example: request_id
+  
 paths:
   /v3/firmware-images/upload-jobs:
     post:
@@ -1310,15 +1439,15 @@ paths:
         400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/BadRequestErrorResponse'
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         409:
           description: Conflict.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
     get:
       tags:
         - Device update - firmware images
@@ -1484,11 +1613,11 @@ paths:
         400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/BadRequestErrorResponse'
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
       x-filter:
         updated_at:
           - in
@@ -1547,11 +1676,11 @@ paths:
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
     delete:
       tags:
         - Device update - firmware images
@@ -1573,15 +1702,15 @@ paths:
         400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/BadRequestErrorResponse'
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
     put:
       tags:
         - Device update - firmware images
@@ -1617,15 +1746,15 @@ paths:
         400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/BadRequestErrorResponse'
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/firmware-images/upload-jobs/{upload_job_id}/chunks:
     get:
       tags:
@@ -1776,15 +1905,15 @@ paths:
         400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/BadRequestErrorResponse'
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
       x-filter:
         created_at:
           - in
@@ -1866,15 +1995,15 @@ paths:
         400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/BadRequestErrorResponse'
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/firmware-images/upload-jobs/{upload_job_id}/chunks/{chunk_id}:
     get:
       tags:
@@ -1905,11 +2034,11 @@ paths:
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/firmware-images:
     get:
       tags:
@@ -2088,22 +2217,22 @@ paths:
           name: filter
           type: string
       responses:
-        '200':
+        200:
           description: Request successful.
           schema:
             $ref: '#/definitions/FirmwareImagePage'
-        '400':
+        400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Unable to find content.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
       x-filter:
         created_at:
           - in
@@ -2203,30 +2332,30 @@ paths:
           required: false
           default: false
       responses:
-        '201':
+        201:
           description: Firmware image created. The API gateway enforces the account-specific file size.
           schema:
             $ref: '#/definitions/FirmwareImage'
-        '400':
+        400:
           description: Cannot validate the data used to create the firmware image.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        403:
           description: Forbidden.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '409':
+            $ref: '#/definitions/ForbiddenErrorResponse'
+        409:
           description: 'Conflict: a firmware image with the same name already exists.'
           schema:
             $ref: '#/definitions/ErrorResponse'
-        '413':
+        413:
           description: Firmware image too large.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/RequestTooLargeErrorResponse'
   '/v3/firmware-images/{image_id}':
     delete:
       tags:
@@ -2249,20 +2378,20 @@ paths:
           type: string
           pattern: '[A-Fa-f0-9]{32}'
       responses:
-        '204':
+        204:
           description: Firmware image deleted.
-        '400':
+        400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Firmware image not found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
     get:
       tags:
         - Device update - firmware images
@@ -2284,22 +2413,22 @@ paths:
           type: string
           pattern: '[A-Fa-f0-9]{32}'
       responses:
-        '200':
+        200:
           description: Retrieved result successfully.
           schema:
             $ref: '#/definitions/FirmwareImage'
-        '400':
+        400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Firmware image can't be found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/firmware-manifests/:
     get:
       tags:
@@ -2466,22 +2595,22 @@ paths:
           name: filter
           type: string
       responses:
-        '200':
+        200:
           description: Request successful.
           schema:
             $ref: '#/definitions/FirmwareManifestPage'
-        '400':
+        400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Unable to find content.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
       x-filter:
         created_at:
           - in
@@ -2574,27 +2703,27 @@ paths:
           format: free text
           maxLength: 128
       responses:
-        '201':
+        201:
           description: Created.
           schema:
             $ref: '#/definitions/FirmwareManifest'
-        '400':
+        400:
           description: |
             Validation error. The data used to create the firmware manifest did not validate and/or the manifest uploaded exceeded 2 KB in size.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        403:
           description: Forbidden.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '409':
+            $ref: '#/definitions/ForbiddenErrorResponse'
+        409:
           description: 'Conflict: a manifest with the same name already exists.'
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
   '/v3/firmware-manifests/{manifest_id}':
     delete:
       tags:
@@ -2617,20 +2746,20 @@ paths:
           type: string
           pattern: '[A-Fa-f0-9]{32}'
       responses:
-        '204':
+        204:
           description: Firmware manifest deleted.
-        '400':
+        400:
           description: Bad Request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Firmware manifest not found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
     get:
       tags:
         - Device update - firmware manifests
@@ -2652,22 +2781,22 @@ paths:
           type: string
           pattern: '[A-Fa-f0-9]{32}'
       responses:
-        '200':
+        200:
           description: Retrieved result successfully.
           schema:
             $ref: '#/definitions/FirmwareManifest'
-        '400':
+        400:
           description: Bad request.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Firmware manifest can't be found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/update-campaigns:
     get:
       tags:
@@ -2843,23 +2972,23 @@ paths:
           name: filter
           type: string
       responses:
-        '200':
+        200:
           description: Request successful.
           schema:
             $ref: '#/definitions/UpdateCampaignPage'
-        '400':
+        400:
           description: |
             Validation error: The data used to update the campaign did not validate.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Unable to find content.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
       x-filter:
         created_at:
           - in
@@ -2942,23 +3071,23 @@ paths:
           schema:
             $ref: '#/definitions/UpdateCampaignPostRequest'
       responses:
-        '201':
+        201:
           description: Update campaign created.
           schema:
             $ref: '#/definitions/UpdateCampaign'
-        '400':
+        400:
           description: |
             Validation error: The data used to create the campaign did not validate.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '409':
-          description: 'Conflict: a campaign with the same name already exists.'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        409:
+          description: Conflict, a campaign with the same name already exists
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
   '/v3/update-campaigns/{campaign_id}':
     delete:
       tags:
@@ -2976,25 +3105,25 @@ paths:
       parameters:
         - <<: *campaign_id_parameter
       responses:
-        '204':
+        204:
           description: Update campaign deleted.
-        '400':
+        400:
           description: |
             Validation error: The data used to update the campaign did not validate.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Update campaign can't be found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
         409:
           description: Conflict - Cannot delete the campaign while in the current phase.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
     get:
       tags:
         - Device update - campaigns
@@ -3011,23 +3140,23 @@ paths:
       parameters:
         - <<: *campaign_id_parameter
       responses:
-        '200':
+        200:
           description: Retrieved result successfully.
           schema:
             $ref: '#/definitions/UpdateCampaign'
-        '400':
+        400:
           description: |
             Validation error: The data used to update the campaign did not validate.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Unable to find campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
     put:
       tags:
         - Device update - campaigns
@@ -3056,19 +3185,27 @@ paths:
           schema:
             $ref: '#/definitions/UpdateCampaignPutRequest'
       responses:
-        '200':
+        200:
           description: Update campaign updated.
           schema:
             $ref: '#/definitions/UpdateCampaign'
-        '400':
+        400:
           description: |
             Validation error: The data used to update the campaign did not validate.
-        '401':
+          schema:
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
-        '403':
+          schema:
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        403:
           description: Fields apart from 'name', 'description' and 'state' cannot be modified when the state is not 'draft'.
-        '404':
+          schema:
+            $ref: '#/definitions/ForbiddenErrorResponse'
+        404:
           description: Update campaign can't be found.
+          schema:
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   '/v3/update-campaigns/{campaign_id}/clone':
     post:
       tags:
@@ -3087,15 +3224,19 @@ paths:
       parameters:
         - <<: *campaign_id_parameter
       responses:
-        '200':
+        200:
           description: Cloned update campaign.
           schema:
             $ref: '#/definitions/UpdateCampaign'
-        '400':
+        400:
           description: |
             Validation error: The data used to update the campaign did not validate.
-        '401':
+          schema:
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
+          schema:
+            $ref: '#/definitions/UnauthorizedErrorResponse'
   '/v3/update-campaigns/{campaign_id}/campaign-device-metadata':
     get:
       tags:
@@ -3137,6 +3278,8 @@ paths:
             $ref: "#/definitions/CampaignDeviceMetadataPage"
         401:
           description: "Unauthorized"
+          schema:
+            $ref: '#/definitions/UnauthorizedErrorResponse'
   '/v3/update-campaigns/{campaign_id}/campaign-device-metadata/{campaign_device_metadata_id}':
     get:
       tags:
@@ -3166,8 +3309,12 @@ paths:
             $ref: "#/definitions/CampaignDeviceMetadata"
         401:
           description: "Unauthorized."
+          schema:
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: "Not Found."
+          schema:
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/update-campaigns/{campaign_id}/start:
     post:
       tags:
@@ -3185,24 +3332,24 @@ paths:
       parameters:
         - <<: *campaign_id_parameter
       responses:
-        '202':
+        202:
           description: The campaign is starting.
-        '400':
+        400:
           description: Unable to change the phase of the campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Cannot find the campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '409':
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
+        409:
           description: Cannot start the campaign while in the current phase.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
   /v3/update-campaigns/{campaign_id}/stop:
     post:
       tags:
@@ -3220,24 +3367,24 @@ paths:
       parameters:
         - <<: *campaign_id_parameter
       responses:
-        '202':
+        202:
           description: The campaign is stopping.
-        '400':
+        400:
           description: Unable to change the phase of the campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Cannot find the campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '409':
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
+        409:
           description: Cannot stop the campaign while in the current phase.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
   /v3/update-campaigns/{campaign_id}/archive:
     post:
       tags:
@@ -3255,24 +3402,24 @@ paths:
       parameters:
         - <<: *campaign_id_parameter
       responses:
-        '202':
+        202:
           description: The campaign has been archived.
-        '400':
+        400:
           description: Unable to change the phase of the campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+            $ref: '#/definitions/BadRequestErrorResponse'
+        401:
           description: Not authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+            $ref: '#/definitions/UnauthorizedErrorResponse'
+        404:
           description: Cannot find the campaign.
           schema:
-            $ref: '#/definitions/ErrorResponse'
-        '409':
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
+        409:
           description: Cannot archive the campaign while in the current phase.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ConflictErrorResponse'
   /v3/update-campaigns/{campaign_id}/metrics:
     get:
       tags:
@@ -3297,11 +3444,11 @@ paths:
         401:
           description: "Unauthorized."
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: "Unable to find campaign or the campaign hasn't started."
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
       deprecated: true
       x-deprecation:
         issued_at: "2019-04-10T13:41:00+00:00"
@@ -3332,11 +3479,11 @@ paths:
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/update-campaigns/{campaign_id}/statistics/{summary_status_id}:
     get:
       tags:
@@ -3362,11 +3509,11 @@ paths:
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/update-campaigns/{campaign_id}/statistics/{summary_status_id}/event_types:
     get:
       tags:
@@ -3392,11 +3539,11 @@ paths:
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   /v3/update-campaigns/{campaign_id}/statistics/{summary_status_id}/event_types/{event_type_id}:
     get:
       tags:
@@ -3423,11 +3570,11 @@ paths:
         401:
           description: Not Authenticated.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
   '/v3/update-campaigns/{campaign_id}/mesh-statistics':
     get:
       tags:
@@ -3451,7 +3598,9 @@ paths:
             $ref: "#/definitions/MeshStatisticsPage"
         401:
           description: "Unauthorized"
+          schema:
+            $ref: '#/definitions/UnauthorizedErrorResponse'
         404:
           description: Not Found.
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/ReportNotFoundErrorResponse'
