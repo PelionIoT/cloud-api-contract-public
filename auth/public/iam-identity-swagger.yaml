@@ -32,6 +32,8 @@ tags:
     description: Manage users.
   - name: Security and identity - certificates
     description: Manage trusted certificates.
+  - name: Security and identity - OEM certificates
+    description: Manage OEM certificates.
   - name: User interface configuration - colors
     description: Manage branding colors in the service portal UI.
   - name: User interface configuration - images
@@ -58,6 +60,8 @@ tags:
     description: Fetch email notifications sent on important events of a tenant account.
   - name: Tenant security and identity - certificates
     description: Manage trusted certificates of a tenant account.
+  - name: Tenant security and identity - OEM certificates
+    description: Manage OEM certificates of a tenant account.
   - name: Tenant user interface configuration - colors
     description: Manage branding colors in the service portal UI of a tenant account.
   - name: Tenant user interface configuration - images
@@ -296,8 +300,8 @@ paths:
           description: |-
             Action, either `create` or `enroll`.
             <ul>
-            <li>`create` creates the account where its admin user has ACTIVE status if `admin_password` was defined in the request, or RESET status if no `admin_password` was defined. If the user already exists, its status is not modified. </li>
-            <li>`enroll` creates the account where its admin user has ENROLLING status. If the user already exists, its status is not modified. Email to finish enrollment or notify the existing user about the new account is sent to the `admin_email` defined in the request. </li></ul>
+            <li>`create` creates an account and also creates a new admin  if a user with the specified email address does not exist. </li>
+            <li>`enroll` creates an account and enrolls a new admin user. The user receives an email with link to finish the enrollment or a notification message about the new account. </li></ul>
           required: false
           type: string
           default: create
@@ -5521,6 +5525,11 @@ paths:
           description: 'Filter for finding certificates by validity. True returns certificates which are not yet expired. False returns certificates which have expired.'
           required: false
           type: boolean
+        - name: is_public__eq
+          in: query
+          description: 'Filter for finding public certificates.'
+          required: false
+          type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -5734,6 +5743,291 @@ paths:
             $ref: '#/definitions/ErrorResponse'
         '404':
           description: An account or certificate with the given ID not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/trusted-certificates/{cert_id}/release':
+    post:
+      tags:
+        - Tenant security and identity - certificates
+      summary: Release an OEM certificate.
+      description: |-
+        Mark an OEM trusted certificate as public.
+        <b>Note:</b> This endpoint is restricted to OEM administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates/{cert_id}/release \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: releaseAccountCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: Account ID.
+          required: true
+          type: string
+        - name: cert_id
+          in: path
+          description: The ID of the trusted certificate to release.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/trusted-certificates/{cert_id}/unrelease':
+    post:
+      tags:
+        - Tenant security and identity - certificates
+      summary: Unrelease an OEM certificate.
+      description: |-
+        Unrelease an OEM trusted certificate for being private again.
+        <b>Note:</b> This endpoint is restricted to OEM administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/trusted-certificates/{cert_id}/unrelease \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: unreleaseAccountCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: Account ID.
+          required: true
+          type: string
+        - name: cert_id
+          in: path
+          description: The ID of the trusted certificate to unrelease.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/accounts/{account_id}/oem-certificates:
+    get:
+      tags:
+        - Tenant security and identity - OEM certificates
+      summary: Get all OEM certificates.
+      description: |-
+        Retrieve an array of OEM certificates.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/oem-certificates \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllAccountOemCertificates
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: Account ID.
+          required: true
+          type: string
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: service__eq
+          in: query
+          description: 'Service filter, either LwM2M or bootstrap.'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateRespList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account with the given ID does not exist.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/oem-certificates/{oem_cert_id}':
+    get:
+      tags:
+        - Tenant security and identity - OEM certificates
+      summary: Get an OEM certificate.
+      description: |-
+        Retrieve an OEM certificate.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/oem-certificates/{oem_cert_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAccountOemCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: Account ID.
+          required: true
+          type: string
+        - name: oem_cert_id
+          in: path
+          description: The ID of the OEM certificate to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or OEM certificate with the given ID not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/oem-certificates/{oem_cert_id}/import':
+    post:
+      tags:
+        - Tenant security and identity - OEM certificates
+      summary: Import an OEM certificate.
+      description: |-
+        Import an OEM certificate to an account.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/oem-certificates/{oem_cert_id}/import \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: importAccountOemCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: Account ID.
+          required: true
+          type: string
+        - name: oem_cert_id
+          in: path
+          description: The ID of the OEM certificate to import.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or OEM certificate with the given ID not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/accounts/{account_id}/oem-certificates/{oem_cert_id}/remove':
+    post:
+      tags:
+        - Tenant security and identity - OEM certificates
+      summary: Removes an OEM certificate.
+      description: |-
+        Remove an OEM certificate from an account.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/accounts/{account_id}/oem-certificates/{oem_cert_id}/remove \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: removeAccountOemCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: account_id
+          in: path
+          description: Account ID.
+          required: true
+          type: string
+        - name: oem_cert_id
+          in: path
+          description: The ID of the OEM certificate to remove.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Successful operation.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An account or OEM certificate with the given ID not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   '/v3/accounts/{account_id}/user-invitations':
@@ -11242,6 +11536,11 @@ paths:
           description: 'Filter for finding certificates by validity. True returns certificates which are not yet expired. False returns certificates which have expired.'
           required: false
           type: boolean
+        - name: is_public__eq
+          in: query
+          description: 'Filter for finding public certificates.'
+          required: false
+          type: boolean
       responses:
         '200':
           description: Successful operation.
@@ -11432,6 +11731,257 @@ paths:
             $ref: '#/definitions/ErrorResponse'
         '404':
           description: A certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/trusted-certificates/{cert_id}/release':
+    post:
+      tags:
+        - Security and identity - certificates
+      summary: Release an OEM certificate.
+      description: |-
+        Mark an OEM trusted certificate as public.
+        <b>Note:</b> This endpoint is restricted to OEM administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/trusted-certificates/{cert_id}/release \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: releaseCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: cert_id
+          in: path
+          description: The ID of the trusted certificate to release.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/trusted-certificates/{cert_id}/unrelease':
+    post:
+      tags:
+        - Security and identity - certificates
+      summary: Unrelease an OEM certificate.
+      description: |-
+        Unrelease an OEM trusted certificate for being private again.
+        <b>Note:</b> This endpoint is restricted to OEM administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/trusted-certificates/{cert_id}/unrelease \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: unreleaseCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: cert_id
+          in: path
+          description: The ID of the trusted certificate to unrelease.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: A certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /v3/oem-certificates:
+    get:
+      tags:
+        - Security and identity - OEM certificates
+      summary: Get all OEM certificates.
+      description: |-
+        Retrieve an array of OEM certificates.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/oem-certificates \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getAllOemCertificates
+      produces:
+        - application/json
+      parameters:
+        - name: limit
+          in: query
+          description: 'The number of results to return (2-1000). Default 50.'
+          required: false
+          type: integer
+          default: 50
+          format: int32
+        - name: after
+          in: query
+          description: The entity ID to retrieve after the given one.
+          required: false
+          type: string
+        - name: order
+          in: query
+          description: 'Record order based on creation. Acceptable values: ASC, DESC. Default: ASC.'
+          required: false
+          type: string
+          default: ASC
+        - name: include
+          in: query
+          description: 'Comma-separated additional data to return. Currently supported: total_count.'
+          required: false
+          type: string
+        - name: service__eq
+          in: query
+          description: 'Service filter, either LwM2M or bootstrap.'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateRespList'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/oem-certificates/{oem_cert_id}':
+    get:
+      tags:
+        - Security and identity - OEM certificates
+      summary: Get an OEM certificate.
+      description: |-
+        Retrieve an OEM certificate.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X GET https://api.us-east-1.mbedcloud.com/v3/oem-certificates/{oem_cert_id} \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: getOemCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: oem_cert_id
+          in: path
+          description: The ID of the OEM certificate to retrieve.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An OEM certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/oem-certificates/{oem_cert_id}/import':
+    post:
+      tags:
+        - Security and identity - OEM certificates
+      summary: Import an OEM certificate.
+      description: |-
+        Import an OEM certificate to this account.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/oem-certificates/{oem_cert_id}/import \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: importOemCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: oem_cert_id
+          in: path
+          description: The ID of the OEM certificate to import.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successful operation.
+          schema:
+            $ref: '#/definitions/TrustedCertificateResp'
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An OEM certificate not found.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/v3/oem-certificates/{oem_cert_id}/remove':
+    post:
+      tags:
+        - Security and identity - OEM certificates
+      summary: Removes an OEM certificate.
+      description: |-
+        Remove an OEM certificate from this account.
+        <b>Note:</b> This endpoint is restricted to administrators.
+        **Example:**
+        ```
+        curl -X POST https://api.us-east-1.mbedcloud.com/v3/oem-certificates/{oem_cert_id}/remove \
+        -H 'Authorization: Bearer <access_key>'
+        ```
+      operationId: removeOemCertificate
+      produces:
+        - application/json
+      parameters:
+        - name: oem_cert_id
+          in: path
+          description: The ID of the OEM certificate to remove.
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Successful operation.
+        '401':
+          description: Authentication failure.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden.
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: An OEM certificate not found.
           schema:
             $ref: '#/definitions/ErrorResponse'
   /v3/user-invitations:
@@ -12901,6 +13451,17 @@ definitions:
         description: 'Tier history for this account.'
         items:
           $ref: '#/definitions/TierHistory'
+      is_oem:
+        type: boolean
+        example: false
+        readOnly: true
+        description: 'Flag indicating whether this is an OEM account or not.'
+      oem_name:
+        type: string
+        maxLength: 100
+        example: Acme Inc.
+        readOnly: true
+        description: 'OEM account name'
     description: 'Represents an account in requests and responses.'
   AccountInfoList:
     type: object
@@ -14602,6 +15163,29 @@ definitions:
         example: true
         description: 'This read-only flag indicates whether the certificate is valid or not.'
         readOnly: true
+      is_public:
+        type: boolean
+        readOnly: true
+        example: false
+        description: 'The certificate is public and can be imported into other accounts.'
+      released_at:
+        type: string
+        readOnly: true
+        format: date-time
+        example: '2021-11-30T09:00:00Z'
+        description: 'For OEM certificates this field shows the time when it was released.'
+      imported_at:
+        type: string
+        readOnly: true
+        format: date-time
+        example: '2021-12-01T09:00:00Z'
+        description: 'For OEM certificates this field shows the time when it was imported to this account.'
+      source_id:
+        type: string
+        readOnly: true
+        example: 01619571d01d0242ac12000600000000
+        description: 'If imported, this field shows the original ID of the OEM certificate.'
+        pattern: '[a-f0-9]{32}'
     description: 'Represents a trusted certificate in responses.'
   TrustedCertificateRespList:
     type: object
@@ -14768,7 +15352,7 @@ definitions:
       status:
         type: string
         example: ACTIVE
-        description: 'The status of the user. ENROLLING state indicates that the user is in the middle of the enrollment process. INVITED means that the user has not accepted the invitation request. RESET means that the password must be changed immediately. INACTIVE users are locked out and not permitted to use the system.'
+        description: 'The status of the user. ENROLLING state indicates that the user is in the middle of the enrollment process. INVITED means that the user has not accepted the invitation request. RESET means that the user has not finished the password recovery process yet. INACTIVE users are locked out and not permitted to use the system.'
         enum:
           - ENROLLING
           - INVITED
@@ -15104,7 +15688,7 @@ definitions:
         type: string
         x-nullable: true
         example: ACTIVE
-        description: 'The status of the user. ENROLLING indicates that the user is in the middle of the enrollment process. INVITED means that the user has not accepted the invitation request. RESET means that the password must be changed immediately. INACTIVE users are locked out and not permitted to use the system. Can be changed by the Aggregator Admin only.'
+        description: 'The status of the user. ENROLLING indicates that the user is in the middle of the enrollment process. INVITED means that the user has not accepted the invitation request. RESET means that the user has not finished the password recovery process yet. INACTIVE users are locked out and not permitted to use the system. Can be changed by the Aggregator Admin only.'
         enum:
           - ENROLLING
           - INVITED
