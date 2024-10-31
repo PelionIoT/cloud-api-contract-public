@@ -1,10 +1,10 @@
-# Pelion Device Management Cloud API Swagger Files
+# Izuma Device Management Cloud API Swagger Files
 
-This Git repository contains Pelion Device Management (PDM) Cloud API Swagger files.
+This Git repository contains [Izuma Networks](https://www.izumanetworks.com) Device Management (PDM) Cloud API Swagger files.
 
 The repository is updated regluarly, whenever changes are made to PDM's APIs.
 
-Full documentation of PDM can be found in https://cloud.mbed.com/docs/latest.
+Full documentation for Izuma Device Management in: https://developer.izumanetworks.com/
 
 A rendered view of the Swagger files can be found in
 https://developer.izumanetworks.com/docs/device-management/current/service-api-references/index.html.
